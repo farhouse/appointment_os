@@ -1,0 +1,314 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum Role {
+  ADMIN
+  MANAGER
+  BARBER
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  FINISHED
+  CANCELED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+  OTHER
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+enum CashMovementType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+// Models
+
+model Branch {
+  id        String   @id @default(uuid())
+  name      String
+  address   String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         UserBranch[]
+  appointments  Appointment[]
+  stock         BranchStock[]
+  stockMovements StockMovement[]
+  sales         Sale[]
+  cashSessions  CashSession[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(BARBER)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branches      UserBranch[]
+  appointments  Appointment[] // As the professional
+  confirmedAppointments Appointment[] @relation("ConfirmedBy")
+  sales         Sale[]
+  auditLogs     AuditLog[]
+}
+
+model UserBranch {
+  userId    String
+  branchId  String
+  user      User    @relation(fields: [userId], references: [id])
+  branch    Branch  @relation(fields: [branchId], references: [id])
+
+  @@id([userId, branchId])
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal
+  duration    Int      // in minutes
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointmentServices AppointmentService[]
+}
+
+model Client {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String?
+  email       String?  @unique
+  phone       String?  @unique
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments  Appointment[]
+  sales         Sale[]
+  loyaltyLedger LoyaltyLedger[]
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  branchId       String
+  clientId       String
+  professionalId String? // User (Employee)
+  status         AppointmentStatus @default(PENDING)
+  startTime      DateTime
+  endTime        DateTime
+  notes          String?
+  
+  // Confirmation details
+  confirmedAt    DateTime?
+  confirmedById  String?
+  confirmedBy    User?    @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+
+  // Notification toggles
+  notifyEmail    Boolean  @default(true)
+  notifySms      Boolean  @default(false)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  branch       Branch               @relation(fields: [branchId], references: [id])
+  client       Client               @relation(fields: [clientId], references: [id])
+  professional User?                @relation(fields: [professionalId], references: [id])
+  services     AppointmentService[]
+  
+  @@index([branchId])
+  @@index([clientId])
+  @@index([professionalId])
+  @@index([startTime, endTime])
+}
+
+model AppointmentService {
+  appointmentId String
+  serviceId     String
+  price         Decimal // Snapshot of price at booking time
+  duration      Int     // Snapshot of duration
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  service     Service     @relation(fields: [serviceId], references: [id])
+
+  @@id([appointmentId, serviceId])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  sku         String   @unique
+  description String?
+  price       Decimal
+  cost        Decimal?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  branchStock    BranchStock[]
+  stockMovements StockMovementItem[]
+  saleItems      SaleItem[]
+}
+
+model BranchStock {
+  branchId  String
+  productId String
+  quantity  Int     @default(0)
+  minStock  Int     @default(0)
+  
+  branch  Branch  @relation(fields: [branchId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@id([branchId, productId])
+}
+
+model StockMovement {
+  id          String            @id @default(uuid())
+  branchId    String
+  type        StockMovementType
+  reference   String?           // e.g., Purchase Order # or Sale ID
+  createdAt   DateTime          @default(now())
+  
+  branch      Branch              @relation(fields: [branchId], references: [id])
+  items       StockMovementItem[]
+}
+
+model StockMovementItem {
+  id              String   @id @default(uuid())
+  movementId      String
+  productId       String
+  quantity        Int
+  
+  movement StockMovement @relation(fields: [movementId], references: [id])
+  product  Product       @relation(fields: [productId], references: [id])
+}
+
+model Sale {
+  id            String        @id @default(uuid())
+  branchId      String
+  clientId      String?
+  userId        String?       // Seller
+  total         Decimal
+  paymentMethod PaymentMethod
+  createdAt     DateTime      @default(now())
+  
+  branch Branch @relation(fields: [branchId], references: [id])
+  client Client? @relation(fields: [clientId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
+  items  SaleItem[]
+}
+
+model SaleItem {
+  id        String   @id @default(uuid())
+  saleId    String
+  productId String
+  quantity  Int
+  price     Decimal
+  
+  sale    Sale    @relation(fields: [saleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model LoyaltyLedger {
+  id          String   @id @default(uuid())
+  clientId    String
+  points      Int      // Can be negative for usage
+  reason      String?
+  createdAt   DateTime @default(now())
+  
+  client Client @relation(fields: [clientId], references: [id])
+}
+
+model CashSession {
+  id           String    @id @default(uuid())
+  branchId     String
+  openedBy     String    // User ID
+  closedBy     String?   // User ID
+  openingTime  DateTime  @default(now())
+  closingTime  DateTime?
+  openingBalance Decimal
+  closingBalance Decimal?
+  
+  branch Branch @relation(fields: [branchId], references: [id])
+  movements CashMovement[]
+  
+  // Note: Uniqueness by (branchId, date) is tricky because "date" isn't a field, 
+  // but we can enforce one open session per branch.
+  // For the prompt requirement "unique(branchId, date)", we might add a 'date' field manually managed
+  // or just rely on business logic. I will add a date field for the unique constraint.
+  date         DateTime @db.Date // Store just the date part
+  
+  @@unique([branchId, date])
+}
+
+model CashMovement {
+  id            String           @id @default(uuid())
+  sessionId     String
+  amount        Decimal
+  type          CashMovementType
+  reason        String?
+  createdAt     DateTime         @default(now())
+  
+  session CashSession @relation(fields: [sessionId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   String?  // JSON string
+  ipAddress String?
+  createdAt DateTime @default(now())
+  
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model NotificationTemplate {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  subject   String?
+  body      String
+  type      String   // EMAIL, SMS, etc.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  jobs NotificationJob[]
+}
+
+model NotificationJob {
+  id         String   @id @default(uuid())
+  templateId String
+  recipient  String
+  status     String   // PENDING, SENT, FAILED
+  sentAt     DateTime?
+  error      String?
+  createdAt  DateTime @default(now())
+  
+  template NotificationTemplate @relation(fields: [templateId], references: [id])
+}

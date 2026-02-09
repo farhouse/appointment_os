@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: barber
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: barber_os
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://barber:password@postgres:5432/barber_os
+      JWT_SECRET: supersecretkeychangeinprod
+      JWT_REFRESH_SECRET: supersecretrefreshkeychangeinprod
+    depends_on:
+      - postgres
+    command: sh -c "npx prisma migrate deploy && node .output/server/index.mjs"
+
+volumes:
+  postgres_data:
