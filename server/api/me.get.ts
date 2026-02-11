@@ -2,7 +2,13 @@ import { defineEventHandler, getCookie, createError } from 'h3'
 import jwt from 'jsonwebtoken'
 import prisma from '~/server/utils/prisma'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw createError({ statusCode: 500, statusMessage: 'Server misconfigured' })
+  }
+  return secret
+}
 
 export default defineEventHandler(async (event) => {
   const token = getCookie(event, 'auth_token')
@@ -15,7 +21,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] }) as any
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {

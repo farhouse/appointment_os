@@ -1,8 +1,17 @@
 import { defineEventHandler, readBody, createError, setCookie } from 'h3'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw createError({ statusCode: 500, statusMessage: 'Server misconfigured' })
+  }
+  return secret
+}
+
+function getJwtRefreshSecret() {
+  return process.env.JWT_REFRESH_SECRET || getJwtSecret()
+}
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -13,15 +22,21 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const decoded: any = jwt.verify(refreshToken, JWT_REFRESH_SECRET)
+    const decoded: any = jwt.verify(refreshToken, getJwtRefreshSecret(), { algorithms: ['HS256'] })
     const accessToken = jwt.sign(
       // Role/email are not carried in refresh token; middleware will use access token for RBAC.
       { userId: decoded.userId },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '1h' }
     )
 
-    setCookie(event, 'auth_token', accessToken, { httpOnly: true, maxAge: 3600 })
+    setCookie(event, 'auth_token', accessToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 3600,
+    })
     return { accessToken }
   } catch (e) {
     throw createError({ statusCode: 401, statusMessage: 'Invalid refresh token' })

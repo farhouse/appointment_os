@@ -4,8 +4,17 @@ import { loginSchema } from '~/server/utils/schemas'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw createError({ statusCode: 500, statusMessage: 'Server misconfigured' })
+  }
+  return secret
+}
+
+function getJwtRefreshSecret() {
+  return process.env.JWT_REFRESH_SECRET || getJwtSecret()
+}
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -45,18 +54,24 @@ export default defineEventHandler(async (event) => {
   // Generate tokens
   const accessToken = jwt.sign(
     { userId: user.id, role: user.role, email: user.email },
-    JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: '1h' }
   )
   
   const refreshToken = jwt.sign(
     { userId: user.id },
-    JWT_REFRESH_SECRET,
+    getJwtRefreshSecret(),
     { expiresIn: '7d' }
   )
 
   // In a real app, store refresh token in HttpOnly cookie
-  setCookie(event, 'auth_token', accessToken, { httpOnly: true, maxAge: 3600 })
+  setCookie(event, 'auth_token', accessToken, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 3600,
+  })
 
   return {
     accessToken,
