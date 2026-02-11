@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { z } from 'zod'
+import { readBodyValidated } from '~/server/utils/http'
 
 const patchSchema = z.object({
   templates: z.array(z.object({
@@ -15,13 +16,8 @@ const patchSchema = z.object({
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN'])
 
-  const body = await readBody(event)
-  const parsed = patchSchema.safeParse(body)
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Validation Error', data: parsed.error.issues })
-  }
-
-  const templates = parsed.data.templates || []
+  const parsed = await readBodyValidated(event, patchSchema)
+  const templates = parsed.templates || []
   const upserted = []
   for (const t of templates) {
     const row = await prisma.notificationTemplate.upsert({

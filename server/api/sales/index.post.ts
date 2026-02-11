@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { readBodyValidated } from '~/server/utils/http'
 
 const schema = z.object({
   branchId: z.string().uuid(),
@@ -19,22 +20,18 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
 
-  const body = await readBody(event)
-  const parsed = schema.safeParse(body)
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Validation Error', data: parsed.error.issues })
-  }
+  const parsed = await readBodyValidated(event, schema)
 
   // MVP: create Sale + SaleItems. No split payments by design.
   const sale = await prisma.sale.create({
     data: {
-      branchId: parsed.data.branchId,
-      clientId: parsed.data.clientId ?? null,
-      userId: parsed.data.userId ?? null,
-      total: parsed.data.total as any,
-      paymentMethod: parsed.data.paymentMethod as any,
+      branchId: parsed.branchId,
+      clientId: parsed.clientId ?? null,
+      userId: parsed.userId ?? null,
+      total: parsed.total as any,
+      paymentMethod: parsed.paymentMethod as any,
       items: {
-        create: parsed.data.items.map(i => ({
+        create: parsed.items.map(i => ({
           productId: i.productId,
           quantity: i.quantity,
           price: i.price as any

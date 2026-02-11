@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { readBodyValidated } from '~/server/utils/http'
 
 const schema = z.object({
   branchId: z.string().uuid(),
@@ -16,20 +17,16 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
 
-  const body = await readBody(event)
-  const parsed = schema.safeParse(body)
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Validation Error', data: parsed.error.issues })
-  }
+  const parsed = await readBodyValidated(event, schema)
 
   // MVP: create movement + items (no stock math yet)
   const movement = await prisma.stockMovement.create({
     data: {
-      branchId: parsed.data.branchId,
-      type: parsed.data.type as any,
-      reference: parsed.data.reference ?? null,
+      branchId: parsed.branchId,
+      type: parsed.type as any,
+      reference: parsed.reference ?? null,
       items: {
-        create: parsed.data.items.map(i => ({ productId: i.productId, quantity: i.quantity }))
+        create: parsed.items.map(i => ({ productId: i.productId, quantity: i.quantity }))
       }
     },
     include: { items: true }
