@@ -1,24 +1,21 @@
-import { createError } from 'h3'
+import type { H3Event } from 'h3'
 import type { Role } from '@prisma/client'
 
-export type AuthUser = {
-  userId: string
-  role: Role
-  email?: string
-}
+import type { AuthUser } from '~/server/utils/auth'
+import { forbidden, unauthorized } from '~/server/utils/errors'
 
-export function getAuthUser(event: any): AuthUser {
-  const u = event?.context?.user
+export function getAuthUser(event: H3Event): AuthUser {
+  const u = event.context.user
   if (!u?.userId || !u?.role) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+    unauthorized('Unauthorized')
   }
   return u as AuthUser
 }
 
-export function requireRole(event: any, roles: Role[]) {
+export function requireRole(event: H3Event, roles: Role[]) {
   const u = getAuthUser(event)
   if (!roles.includes(u.role)) {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+    forbidden('Forbidden')
   }
   return u
 }

@@ -6,7 +6,7 @@ import { requireRole } from '~/server/utils/permissions'
 const schema = z.object({
   filename: z.string().optional(),
   contentBase64: z.string().optional(),
-  mapping: z.record(z.string()).optional()
+  mapping: z.record(z.string(), z.string()).optional()
 })
 
 export default defineEventHandler(async (event) => {
