@@ -4,14 +4,14 @@ definePageMeta({
   middleware: ['private'],
 })
 
-type Role = 'OWNER' | 'ADMIN' | 'MANAGER' | 'BARBER' | 'CLIENT'
+import type { Role } from '~/composables/useMe'
+import { loadMe } from '~/composables/useMe'
 
-const { data, error } = await useFetch('/api/me')
-if (error.value) {
-  await navigateTo('/login')
+const me = await loadMe()
+if (!me) {
+  await navigateTo(`/login?redirect=${encodeURIComponent('/private')}`)
 }
 
-const me: any = data.value?.user ?? data.value
 const role: Role | undefined = me?.role
 
 if (role === 'OWNER' || role === 'ADMIN' || role === 'MANAGER') {

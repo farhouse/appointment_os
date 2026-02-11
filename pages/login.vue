@@ -34,6 +34,9 @@ async function handleLogin() {
       body: { email: email.value, password: password.value }
     })
 
+    // Prevent stale role/menu on repeated logins (e.g. switching users)
+    useState('me', () => null).value = null
+
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/private'
     router.push(redirect)
   } catch (e: any) {

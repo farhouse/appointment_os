@@ -2,15 +2,10 @@
 // Shared authenticated layout ("chrome").
 // The sidebar menu is filtered by role.
 
-type Role = 'OWNER' | 'ADMIN' | 'MANAGER' | 'BARBER' | 'CLIENT'
+import type { Role } from '~/composables/useMe'
+import { useMeState } from '~/composables/useMe'
 
-const me = useState<any | null>('me', () => null)
-
-if (!me.value) {
-  // best-effort: pages already run middleware/private, but layout can be hit during hydration
-  const { data } = await useFetch('/api/me')
-  me.value = data.value?.user ?? data.value ?? null
-}
+const me = useMeState()
 
 const role = computed<Role | undefined>(() => me.value?.role)
 
