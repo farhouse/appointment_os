@@ -1,12 +1,11 @@
-import { defineEventHandler, getRouterParam, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { getAuthUser, requireRole } from '~/server/utils/permissions'
+import { requireParam } from '~/server/utils/http'
+import { notFound } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
-    throw createError({ statusCode: 400, statusMessage: 'id required' })
-  }
+  const id = requireParam(event, 'id')
   // Only managers/admins can confirm appointments.
   requireRole(event, ['ADMIN', 'MANAGER'])
   const user = getAuthUser(event)
@@ -22,6 +21,6 @@ export default defineEventHandler(async (event) => {
     })
     return appointment
   } catch (e) {
-    throw createError({ statusCode: 404, statusMessage: 'Appointment not found' })
+    notFound('Appointment not found')
   }
 })
