@@ -11,18 +11,48 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barber -d barber_os"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
-  app:
-    build: .
+  # DEV server (hot reload)
+  app-dev:
+    image: node:24-alpine
+    working_dir: /app
+    profiles: ["dev"]
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://barber:password@postgres:5432/barber_os
+      NODE_ENV: development
+      DATABASE_URL: postgresql://barber:password@postgres:5432/barber_os
+      JWT_SECRET: dev-secret-change-me
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-me
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "npm ci && npx prisma generate && npx prisma db push && npm run dev -- --host 0.0.0.0"
+
+  # PROD-like container (requires `npm run build` output inside image)
+  app:
+    build: .
+    profiles: ["prod"]
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://barber:password@postgres:5432/barber_os
       JWT_SECRET: supersecretkeychangeinprod
       JWT_REFRESH_SECRET: supersecretrefreshkeychangeinprod
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     command: sh -c "npx prisma migrate deploy && node .output/server/index.mjs"
 
 volumes:
   postgres_data:
+  node_modules:
