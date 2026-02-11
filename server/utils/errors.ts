@@ -21,6 +21,10 @@ export function forbidden(statusMessage = 'Forbidden'): never {
   throw createError({ statusCode: 403, statusMessage })
 }
 
+export function conflict(statusMessage = 'Conflict', data?: unknown): never {
+  throw createError({ statusCode: 409, statusMessage, ...(data === undefined ? {} : { data }) })
+}
+
 export function notFound(statusMessage = 'Not Found'): never {
   throw createError({ statusCode: 404, statusMessage })
 }

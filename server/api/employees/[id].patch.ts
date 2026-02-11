@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, createError } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { employeeSchema } from '~/server/utils/schemas'
 import { requireRole } from '~/server/utils/permissions'
+import { readBodyValidated } from '~/server/utils/http'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
@@ -9,14 +10,10 @@ export default defineEventHandler(async (event) => {
   const id = event.context.params?.id
   if (!id) throw createError({ statusCode: 400, statusMessage: 'id required' })
 
-  const body = await readBody(event)
-  const parsed = employeeSchema.partial().safeParse(body)
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Validation Error', data: parsed.error.issues })
-  }
+  const parsed = await readBodyValidated(event, employeeSchema.partial())
 
   // NOTE: password updates should be via separate endpoint.
-  const { branchIds, password, ...data } = parsed.data as any
+  const { branchIds, password, ...data } = parsed as any
 
   const user = await prisma.user.update({ where: { id }, data })
 
