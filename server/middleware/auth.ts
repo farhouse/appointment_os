@@ -2,6 +2,7 @@ import { defineEventHandler } from 'h3'
 
 import { getAuthCookie, verifyAccessToken } from '~/server/utils/auth'
 import { unauthorized } from '~/server/utils/errors'
+import prisma from '~/server/utils/prisma'
 
 // Paths that don't require auth
 const PUBLIC_PREFIXES = ['/api/public/']
@@ -25,5 +26,19 @@ export default defineEventHandler(async (event) => {
     unauthorized('Unauthorized')
   }
 
-  event.context.user = verifyAccessToken(token)
+  // Verify signature + shape first, then re-load from DB to:
+  // - enforce `active` immediately (no 1h window)
+  // - avoid stale role/email in long-lived tabs
+  const decoded = verifyAccessToken(token)
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+    select: { id: true, role: true, email: true, active: true },
+  })
+
+  if (!user || !user.active) {
+    unauthorized('Unauthorized')
+  }
+
+  event.context.user = { userId: user.id, role: user.role, email: user.email }
 })
