@@ -1,27 +1,18 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { appointmentSchema } from '~/server/utils/schemas'
+import { readBodyValidated } from '~/server/utils/http'
+import { badRequest } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const validation = appointmentSchema.safeParse(body)
-
-  if (!validation.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation Error',
-      data: validation.error.issues,
-    })
-  }
-
-  const { serviceIds, ...data } = validation.data
+  const { serviceIds, ...data } = await readBodyValidated(event, appointmentSchema)
 
   const services = await prisma.service.findMany({
     where: { id: { in: serviceIds } }
   })
 
   if (services.length !== serviceIds.length) {
-    throw createError({ statusCode: 400, statusMessage: 'One or more services not found' })
+    badRequest('One or more services not found')
   }
 
   // Public appointment creation always starts as PENDING
