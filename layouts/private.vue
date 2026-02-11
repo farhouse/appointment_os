@@ -9,11 +9,45 @@
       <aside class="w-64 border-r bg-white min-h-screen p-4">
         <div class="font-semibold">barber-os</div>
         <div class="text-xs text-gray-500 mt-1">Private</div>
-        <nav class="mt-6 space-y-2 text-sm">
-          <NuxtLink class="block hover:underline" to="/private">Home</NuxtLink>
-          <NuxtLink class="block hover:underline" to="/private/manager">Manager</NuxtLink>
-          <NuxtLink class="block hover:underline" to="/private/barber">Barber</NuxtLink>
-          <NuxtLink class="block hover:underline" to="/private/client">Client</NuxtLink>
+
+        <nav class="mt-6 space-y-4 text-sm">
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Common</div>
+            <div class="mt-2 space-y-1">
+              <NuxtLink class="block hover:underline" to="/private">Home</NuxtLink>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Manager</div>
+            <div class="mt-2 space-y-1">
+              <NuxtLink class="block hover:underline" to="/private/manager">Dashboard</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/manager/calendar">Calendar</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/manager/cash">Cash</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/manager/products">Products</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/manager/stock">Stock</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/manager/employees">Employees</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/manager/settings">Settings</NuxtLink>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Barber</div>
+            <div class="mt-2 space-y-1">
+              <NuxtLink class="block hover:underline" to="/private/barber">Home</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/barber/today">Today</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/barber/appointments">Appointments</NuxtLink>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Client</div>
+            <div class="mt-2 space-y-1">
+              <NuxtLink class="block hover:underline" to="/private/client">Home</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/client/book">Book</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/client/appointments">Appointments</NuxtLink>
+            </div>
+          </div>
         </nav>
       </aside>
 
