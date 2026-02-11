@@ -10,9 +10,11 @@ datasource db {
 
 // Enums
 enum Role {
+  OWNER
   ADMIN
   MANAGER
   BARBER
+  CLIENT
 }
 
 enum AppointmentStatus {

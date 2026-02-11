@@ -19,10 +19,13 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({ layout: 'auth' })
+
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const router = useRouter()
+const route = useRoute()
 
 async function handleLogin() {
   try {
@@ -30,7 +33,9 @@ async function handleLogin() {
       method: 'POST',
       body: { email: email.value, password: password.value }
     })
-    router.push('/dashboard')
+
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/private'
+    router.push(redirect)
   } catch (e: any) {
     error.value = e.data?.statusMessage || 'Login failed'
   }
