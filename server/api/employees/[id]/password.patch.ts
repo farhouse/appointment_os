@@ -4,14 +4,14 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import bcrypt from 'bcrypt'
 import { readBodyValidated } from '~/server/utils/http'
+import { requireParam } from '~/server/utils/http'
 
 const schema = z.object({ password: z.string().min(6) })
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN'])
 
-  const id = event.context.params?.id
-  if (!id) throw createError({ statusCode: 400, statusMessage: 'id required' })
+  const id = requireParam(event, 'id')
 
   const parsed = await readBodyValidated(event, schema)
 

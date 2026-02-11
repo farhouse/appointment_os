@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole, getAuthUser } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
+import { requireParam } from '~/server/utils/http'
 
 const schema = z.object({
   countedCash: z.number().nonnegative(),
@@ -13,8 +14,7 @@ export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
   const u = getAuthUser(event)
 
-  const id = event.context.params?.id
-  if (!id) throw createError({ statusCode: 400, statusMessage: 'id required' })
+  const id = requireParam(event, 'id')
 
   const parsed = await readBodyValidated(event, schema)
 

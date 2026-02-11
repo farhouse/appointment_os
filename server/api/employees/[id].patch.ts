@@ -3,12 +3,12 @@ import prisma from '~/server/utils/prisma'
 import { employeeSchema } from '~/server/utils/schemas'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
+import { requireParam } from '~/server/utils/http'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
 
-  const id = event.context.params?.id
-  if (!id) throw createError({ statusCode: 400, statusMessage: 'id required' })
+  const id = requireParam(event, 'id')
 
   const parsed = await readBodyValidated(event, employeeSchema.partial())
 
