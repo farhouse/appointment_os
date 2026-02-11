@@ -20,7 +20,11 @@ export default defineEventHandler(async (event) => {
     where: { id: { in: serviceIds } }
   })
 
-  // Public booking always creates PENDING
+  if (services.length !== serviceIds.length) {
+    throw createError({ statusCode: 400, statusMessage: 'One or more services not found' })
+  }
+
+  // Public appointment creation always starts as PENDING
   const appointment = await prisma.appointment.create({
     data: {
       ...data,
@@ -32,6 +36,9 @@ export default defineEventHandler(async (event) => {
           duration: s.duration
         }))
       }
+    },
+    include: {
+      services: true
     }
   })
 

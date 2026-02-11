@@ -15,24 +15,28 @@ Open-source barber shop management system (MVP).
 
 ## Getting Started (Local - Recommended for now)
 
-1. **Install dependencies**
+1. **Prereqs**
+   - Node.js 24
+   - Postgres 14+ (local install, or run Postgres however you like)
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Create `.env`**
-   Copy `.env.example` → `.env` and set at least:
-   - `DATABASE_URL` (Postgres)
+3. **Create `.env`**
+   Copy `.env.example` to `.env` and set at least:
+   - `DATABASE_URL`
    - `JWT_SECRET`
-   - `JWT_REFRESH_SECRET`
+   - `JWT_REFRESH_SECRET` (optional; defaults to `JWT_SECRET`)
 
-3. **Create schema + seed**
+4. **Create schema + seed**
    ```bash
    npx prisma db push
    npx prisma db seed
    ```
 
-4. **Run dev server**
+5. **Run dev server**
    ```bash
    npm run dev
    ```
@@ -106,6 +110,39 @@ The API is built with Nuxt Server Routes.
 - **Clients:** `/api/clients`
 - **Appointments:** `/api/appointments`
 - **Calendar:** `/api/calendar/events`
+
+## Smoke Test (curl)
+
+Assumes the app is running on `http://localhost:3000`.
+
+1) Login (captures `auth_token` cookie)
+
+```bash
+curl -i -c cookie.txt \
+  -H 'content-type: application/json' \
+  -d '{"email":"admin@barberos.com","password":"admin123"}' \
+  http://localhost:3000/api/auth/login
+```
+
+2) Authenticated endpoint
+
+```bash
+curl -i -b cookie.txt http://localhost:3000/api/me
+```
+
+3) Public endpoints (no cookie)
+
+```bash
+curl -i 'http://localhost:3000/api/public/branches'
+curl -i 'http://localhost:3000/api/public/services'
+```
+
+4) Calendar events (BARBER users only see their own when `professionalId` is omitted)
+
+```bash
+curl -i -b cookie.txt \
+  'http://localhost:3000/api/calendar/events?start=2026-01-01T00:00:00.000Z&end=2026-01-08T00:00:00.000Z'
+```
 
 ## Tech Stack
 

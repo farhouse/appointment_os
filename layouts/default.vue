@@ -5,7 +5,6 @@
       <div class="space-x-2">
         <UButton to="/" variant="ghost">Home</UButton>
         <UButton to="/calendar" variant="ghost">Calendar</UButton>
-        <UButton to="/bookings" variant="ghost">Bookings</UButton>
       </div>
     </div>
     <slot />

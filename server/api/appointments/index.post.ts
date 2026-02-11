@@ -1,8 +1,10 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { appointmentSchema } from '~/server/utils/schemas'
+import { requireRole } from '~/server/utils/permissions'
 
 export default defineEventHandler(async (event) => {
+  requireRole(event, ['ADMIN', 'MANAGER'])
   const body = await readBody(event)
   const validation = appointmentSchema.safeParse(body)
 

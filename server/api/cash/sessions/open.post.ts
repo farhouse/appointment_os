@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       branchId: parsed.data.branchId,
       openedBy: u.userId,
       openingBalance: parsed.data.openingAmount as any,
-      date: today as any
+      date: today
     }
   })
 })

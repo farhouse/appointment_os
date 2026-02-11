@@ -14,11 +14,11 @@ const calendarOptions = ref({
   },
   slotMinTime: '08:00:00',
   slotMaxTime: '20:00:00',
-  events: '/api/bookings', // Will fetch from our API
+  events: '/api/calendar/events',
   selectable: true,
   editable: true,
   select: (info: any) => {
-    // Handle date selection for new booking
+    // Handle date selection for new appointment
     console.log('Selected:', info)
   }
 })

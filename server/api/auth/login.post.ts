@@ -1,10 +1,11 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readBody, createError, setCookie } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { loginSchema } from '~/server/utils/schemas'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -50,7 +51,7 @@ export default defineEventHandler(async (event) => {
   
   const refreshToken = jwt.sign(
     { userId: user.id },
-    JWT_SECRET,
+    JWT_REFRESH_SECRET,
     { expiresIn: '7d' }
   )
 

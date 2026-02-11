@@ -15,7 +15,8 @@ export default defineEventHandler(async (event) => {
   try {
     const decoded: any = jwt.verify(refreshToken, JWT_REFRESH_SECRET)
     const accessToken = jwt.sign(
-      { userId: decoded.userId, role: decoded.role, email: decoded.email },
+      // Role/email are not carried in refresh token; middleware will use access token for RBAC.
+      { userId: decoded.userId },
       JWT_SECRET,
       { expiresIn: '1h' }
     )

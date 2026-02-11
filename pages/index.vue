@@ -4,7 +4,7 @@
     <p class="text-xl text-gray-600 mb-8">Manage your barbershop efficiently</p>
     <div class="flex justify-center gap-4">
       <UButton to="/calendar" size="xl" color="primary">View Calendar</UButton>
-      <UButton to="/bookings" size="xl" variant="outline">Manage Bookings</UButton>
+      <UButton to="/calendar" size="xl" variant="outline">Manage Appointments</UButton>
     </div>
   </div>
 </template>

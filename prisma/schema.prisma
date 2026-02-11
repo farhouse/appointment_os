@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // Enums
@@ -150,7 +151,7 @@ model Appointment {
 model AppointmentService {
   appointmentId String
   serviceId     String
-  price         Decimal // Snapshot of price at booking time
+  price         Decimal // Snapshot of price at appointment creation time
   duration      Int     // Snapshot of duration
 
   appointment Appointment @relation(fields: [appointmentId], references: [id])
@@ -260,7 +261,7 @@ model CashSession {
   // but we can enforce one open session per branch.
   // For the prompt requirement "unique(branchId, date)", we might add a 'date' field manually managed
   // or just rely on business logic. I will add a date field for the unique constraint.
-  date         DateTime @db.Date // Store just the date part
+  date         DateTime // Store date at 00:00:00Z
   
   @@unique([branchId, date])
 }

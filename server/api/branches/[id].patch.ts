@@ -1,8 +1,10 @@
 import { defineEventHandler, createError, readBody, getRouterParam } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { branchUpdateSchema } from '~/server/utils/schemas'
+import { requireRole } from '~/server/utils/permissions'
 
 export default defineEventHandler(async (event) => {
+  requireRole(event, ['ADMIN', 'MANAGER'])
   const id = getRouterParam(event, 'id')
   const body = await readBody(event)
   const validation = branchUpdateSchema.safeParse(body)
