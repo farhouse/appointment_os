@@ -1,30 +1,46 @@
 <script setup lang="ts">
-// FullCalendar v5 requires initializing the global vdom layer before importing plugins.
-import '@fullcalendar/core/vdom'
+import { defineAsyncComponent } from 'vue'
 
-import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+// Load FullCalendar only on client to avoid SSR/runtime issues.
+const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3'))
 
-const calendarOptions = ref({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+const ready = ref(false)
+const plugins = shallowRef<any[]>([])
+
+onMounted(async () => {
+  // FullCalendar v5 needs vdom initialized before plugins.
+  await import('@fullcalendar/core/vdom')
+  const dayGrid = (await import('@fullcalendar/daygrid')).default
+  const timeGrid = (await import('@fullcalendar/timegrid')).default
+  const interaction = (await import('@fullcalendar/interaction')).default
+  plugins.value = [dayGrid, timeGrid, interaction]
+  ready.value = true
+})
+
+const calendarOptions = computed(() => ({
+  plugins: plugins.value,
   initialView: 'timeGridWeek',
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
-    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    right: 'dayGridMonth,timeGridWeek,timeGridDay',
   },
   slotMinTime: '08:00:00',
   slotMaxTime: '20:00:00',
-  events: '/api/calendar/events',
+  // Public calendar: gracefully handle unauth / errors.
+  events: async (info: any, success: (events: any[]) => void, failure: () => void) => {
+    try {
+      const query = new URLSearchParams({ start: info.startStr, end: info.endStr })
+      const events = await $fetch(`/api/calendar/events?${query.toString()}`)
+      success(events as any[])
+    } catch (e) {
+      success([])
+      failure()
+    }
+  },
   selectable: true,
-  editable: true,
-  select: (info: any) => {
-    // Handle date selection for new appointment
-    console.log('Selected:', info)
-  }
-})
+  editable: false,
+}))
 </script>
 
 <template>
@@ -32,7 +48,7 @@ const calendarOptions = ref({
     <h2 class="text-2xl font-bold mb-4">{{ $t('calendar.schedule') }}</h2>
     <div class="bg-white p-4 rounded-lg shadow h-[600px]">
       <ClientOnly>
-        <FullCalendar :options="calendarOptions" class="h-full" />
+        <FullCalendar v-if="ready" :options="calendarOptions" class="h-full" />
       </ClientOnly>
     </div>
   </div>

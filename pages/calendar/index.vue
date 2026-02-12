@@ -6,38 +6,55 @@
     </div>
     <div class="flex-grow">
       <ClientOnly>
-        <FullCalendar :options="calendarOptions" />
+        <FullCalendar v-if="ready" :options="calendarOptions" />
       </ClientOnly>
     </div>
   </div>
 </template>
 
-<script setup>
-// FullCalendar v5 requires initializing the global vdom layer before importing plugins.
-import '@fullcalendar/core/vdom'
+<script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 
-import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3'))
+
+const ready = ref(false)
+const plugins = shallowRef<any[]>([])
+
+onMounted(async () => {
+  await import('@fullcalendar/core/vdom')
+  const dayGrid = (await import('@fullcalendar/daygrid')).default
+  const timeGrid = (await import('@fullcalendar/timegrid')).default
+  const interaction = (await import('@fullcalendar/interaction')).default
+  plugins.value = [dayGrid, timeGrid, interaction]
+  ready.value = true
+})
 
 const { t } = useI18n()
 
-const calendarOptions = ref({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+const calendarOptions = computed(() => ({
+  plugins: plugins.value,
   initialView: 'timeGridWeek',
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
-    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    right: 'dayGridMonth,timeGridWeek,timeGridDay',
   },
-  events: '/api/calendar/events',
+  events: async (info: any, success: (events: any[]) => void, failure: () => void) => {
+    try {
+      const query = new URLSearchParams({ start: info.startStr, end: info.endStr })
+      const events = await $fetch(`/api/calendar/events?${query.toString()}`)
+      success(events as any[])
+    } catch (e) {
+      success([])
+      failure()
+    }
+  },
   editable: true,
   selectable: true,
   eventDrop: handleEventDrop,
   eventClick: handleEventClick,
-  select: handleDateSelect
-})
+  select: handleDateSelect,
+}))
 
 async function handleEventDrop(info) {
   if (!confirm(t('calendar.confirmMove'))) {

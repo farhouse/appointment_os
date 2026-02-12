@@ -1,12 +1,20 @@
 <script setup lang="ts">
-// FullCalendar v5 requires initializing the global vdom layer before importing plugins.
-import '@fullcalendar/core/vdom'
-
-import FullCalendar from '@fullcalendar/vue3'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import { defineAsyncComponent } from 'vue'
 import { useSelectedBranch } from '~/composables/useSelectedBranch'
+
+const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3'))
+
+const ready = ref(false)
+const plugins = shallowRef<any[]>([])
+
+onMounted(async () => {
+  await import('@fullcalendar/core/vdom')
+  const dayGrid = (await import('@fullcalendar/daygrid')).default
+  const timeGrid = (await import('@fullcalendar/timegrid')).default
+  const interaction = (await import('@fullcalendar/interaction')).default
+  plugins.value = [dayGrid, timeGrid, interaction]
+  ready.value = true
+})
 
 definePageMeta({
   layout: 'private',
@@ -19,7 +27,7 @@ const { selectedBranchId } = useSelectedBranch()
 const calendarOptions = computed(() => {
   const branchId = selectedBranchId.value
   return {
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    plugins: plugins.value,
     initialView: 'timeGridWeek',
     headerToolbar: {
       left: 'prev,next today',
@@ -46,7 +54,7 @@ const calendarOptions = computed(() => {
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
     <div class="bg-white p-4 rounded-lg shadow h-[600px] mt-4">
       <ClientOnly>
-        <FullCalendar :options="calendarOptions" class="h-full" />
+        <FullCalendar v-if="ready" :options="calendarOptions" class="h-full" />
       </ClientOnly>
     </div>
   </div>
