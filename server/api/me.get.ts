@@ -1,21 +1,17 @@
-import { defineEventHandler, getCookie, createError } from 'h3'
-import jwt from 'jsonwebtoken'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+import { getAuthCookie, verifyAccessToken } from '~/server/utils/auth'
+import { unauthorized } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  const token = getCookie(event, 'auth_token')
+  const token = getAuthCookie(event)
 
   if (!token) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized',
-    })
+    unauthorized('Unauthorized')
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const decoded = verifyAccessToken(token)
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -28,17 +24,11 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!user || !user.active) {
-       throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized',
-      })
+      unauthorized('Unauthorized')
     }
 
     return { user }
   } catch (err) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Invalid token',
-    })
+    unauthorized('Invalid token')
   }
 })

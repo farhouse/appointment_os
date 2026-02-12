@@ -1,21 +1,14 @@
-import { defineEventHandler, readBody, createError, getRouterParam } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { appointmentUpdateSchema } from '~/server/utils/schemas'
 import { requireRole } from '~/server/utils/permissions'
+import { readBodyValidated, requireParam } from '~/server/utils/http'
+import { notFound } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
-  const id = getRouterParam(event, 'id')
-  const body = await readBody(event)
-  const validation = appointmentUpdateSchema.safeParse(body)
-
-  if (!validation.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation Error',
-      data: validation.error.issues,
-    })
-  }
+  const id = requireParam(event, 'id')
+  const validation = await readBodyValidated(event, appointmentUpdateSchema)
 
   // Handle service updates if present (complex logic, minimal impl here)
   // For MVP v1.1 just updating scalars
@@ -25,10 +18,10 @@ export default defineEventHandler(async (event) => {
   try {
     const appointment = await prisma.appointment.update({
       where: { id },
-      data: validation.data
+      data: validation
     })
     return appointment
   } catch (e) {
-    throw createError({ statusCode: 404, statusMessage: 'Appointment not found' })
+    notFound('Appointment not found')
   }
 })

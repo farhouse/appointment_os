@@ -1,7 +1,8 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { readBodyValidated } from '~/server/utils/http'
 
 const schema = z.object({
   sessionId: z.string().uuid(),
@@ -13,18 +14,14 @@ const schema = z.object({
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
 
-  const body = await readBody(event)
-  const parsed = schema.safeParse(body)
-  if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Validation Error', data: parsed.error.issues })
-  }
+  const parsed = await readBodyValidated(event, schema)
 
   return prisma.cashMovement.create({
     data: {
-      sessionId: parsed.data.sessionId,
-      amount: parsed.data.amount as any,
-      type: parsed.data.type as any,
-      reason: parsed.data.reason ?? null
+      sessionId: parsed.sessionId,
+      amount: parsed.amount as any,
+      type: parsed.type as any,
+      reason: parsed.reason ?? null
     }
   })
 })

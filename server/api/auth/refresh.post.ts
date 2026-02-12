@@ -1,29 +1,29 @@
-import { defineEventHandler, readBody, createError, setCookie } from 'h3'
-import jwt from 'jsonwebtoken'
+import { defineEventHandler } from 'h3'
+import { z } from 'zod'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET
+import prisma from '~/server/utils/prisma'
+import { signAccessToken, setAuthCookie, verifyRefreshToken } from '~/server/utils/auth'
+import { readBodyValidated } from '~/server/utils/http'
+import { unauthorized } from '~/server/utils/errors'
+
+const schema = z.object({ refreshToken: z.string().min(1) })
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event)
-  const refreshToken = body?.refreshToken
+  const { refreshToken } = await readBodyValidated(event, schema)
+  const decoded = verifyRefreshToken(refreshToken)
 
-  if (!refreshToken || typeof refreshToken !== 'string') {
-    throw createError({ statusCode: 400, statusMessage: 'refreshToken required' })
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+    select: { id: true, role: true, email: true, active: true },
+  })
+
+  if (!user || !user.active) {
+    unauthorized('Unauthorized')
   }
 
-  try {
-    const decoded: any = jwt.verify(refreshToken, JWT_REFRESH_SECRET)
-    const accessToken = jwt.sign(
-      // Role/email are not carried in refresh token; middleware will use access token for RBAC.
-      { userId: decoded.userId },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    )
+  // Role/email are not carried in refresh token; we fetch them to issue a usable access token.
+  const accessToken = signAccessToken({ userId: user.id, role: user.role, email: user.email })
 
-    setCookie(event, 'auth_token', accessToken, { httpOnly: true, maxAge: 3600 })
-    return { accessToken }
-  } catch (e) {
-    throw createError({ statusCode: 401, statusMessage: 'Invalid refresh token' })
-  }
+  setAuthCookie(event, accessToken)
+  return { accessToken }
 })

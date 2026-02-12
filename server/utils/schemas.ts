@@ -16,7 +16,7 @@ export const branchUpdateSchema = branchSchema.partial()
 export const employeeSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1),
-  role: z.enum(['ADMIN', 'MANAGER', 'BARBER']),
+  role: z.enum(['OWNER', 'ADMIN', 'MANAGER', 'BARBER', 'CLIENT']),
   password: z.string().min(6).optional(), // Optional for updates if logic handles it
   active: z.boolean().optional(),
   branchIds: z.array(z.string()).optional()

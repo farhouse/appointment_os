@@ -1,12 +1,9 @@
-import { getQuery, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
+import { requireQueryString } from '~/server/utils/http'
 
 export default defineEventHandler(async (event) => {
-  const q = getQuery(event)
-  const branchId = q.branchId
-  if (!branchId || typeof branchId !== 'string') {
-    throw createError({ statusCode: 400, statusMessage: 'branchId required' })
-  }
+  const branchId = requireQueryString(event, 'branchId')
 
   // Barber users assigned to branch
   const barbers = await prisma.user.findMany({

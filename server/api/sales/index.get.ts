@@ -1,18 +1,15 @@
-import { getQuery, createError } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { requireQueryString } from '~/server/utils/http'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
 
   const q = getQuery(event)
-  const branchId = q.branchId
+  const branchId = requireQueryString(event, 'branchId')
   const from = q.from
   const to = q.to
-
-  if (!branchId || typeof branchId !== 'string') {
-    throw createError({ statusCode: 400, statusMessage: 'branchId required' })
-  }
 
   const where: any = { branchId }
   if (from && typeof from === 'string') where.createdAt = { ...(where.createdAt||{}), gte: new Date(from) }

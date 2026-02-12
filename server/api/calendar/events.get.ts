@@ -1,6 +1,7 @@
-import { defineEventHandler, getQuery, createError } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { getAuthUser } from '~/server/utils/permissions'
+import { badRequest, forbidden } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
   const u = getAuthUser(event)
@@ -11,13 +12,13 @@ export default defineEventHandler(async (event) => {
   const professionalId = query.professionalId as string | undefined
 
   if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    throw createError({ statusCode: 400, statusMessage: 'start and end query params are required (ISO date)' })
+    badRequest('start and end query params are required (ISO date)')
   }
 
   if (u.role === 'BARBER') {
     // Barbers can only read their own calendar.
     if (professionalId && professionalId !== u.userId) {
-      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+      forbidden('Forbidden')
     }
   }
 

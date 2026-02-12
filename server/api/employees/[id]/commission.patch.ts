@@ -1,6 +1,8 @@
-import { defineEventHandler, createError } from 'h3'
+import { defineEventHandler } from 'h3'
+
+import { notFound } from '~/server/utils/errors'
 
 // Not part of MVP v1.1.
 export default defineEventHandler(async () => {
-  throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+  notFound('Not Found')
 })

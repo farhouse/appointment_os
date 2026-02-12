@@ -1,11 +1,12 @@
-import { defineEventHandler, getCookie, createError } from 'h3'
-import jwt from 'jsonwebtoken'
+import { defineEventHandler } from 'h3'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+import { getAuthCookie, verifyAccessToken } from '~/server/utils/auth'
+import { unauthorized } from '~/server/utils/errors'
+import prisma from '~/server/utils/prisma'
 
 // Paths that don't require auth
 const PUBLIC_PREFIXES = ['/api/public/']
-const PUBLIC_EXACT = new Set(['/api/auth/login', '/api/auth/refresh'])
+const PUBLIC_EXACT = new Set(['/api/auth/login', '/api/auth/refresh', '/api/auth/logout'])
 
 export default defineEventHandler(async (event) => {
   const path = event.path
@@ -19,16 +20,25 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  const token = getCookie(event, 'auth_token')
+  const token = getAuthCookie(event)
 
   if (!token) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+    unauthorized('Unauthorized')
   }
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    event.context.user = decoded
-  } catch (e) {
-    throw createError({ statusCode: 401, statusMessage: 'Invalid token' })
+  // Verify signature + shape first, then re-load from DB to:
+  // - enforce `active` immediately (no 1h window)
+  // - avoid stale role/email in long-lived tabs
+  const decoded = verifyAccessToken(token)
+
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.userId },
+    select: { id: true, role: true, email: true, active: true },
+  })
+
+  if (!user || !user.active) {
+    unauthorized('Unauthorized')
   }
+
+  event.context.user = { userId: user.id, role: user.role, email: user.email }
 })
