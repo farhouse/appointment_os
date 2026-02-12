@@ -61,6 +61,16 @@
   "calendar": {
     "schedule": "Agenda",
     "backToDashboard": "Volver al panel",
+
+    "day": "Día",
+    "week": "Semana",
+    "month": "Mes",
+    "labels": {
+      "previous": "Anterior",
+      "today": "Hoy",
+      "next": "Siguiente"
+    },
+
     "confirmMove": "¿Confirmás este cambio?",
     "moveError": "No se pudo mover el turno",
     "eventAlert": "Turno:",

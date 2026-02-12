@@ -61,6 +61,16 @@
   "calendar": {
     "schedule": "Schedule",
     "backToDashboard": "Back to Dashboard",
+
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "labels": {
+      "previous": "Previous",
+      "today": "Today",
+      "next": "Next"
+    },
+
     "confirmMove": "Are you sure about this change?",
     "moveError": "Failed to move appointment",
     "eventAlert": "Event:",
