@@ -26,7 +26,7 @@ const calendarOptions = ref({
 
 <template>
   <div>
-    <h2 class="text-2xl font-bold mb-4">Schedule</h2>
+    <h2 class="text-2xl font-bold mb-4">{{ $t('calendar.schedule') }}</h2>
     <div class="bg-white p-4 rounded-lg shadow h-[600px]">
       <FullCalendar :options="calendarOptions" class="h-full" />
     </div>

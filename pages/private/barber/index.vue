@@ -8,7 +8,7 @@ definePageMeta({
 
 <template>
   <div>
-    <h1 class="text-2xl font-semibold">Barber</h1>
-    <p class="text-sm text-gray-600">Barber workspace (skeleton).</p>
+    <h1 class="text-2xl font-semibold">{{ $t('pages.private.barberTitle') }}</h1>
+    <p class="text-sm text-gray-600">{{ $t('pages.private.barberSubtitle') }}</p>
   </div>
 </template>

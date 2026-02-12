@@ -8,7 +8,7 @@ definePageMeta({
 
 <template>
   <div>
-    <h1 class="text-2xl font-semibold">Manager</h1>
-    <p class="text-sm text-gray-600">Manager/Admin/Owner workspace (skeleton).</p>
+    <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerTitle') }}</h1>
+    <p class="text-sm text-gray-600">{{ $t('pages.private.managerSubtitle') }}</p>
   </div>
 </template>

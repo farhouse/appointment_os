@@ -25,7 +25,7 @@ if (role === 'OWNER' || role === 'ADMIN' || role === 'MANAGER') {
 
 <template>
   <div>
-    <h1 class="text-xl font-semibold">Private</h1>
-    <p class="text-sm text-gray-600">Redirecting…</p>
+    <h1 class="text-xl font-semibold">{{ $t('pages.private.title') }}</h1>
+    <p class="text-sm text-gray-600">{{ $t('pages.private.redirecting') }}</p>
   </div>
 </template>

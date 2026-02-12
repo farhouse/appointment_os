@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "Barber OS",
+    "private": "Private"
+  },
+  "nav": {
+    "home": "Home",
+    "calendar": "Calendar",
+    "common": "Common",
+    "manager": "Manager",
+    "barber": "Barber",
+    "client": "Client",
+    "dashboard": "Dashboard",
+    "cash": "Cash",
+    "products": "Products",
+    "stock": "Stock",
+    "employees": "Employees",
+    "settings": "Settings",
+    "today": "Today",
+    "appointments": "Appointments",
+    "book": "Book"
+  },
+  "landing": {
+    "title": "Welcome to Barber OS",
+    "subtitle": "Manage your barbershop efficiently",
+    "viewCalendar": "View Calendar",
+    "manageAppointments": "Manage Appointments",
+    "login": "Login",
+    "dashboard": "Go to dashboard"
+  },
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "error": "Login failed"
+  },
+  "pages": {
+    "private": {
+      "title": "Private",
+      "redirecting": "Redirecting…",
+      "managerTitle": "Manager",
+      "managerSubtitle": "Manager/Admin/Owner workspace (skeleton).",
+      "barberTitle": "Barber",
+      "barberSubtitle": "Barber workspace (skeleton).",
+      "clientTitle": "Client",
+      "clientSubtitle": "Client workspace (skeleton).",
+      "managerCalendar": "Manager · Calendar",
+      "managerCash": "Manager · Cash",
+      "managerProducts": "Manager · Products",
+      "managerStock": "Manager · Stock",
+      "managerEmployees": "Manager · Employees",
+      "managerSettings": "Manager · Settings",
+      "barberToday": "Barber · Today",
+      "barberAppointments": "Barber · Appointments",
+      "clientBook": "Client · Book",
+      "clientAppointments": "Client · Appointments",
+      "placeholder": "Placeholder page."
+    }
+  },
+  "calendar": {
+    "schedule": "Schedule",
+    "backToDashboard": "Back to Dashboard",
+    "confirmMove": "Are you sure about this change?",
+    "moveError": "Failed to move appointment",
+    "eventAlert": "Event:",
+    "status": "Status:",
+    "newEventPrompt": "Please enter a new title for your event",
+    "createStub": "Create appointment functionality to be implemented with a form"
+  },
+  "booking": {
+    "selectBranch": "Select a branch to book"
+  },
+  "dashboard": {
+    "manageStaff": "Manage staff and roles",
+    "reports": "Reports",
+    "viewSales": "View sales and performance",
+    "logout": "Logout"
+  },
+  "branch": {
+    "label": "Branch",
+    "all": "All",
+    "select": "Select a branch"
+  },
+  "language": {
+    "label": "Language"
+  }
+}

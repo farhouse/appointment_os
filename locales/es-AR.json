@@ -1,0 +1,88 @@
+{
+  "app": {
+    "name": "Barber OS",
+    "private": "Privado"
+  },
+  "nav": {
+    "home": "Inicio",
+    "calendar": "Calendario",
+    "common": "Común",
+    "manager": "Gerencia",
+    "barber": "Barbero",
+    "client": "Cliente",
+    "dashboard": "Panel",
+    "cash": "Caja",
+    "products": "Productos",
+    "stock": "Stock",
+    "employees": "Empleados",
+    "settings": "Configuración",
+    "today": "Hoy",
+    "appointments": "Turnos",
+    "book": "Reservar"
+  },
+  "landing": {
+    "title": "Bienvenido a Barber OS",
+    "subtitle": "Gestiona tu barbería de forma eficiente",
+    "viewCalendar": "Ver calendario",
+    "manageAppointments": "Gestionar turnos",
+    "login": "Iniciar sesión",
+    "dashboard": "Ir al panel"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Email",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "error": "Error al iniciar sesión"
+  },
+  "pages": {
+    "private": {
+      "title": "Privado",
+      "redirecting": "Redirigiendo…",
+      "managerTitle": "Gerencia",
+      "managerSubtitle": "Espacio de gerencia/admin/owner (skeleton).",
+      "barberTitle": "Barbero",
+      "barberSubtitle": "Espacio de barbero (skeleton).",
+      "clientTitle": "Cliente",
+      "clientSubtitle": "Espacio de cliente (skeleton).",
+      "managerCalendar": "Gerencia · Calendario",
+      "managerCash": "Gerencia · Caja",
+      "managerProducts": "Gerencia · Productos",
+      "managerStock": "Gerencia · Stock",
+      "managerEmployees": "Gerencia · Empleados",
+      "managerSettings": "Gerencia · Configuración",
+      "barberToday": "Barbero · Hoy",
+      "barberAppointments": "Barbero · Turnos",
+      "clientBook": "Cliente · Reservar",
+      "clientAppointments": "Cliente · Turnos",
+      "placeholder": "Página en construcción."
+    }
+  },
+  "calendar": {
+    "schedule": "Agenda",
+    "backToDashboard": "Volver al panel",
+    "confirmMove": "¿Confirmás este cambio?",
+    "moveError": "No se pudo mover el turno",
+    "eventAlert": "Turno:",
+    "status": "Estado:",
+    "newEventPrompt": "Ingresá un título para el turno",
+    "createStub": "La creación de turnos se implementará con un formulario"
+  },
+  "booking": {
+    "selectBranch": "Seleccioná una sucursal para reservar"
+  },
+  "dashboard": {
+    "manageStaff": "Gestionar personal y roles",
+    "reports": "Reportes",
+    "viewSales": "Ver ventas y desempeño",
+    "logout": "Cerrar sesión"
+  },
+  "branch": {
+    "label": "Sucursal",
+    "all": "Todas",
+    "select": "Seleccioná una sucursal"
+  },
+  "language": {
+    "label": "Idioma"
+  }
+}
