@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+// Prisma v7+ expects a (possibly empty) PrismaClientOptions object.
+const prisma = new PrismaClient({})
 
 export default prisma
