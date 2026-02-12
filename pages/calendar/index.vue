@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold">{{ $t('nav.calendar') }}</h1>
       <NuxtLink to="/dashboard" class="text-blue-600">{{ $t('calendar.backToDashboard') }}</NuxtLink>
     </div>
-    <div class="flex-grow">
+    <div class="flex-grow text-gray-900">
       <ClientOnly>
         <FullCalendar v-if="ready" :options="calendarOptions" />
       </ClientOnly>

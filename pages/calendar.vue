@@ -46,7 +46,7 @@ const calendarOptions = computed(() => ({
 <template>
   <div>
     <h2 class="text-2xl font-bold mb-4">{{ $t('calendar.schedule') }}</h2>
-    <div class="bg-white p-4 rounded-lg shadow h-[600px]">
+    <div class="bg-white p-4 rounded-lg shadow h-[600px] text-gray-900">
       <ClientOnly>
         <FullCalendar v-if="ready" :options="calendarOptions" class="h-full" />
       </ClientOnly>

@@ -52,7 +52,7 @@ const calendarOptions = computed(() => {
 <template>
   <div>
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
-    <div class="bg-white p-4 rounded-lg shadow h-[600px] mt-4">
+    <div class="bg-white p-4 rounded-lg shadow h-[600px] mt-4 text-gray-900">
       <ClientOnly>
         <FullCalendar v-if="ready" :options="calendarOptions" class="h-full" />
       </ClientOnly>
