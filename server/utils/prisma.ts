@@ -1,13 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 
-// Prisma v7+: pass an explicit options object.
-// Also wire DATABASE_URL explicitly to avoid any env-resolution edge cases in containers.
+// Prisma v7+: always pass a *non-empty* options object.
+// Some Prisma client builds (eg. different engine targets) don't accept `datasources` overrides,
+// so keep this conservative and compatible.
 const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
+  log: ['error'],
 })
 
 export default prisma
