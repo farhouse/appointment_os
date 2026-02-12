@@ -20,6 +20,11 @@ export default defineEventHandler(async (event) => {
         name: true,
         role: true,
         active: true, // This should exist now
+        branches: {
+          select: {
+            branchId: true
+          }
+        }
       }
     })
 

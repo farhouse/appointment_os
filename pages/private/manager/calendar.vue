@@ -1,14 +1,50 @@
 <script setup lang="ts">
+import FullCalendar from '@fullcalendar/vue3'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import { useSelectedBranch } from '~/composables/useSelectedBranch'
+
 definePageMeta({
   layout: 'private',
   middleware: ['private', 'role'],
   roles: ['OWNER', 'ADMIN', 'MANAGER'],
 })
+
+const { selectedBranchId } = useSelectedBranch()
+
+const calendarOptions = computed(() => {
+  const branchId = selectedBranchId.value
+  return {
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    initialView: 'timeGridWeek',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    slotMinTime: '08:00:00',
+    slotMaxTime: '20:00:00',
+    events: (info: { startStr: string; endStr: string }, success: (events: any[]) => void, failure: () => void) => {
+      const query = new URLSearchParams({ start: info.startStr, end: info.endStr })
+      if (branchId) query.set('branchId', branchId)
+      $fetch(`/api/calendar/events?${query.toString()}`)
+        .then((events) => success(events as any[]))
+        .catch(() => failure())
+    },
+    selectable: true,
+    editable: true
+  }
+})
 </script>
 
 <template>
   <div>
-    <h1 class="text-2xl font-semibold">Manager · Calendar</h1>
-    <p class="text-sm text-gray-600">Placeholder page.</p>
+    <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
+    <div class="bg-white p-4 rounded-lg shadow h-[600px] mt-4">
+      <ClientOnly>
+        <FullCalendar :options="calendarOptions" class="h-full" />
+      </ClientOnly>
+    </div>
   </div>
 </template>

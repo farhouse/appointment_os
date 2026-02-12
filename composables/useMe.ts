@@ -6,6 +6,7 @@ export type MeUser = {
   name: string
   role: Role
   active?: boolean
+  branches?: { branchId: string }[]
 }
 
 type MeResponse = { user: MeUser }
