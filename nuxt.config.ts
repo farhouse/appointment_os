@@ -5,13 +5,8 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxtjs/i18n'],
   css: [
     '~/assets/css/main.css',
-    '@fullcalendar/common/main.css',
-    '@fullcalendar/daygrid/main.css',
-    '@fullcalendar/timegrid/main.css'
+    'vue-cal/style'
   ],
-  build: {
-    transpile: ['@fullcalendar/vue3']
-  },
   i18n: {
     defaultLocale: 'es-AR',
     locales: [

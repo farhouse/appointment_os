@@ -10,11 +10,6 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@fullcalendar/core": "5.11.5",
-    "@fullcalendar/daygrid": "5.11.5",
-    "@fullcalendar/interaction": "5.11.5",
-    "@fullcalendar/timegrid": "5.11.5",
-    "@fullcalendar/vue3": "5.11.5",
     "@nuxt/ui": "^4.4.0",
     "@nuxtjs/i18n": "^10.2.3",
     "@prisma/client": "^6.14.0",
@@ -23,6 +18,7 @@
     "jsonwebtoken": "^9.0.3",
     "nuxt": "^4.3.1",
     "vue": "^3.5.27",
+    "vue-cal": "^5.0.1-rc.34",
     "vue-router": "^4.6.4",
     "zod": "^4.3.6"
   },
