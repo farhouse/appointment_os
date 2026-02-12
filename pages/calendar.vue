@@ -8,8 +8,6 @@ const ready = ref(false)
 const plugins = shallowRef<any[]>([])
 
 onMounted(async () => {
-  // FullCalendar v5 needs vdom initialized before plugins.
-  await import('@fullcalendar/core/vdom')
   const dayGrid = (await import('@fullcalendar/daygrid')).default
   const timeGrid = (await import('@fullcalendar/timegrid')).default
   const interaction = (await import('@fullcalendar/interaction')).default

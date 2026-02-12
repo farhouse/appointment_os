@@ -21,7 +21,6 @@ const ready = ref(false)
 const plugins = shallowRef<any[]>([])
 
 onMounted(async () => {
-  await import('@fullcalendar/core/vdom')
   const dayGrid = (await import('@fullcalendar/daygrid')).default
   const timeGrid = (await import('@fullcalendar/timegrid')).default
   const interaction = (await import('@fullcalendar/interaction')).default
