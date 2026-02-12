@@ -29,6 +29,8 @@ services:
       DATABASE_URL: postgresql://barber:password@postgres:5432/barber_os
       JWT_SECRET: dev-secret-change-me
       JWT_REFRESH_SECRET: dev-refresh-secret-change-me
+      # Prisma v7 can default to the "client" engine in some environments; force binary engine in Docker.
+      PRISMA_CLIENT_ENGINE_TYPE: binary
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
