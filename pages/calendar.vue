@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// FullCalendar v5 requires initializing the global vdom layer before importing plugins.
+import '@fullcalendar/core/vdom'
+
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
