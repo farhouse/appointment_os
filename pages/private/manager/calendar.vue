@@ -10,7 +10,7 @@ definePageMeta({
 
 const { selectedBranchId } = useSelectedBranch()
 
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 
 const calendarView = ref<VueCalView | null>(null)
 const calendarEvents = ref<VueCalEvent[]>([])

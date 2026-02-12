@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import type { VueCalEvent, VueCalView } from 'vue-cal'
 
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 
 const calendarView = ref<VueCalView | null>(null)
 const calendarEvents = ref<VueCalEvent[]>([])
