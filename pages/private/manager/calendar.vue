@@ -1,19 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
 import { useSelectedBranch } from '~/composables/useSelectedBranch'
-
-const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3').then((m) => m.default))
-
-const ready = ref(false)
-const plugins = shallowRef<any[]>([])
-
-onMounted(async () => {
-  const dayGrid = (await import('@fullcalendar/daygrid')).default
-  const timeGrid = (await import('@fullcalendar/timegrid')).default
-  const interaction = (await import('@fullcalendar/interaction')).default
-  plugins.value = [dayGrid, timeGrid, interaction]
-  ready.value = true
-})
 
 definePageMeta({
   layout: 'private',
@@ -26,7 +12,6 @@ const { selectedBranchId } = useSelectedBranch()
 const calendarOptions = computed(() => {
   const branchId = selectedBranchId.value
   return {
-    plugins: plugins.value,
     initialView: 'timeGridWeek',
     headerToolbar: {
       left: 'prev,next today',
@@ -52,9 +37,7 @@ const calendarOptions = computed(() => {
   <div>
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
     <div class="bg-white p-4 rounded-lg shadow h-[600px] mt-4 text-gray-900">
-      <ClientOnly>
-        <FullCalendar v-if="ready" :options="calendarOptions" class="h-full" />
-      </ClientOnly>
+      <FullCalendarClient :options="calendarOptions" class="h-full" />
     </div>
   </div>
 </template>

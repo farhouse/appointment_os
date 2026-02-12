@@ -5,33 +5,15 @@
       <NuxtLink to="/dashboard" class="text-blue-600">{{ $t('calendar.backToDashboard') }}</NuxtLink>
     </div>
     <div class="flex-grow text-gray-900">
-      <ClientOnly>
-        <FullCalendar v-if="ready" :options="calendarOptions" />
-      </ClientOnly>
+      <FullCalendarClient :options="calendarOptions" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
-
-const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3').then((m) => m.default))
-
-const ready = ref(false)
-const plugins = shallowRef<any[]>([])
-
-onMounted(async () => {
-  const dayGrid = (await import('@fullcalendar/daygrid')).default
-  const timeGrid = (await import('@fullcalendar/timegrid')).default
-  const interaction = (await import('@fullcalendar/interaction')).default
-  plugins.value = [dayGrid, timeGrid, interaction]
-  ready.value = true
-})
-
 const { t } = useI18n()
 
 const calendarOptions = computed(() => ({
-  plugins: plugins.value,
   initialView: 'timeGridWeek',
   headerToolbar: {
     left: 'prev,next today',
@@ -80,15 +62,15 @@ function handleEventClick(info) {
 }
 
 function handleDateSelect(selectInfo) {
-    // Basic stub for creating appointment from calendar
-    // In real app, open a modal with form
-    const title = prompt(t('calendar.newEventPrompt'))
-    const calendarApi = selectInfo.view.calendar
-    calendarApi.unselect() // clear date selection
-    if (title) {
-      // Create appointment via API would go here
-      // For now just alert
-      alert(t('calendar.createStub'))
-    }
+  // Basic stub for creating appointment from calendar
+  // In real app, open a modal with form
+  const title = prompt(t('calendar.newEventPrompt'))
+  const calendarApi = selectInfo.view.calendar
+  calendarApi.unselect() // clear date selection
+  if (title) {
+    // Create appointment via API would go here
+    // For now just alert
+    alert(t('calendar.createStub'))
+  }
 }
 </script>
