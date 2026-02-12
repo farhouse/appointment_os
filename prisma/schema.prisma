@@ -1,7 +1,11 @@
 // prisma/schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  // Ensure query engine binary is generated (needed for Docker/alpine dev & predictable runtime).
+  engineType = "binary"
+  // Support local macOS dev (native) and Docker alpine (linux-musl).
+  binaryTargets = ["native", "linux-musl"]
 }
 
 datasource db {
