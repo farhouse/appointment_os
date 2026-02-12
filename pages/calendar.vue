@@ -2,7 +2,7 @@
 import { defineAsyncComponent } from 'vue'
 
 // Load FullCalendar only on client to avoid SSR/runtime issues.
-const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3'))
+const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3').then((m) => m.default))
 
 const ready = ref(false)
 const plugins = shallowRef<any[]>([])

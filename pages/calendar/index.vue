@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
 
-const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3'))
+const FullCalendar = defineAsyncComponent(() => import('@fullcalendar/vue3').then((m) => m.default))
 
 const ready = ref(false)
 const plugins = shallowRef<any[]>([])
