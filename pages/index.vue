@@ -4,7 +4,7 @@
     <p class="text-xl text-gray-600 mb-8">{{ $t('landing.subtitle') }}</p>
     <div class="flex flex-wrap justify-center gap-4">
       <UButton to="/calendar" size="xl" color="primary">{{ $t('landing.viewCalendar') }}</UButton>
-      <UButton to="/calendar" size="xl" variant="outline">{{ $t('landing.manageAppointments') }}</UButton>
+      <UButton :to="manageAppointmentsHref" size="xl" variant="outline">{{ $t('landing.manageAppointments') }}</UButton>
       <UButton
         :to="ctaHref"
         size="xl"
@@ -26,4 +26,5 @@ await loadMe()
 
 const ctaHref = computed(() => (me.value ? '/private' : '/login'))
 const ctaLabel = computed(() => (me.value ? t('landing.dashboard') : t('landing.login')))
+const manageAppointmentsHref = computed(() => (me.value ? '/private' : '/login'))
 </script>

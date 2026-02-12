@@ -5,7 +5,9 @@
       <NuxtLink to="/dashboard" class="text-blue-600">{{ $t('calendar.backToDashboard') }}</NuxtLink>
     </div>
     <div class="flex-grow">
-      <FullCalendar :options="calendarOptions" />
+      <ClientOnly>
+        <FullCalendar :options="calendarOptions" />
+      </ClientOnly>
     </div>
   </div>
 </template>
