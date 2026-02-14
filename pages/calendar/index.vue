@@ -19,18 +19,18 @@
           </button>
         </div>
         <div class="flex gap-2">
-          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApi?.previous()">
+          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApiView?.previous()">
             {{ $t('calendar.labels.previous') }}
           </button>
-          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApi?.goToToday()">
+          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApiView?.goToToday()">
             {{ $t('calendar.labels.today') }}
           </button>
-          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApi?.next()">
+          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApiView?.next()">
             {{ $t('calendar.labels.next') }}
           </button>
         </div>
         <div class="ml-auto text-sm font-semibold">
-          {{ calendarView?.title || '' }}
+          {{ calendarPayload?.title || calendarView?.title || '' }}
         </div>
       </div>
       <VueCalClient
@@ -51,7 +51,8 @@ import type { VueCalEvent, VueCalView } from 'vue-cal'
 const { locale } = useI18n()
 
 const calendarView = ref<VueCalView | null>(null)
-const calendarApi = ref<any | null>(null)
+const calendarApiView = ref<VueCalView | null>(null)
+const calendarPayload = ref<any | null>(null)
 const calendarEvents = ref<VueCalEvent[]>([])
 const currentView = ref<'day' | 'week' | 'month'>('week')
 
@@ -88,6 +89,11 @@ const viewOptions = [
 watch(calendarView, (view) => {
   if (!view) return
   void loadEvents(view)
+})
+
+watch(calendarPayload, (payload) => {
+  if (!payload?.start || !payload?.end) return
+  void loadEvents({ start: payload.start, end: payload.end } as any)
 })
 
 watch(locale, () => {
@@ -145,15 +151,21 @@ function handleDateSelect({ cell }: { cell: { start: Date } }) {
 
 const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
-function handleReady({ view, vuecal }: { view: VueCalView; vuecal?: any }) {
+function handleReady({ view }: { view: VueCalView }) {
   calendarView.value = view
-  if (vuecal) calendarApi.value = vuecal
+  calendarApiView.value = view
+  calendarPayload.value = {
+    id: view.id,
+    title: view.title,
+    start: view.start,
+    end: view.end
+  }
 }
 
-function handleViewChange(view: VueCalView) {
-  calendarView.value = view
-  if (view.id === 'day' || view.id === 'week' || view.id === 'month') {
-    currentView.value = view.id
+function handleViewChange(payload: any) {
+  calendarPayload.value = payload
+  if (payload?.id === 'day' || payload?.id === 'week' || payload?.id === 'month') {
+    currentView.value = payload.id
   }
 }
 </script>
