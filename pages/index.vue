@@ -30,7 +30,7 @@
           <h2 class="text-lg font-semibold">{{ $t('landing.actions.bookTitle') }}</h2>
           <p class="mt-1 text-sm text-gray-600">{{ $t('landing.actions.bookSubtitle') }}</p>
           <div class="mt-4">
-            <UButton to="/calendar" color="primary">{{ $t('landing.cta.viewCalendar') }}</UButton>
+            <UButton to="/calendar" color="primary">{{ $t('landing.cta.book') }}</UButton>
           </div>
         </div>
 
