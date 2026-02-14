@@ -92,7 +92,41 @@
     "createStub": "La creación de turnos se implementará con un formulario"
   },
   "booking": {
-    "selectBranch": "Seleccioná una sucursal para reservar"
+    "title": "Sacar turno",
+    "subtitle": "Elegí sucursal, servicio y horario.",
+    "details": "Detalles",
+    "branch": "Sucursal",
+    "selectBranch": "Seleccioná una sucursal",
+    "service": "Servicio",
+    "selectService": "Seleccioná un servicio",
+    "barber": "Barbero",
+    "selectBarber": "Seleccioná un barbero",
+    "date": "Fecha",
+
+    "contact": "Tus datos",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "email": "Email",
+    "phone": "Teléfono",
+    "contactHint": "Ingresá al menos email o teléfono para poder confirmarte el turno.",
+
+    "slots": "Horarios disponibles",
+    "duration": "Duración",
+    "pickFirst": "Primero elegí sucursal, servicio y barbero.",
+    "noSlots": "No hay horarios disponibles para esta fecha.",
+
+    "preview": "Vista",
+    "busy": "Ocupado",
+    "selected": "Seleccionado",
+
+    "confirm": "Confirmar turno",
+    "saving": "Guardando…",
+    "success": "¡Listo! Tu turno quedó registrado (pendiente de confirmación).",
+
+    "errors": {
+      "missing": "Completá los datos y elegí un horario.",
+      "generic": "No se pudo guardar el turno. Intentá de nuevo."
+    }
   },
   "dashboard": {
     "manageStaff": "Gestionar personal y roles",

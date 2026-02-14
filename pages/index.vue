@@ -9,7 +9,7 @@
           <p class="mt-4 text-lg text-gray-600">{{ $t('landing.brandSubtitle') }}</p>
 
           <div class="mt-6 flex flex-wrap gap-3">
-            <UButton to="/calendar" color="primary">{{ $t('landing.cta.book') }}</UButton>
+            <UButton to="/book" color="primary">{{ $t('landing.cta.book') }}</UButton>
             <UButton :to="ctaHref" variant="outline">{{ ctaLabel }}</UButton>
           </div>
         </div>
@@ -30,7 +30,7 @@
           <h2 class="text-lg font-semibold">{{ $t('landing.actions.bookTitle') }}</h2>
           <p class="mt-1 text-sm text-gray-600">{{ $t('landing.actions.bookSubtitle') }}</p>
           <div class="mt-4">
-            <UButton to="/calendar" color="primary">{{ $t('landing.cta.book') }}</UButton>
+            <UButton to="/book" color="primary">{{ $t('landing.cta.book') }}</UButton>
           </div>
         </div>
 

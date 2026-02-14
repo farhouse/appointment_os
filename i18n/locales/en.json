@@ -92,7 +92,41 @@
     "createStub": "Create appointment functionality to be implemented with a form"
   },
   "booking": {
-    "selectBranch": "Select a branch to book"
+    "title": "Book appointment",
+    "subtitle": "Choose branch, service and time.",
+    "details": "Details",
+    "branch": "Branch",
+    "selectBranch": "Select a branch",
+    "service": "Service",
+    "selectService": "Select a service",
+    "barber": "Barber",
+    "selectBarber": "Select a barber",
+    "date": "Date",
+
+    "contact": "Your details",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "phone": "Phone",
+    "contactHint": "Please provide at least email or phone so we can confirm your appointment.",
+
+    "slots": "Available times",
+    "duration": "Duration",
+    "pickFirst": "First choose branch, service and barber.",
+    "noSlots": "No available times for this date.",
+
+    "preview": "Preview",
+    "busy": "Busy",
+    "selected": "Selected",
+
+    "confirm": "Confirm appointment",
+    "saving": "Saving…",
+    "success": "Done! Your appointment was created (pending confirmation).",
+
+    "errors": {
+      "missing": "Fill the form and select a time.",
+      "generic": "Could not save the appointment. Please try again."
+    }
   },
   "dashboard": {
     "manageStaff": "Manage staff and roles",
