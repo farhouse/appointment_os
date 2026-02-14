@@ -8,17 +8,18 @@
   --color-warm-wood: #a07a58;
   --color-neutral-gray: #3a3a3a;
 
-  --color-barber-50: #dff5f3;
-  --color-barber-100: #bfeae5;
-  --color-barber-200: #9edfd7;
-  --color-barber-300: #7dd4c9;
-  --color-barber-400: #5cc9bc;
-  --color-barber-500: #2fa7a0;
-  --color-barber-600: #258781;
-  --color-barber-700: #1d6a65;
-  --color-barber-800: #154d49;
-  --color-barber-900: #0e3230;
-  --color-barber-950: #081c1a;
+  /* Primary accent (warm copper / leather highlight). */
+  --color-barber-50: #fbf3ea;
+  --color-barber-100: #f6e3d2;
+  --color-barber-200: #edc7a6;
+  --color-barber-300: #e2a473;
+  --color-barber-400: #cc8554;
+  --color-barber-500: #b37a4c;
+  --color-barber-600: #8f613e;
+  --color-barber-700: #6e4b31;
+  --color-barber-800: #4e3524;
+  --color-barber-900: #2f2218;
+  --color-barber-950: #1b140f;
 
   --color-slate-50: #f2efea;
   --color-slate-100: #e7dfd3;
@@ -48,13 +49,14 @@
   --ui-primary-active: var(--color-barber-600);
   --ui-primary-contrast: #0b0b0c;
 
-  --ui-secondary: var(--color-warm-brown);
-  --ui-secondary-hover: var(--color-brown-highlight);
-  --ui-secondary-active: #5f3724;
-  --ui-secondary-contrast: #f6f0e8;
+  /* Secondary accent (teal) for highlights / info states. */
+  --ui-secondary: var(--color-teal);
+  --ui-secondary-hover: color-mix(in oklab, var(--color-teal), #ffffff 12%);
+  --ui-secondary-active: color-mix(in oklab, var(--color-teal), #000000 12%);
+  --ui-secondary-contrast: #0b0b0c;
 
-  --ui-link: var(--color-barber-500);
-  --ui-ring: color-mix(in oklab, var(--color-barber-500), #ffffff 25%);
+  --ui-link: var(--color-barber-400);
+  --ui-ring: color-mix(in oklab, var(--color-barber-500), #ffffff 22%);
 }
 
 body {
