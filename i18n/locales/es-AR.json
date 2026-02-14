@@ -21,27 +21,25 @@
     "book": "Reservar"
   },
   "landing": {
-    "title": "Bienvenido a Barber OS",
-    "subtitle": "Gestioná tu barbería de forma simple y profesional.",
-    "photoPlaceholder": "FOTO",
-    "viewCalendar": "Ver calendario",
-    "manageAppointments": "Gestionar turnos",
+    "brandEyebrow": "Barbería",
+    "brandName": "Emi Barber Club",
+    "brandSubtitle": "Cortes clásicos y modernos. Reservá tu turno en segundos.",
+    "photoAlt": "Interior de Emi Barber Club",
+
+    "cta": {
+      "book": "Sacar turno",
+      "viewCalendar": "Ver calendario"
+    },
+
+    "actions": {
+      "bookTitle": "Reservá tu turno",
+      "bookSubtitle": "Mirá la agenda y elegí el horario que te quede cómodo.",
+      "loginTitle": "Ya soy cliente",
+      "loginSubtitle": "Iniciá sesión para ver tus turnos y tu cuenta."
+    },
+
     "login": "Iniciar sesión",
-    "dashboard": "Ir al panel",
-    "cards": {
-      "calendar": {
-        "title": "Agenda",
-        "subtitle": "Consultá disponibilidad y próximos turnos."
-      },
-      "manage": {
-        "title": "Gestión",
-        "subtitle": "Administrá turnos, staff y sucursales."
-      },
-      "account": {
-        "title": "Cuenta",
-        "subtitle": "Ingresá para acceder a tu panel privado."
-      }
-    }
+    "dashboard": "Ir al panel"
   },
   "login": {
     "title": "Iniciar sesión",

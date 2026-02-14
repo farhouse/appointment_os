@@ -21,27 +21,25 @@
     "book": "Book"
   },
   "landing": {
-    "title": "Welcome to Barber OS",
-    "subtitle": "Run your barbershop simply and professionally.",
-    "photoPlaceholder": "PHOTO",
-    "viewCalendar": "View calendar",
-    "manageAppointments": "Manage appointments",
+    "brandEyebrow": "Barbershop",
+    "brandName": "Emi Barber Club",
+    "brandSubtitle": "Classic and modern cuts. Book your appointment in seconds.",
+    "photoAlt": "Emi Barber Club interior",
+
+    "cta": {
+      "book": "Book appointment",
+      "viewCalendar": "View calendar"
+    },
+
+    "actions": {
+      "bookTitle": "Book your appointment",
+      "bookSubtitle": "Check the calendar and pick a time that works for you.",
+      "loginTitle": "Already a client",
+      "loginSubtitle": "Sign in to see your appointments and account."
+    },
+
     "login": "Login",
-    "dashboard": "Go to dashboard",
-    "cards": {
-      "calendar": {
-        "title": "Schedule",
-        "subtitle": "Check availability and upcoming appointments."
-      },
-      "manage": {
-        "title": "Manage",
-        "subtitle": "Manage appointments, staff and branches."
-      },
-      "account": {
-        "title": "Account",
-        "subtitle": "Sign in to access your private dashboard."
-      }
-    }
+    "dashboard": "Go to dashboard"
   },
   "login": {
     "title": "Login",
