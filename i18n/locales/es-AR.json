@@ -22,11 +22,26 @@
   },
   "landing": {
     "title": "Bienvenido a Barber OS",
-    "subtitle": "Gestiona tu barbería de forma eficiente",
+    "subtitle": "Gestioná tu barbería de forma simple y profesional.",
+    "photoPlaceholder": "FOTO",
     "viewCalendar": "Ver calendario",
     "manageAppointments": "Gestionar turnos",
     "login": "Iniciar sesión",
-    "dashboard": "Ir al panel"
+    "dashboard": "Ir al panel",
+    "cards": {
+      "calendar": {
+        "title": "Agenda",
+        "subtitle": "Consultá disponibilidad y próximos turnos."
+      },
+      "manage": {
+        "title": "Gestión",
+        "subtitle": "Administrá turnos, staff y sucursales."
+      },
+      "account": {
+        "title": "Cuenta",
+        "subtitle": "Ingresá para acceder a tu panel privado."
+      }
+    }
   },
   "login": {
     "title": "Iniciar sesión",

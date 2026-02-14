@@ -22,11 +22,26 @@
   },
   "landing": {
     "title": "Welcome to Barber OS",
-    "subtitle": "Manage your barbershop efficiently",
-    "viewCalendar": "View Calendar",
-    "manageAppointments": "Manage Appointments",
+    "subtitle": "Run your barbershop simply and professionally.",
+    "photoPlaceholder": "PHOTO",
+    "viewCalendar": "View calendar",
+    "manageAppointments": "Manage appointments",
     "login": "Login",
-    "dashboard": "Go to dashboard"
+    "dashboard": "Go to dashboard",
+    "cards": {
+      "calendar": {
+        "title": "Schedule",
+        "subtitle": "Check availability and upcoming appointments."
+      },
+      "manage": {
+        "title": "Manage",
+        "subtitle": "Manage appointments, staff and branches."
+      },
+      "account": {
+        "title": "Account",
+        "subtitle": "Sign in to access your private dashboard."
+      }
+    }
   },
   "login": {
     "title": "Login",
