@@ -4,6 +4,7 @@ import type { VueCalEvent, VueCalView } from 'vue-cal'
 const { locale } = useI18n()
 
 const calendarView = ref<VueCalView | null>(null)
+const calendarApi = ref<any | null>(null)
 const calendarEvents = ref<VueCalEvent[]>([])
 const currentView = ref<'day' | 'week' | 'month'>('week')
 
@@ -49,8 +50,9 @@ async function loadEvents(view: VueCalView) {
 
 const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
-function handleReady({ view }: { view: VueCalView }) {
+function handleReady({ view, vuecal }: { view: VueCalView; vuecal?: any }) {
   calendarView.value = view
+  if (vuecal) calendarApi.value = vuecal
 }
 
 function handleViewChange(view: VueCalView) {
@@ -79,13 +81,13 @@ function handleViewChange(view: VueCalView) {
           </button>
         </div>
         <div class="flex gap-2">
-          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarView?.previous()">
+          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApi?.previous()">
             {{ $t('calendar.labels.previous') }}
           </button>
-          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarView?.goToToday()">
+          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApi?.goToToday()">
             {{ $t('calendar.labels.today') }}
           </button>
-          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarView?.next()">
+          <button type="button" class="px-3 py-1 rounded border border-gray-300 text-sm" @click="calendarApi?.next()">
             {{ $t('calendar.labels.next') }}
           </button>
         </div>
