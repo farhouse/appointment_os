@@ -1,0 +1,87 @@
+@theme {
+  --color-charcoal: #1c1c1e;
+  --color-near-black: #0b0b0c;
+  --color-warm-brown: #7a4b33;
+  --color-brown-highlight: #b37a4c;
+  --color-teal: #2fa7a0;
+  --color-cream-tile: #e7dfd3;
+  --color-warm-wood: #a07a58;
+  --color-neutral-gray: #3a3a3a;
+
+  --color-barber-50: #dff5f3;
+  --color-barber-100: #bfeae5;
+  --color-barber-200: #9edfd7;
+  --color-barber-300: #7dd4c9;
+  --color-barber-400: #5cc9bc;
+  --color-barber-500: #2fa7a0;
+  --color-barber-600: #258781;
+  --color-barber-700: #1d6a65;
+  --color-barber-800: #154d49;
+  --color-barber-900: #0e3230;
+  --color-barber-950: #081c1a;
+
+  --color-slate-50: #f2efea;
+  --color-slate-100: #e7dfd3;
+  --color-slate-200: #d6c7b3;
+  --color-slate-300: #b8a186;
+  --color-slate-400: #9b7e5e;
+  --color-slate-500: #7a4b33;
+  --color-slate-600: #623b29;
+  --color-slate-700: #4b2e20;
+  --color-slate-800: #322119;
+  --color-slate-900: #1c1c1e;
+  --color-slate-950: #0b0b0c;
+}
+
+:root {
+  color-scheme: dark;
+  --ui-bg: var(--color-near-black);
+  --ui-bg-muted: var(--color-charcoal);
+  --ui-bg-elevated: var(--color-neutral-gray);
+  --ui-border: #2a2a2d;
+  --ui-text: #f3ede5;
+  --ui-text-muted: #c9c1b6;
+  --ui-text-highlighted: #ffffff;
+
+  --ui-primary: var(--color-barber-500);
+  --ui-primary-hover: var(--color-barber-400);
+  --ui-primary-active: var(--color-barber-600);
+  --ui-primary-contrast: #0b0b0c;
+
+  --ui-secondary: var(--color-warm-brown);
+  --ui-secondary-hover: var(--color-brown-highlight);
+  --ui-secondary-active: #5f3724;
+  --ui-secondary-contrast: #f6f0e8;
+
+  --ui-link: var(--color-barber-500);
+  --ui-ring: color-mix(in oklab, var(--color-barber-500), #ffffff 25%);
+}
+
+body {
+  background: radial-gradient(
+      1200px 800px at 20% -10%,
+      #1f1b18 0%,
+      rgba(31, 27, 24, 0.3) 45%,
+      rgba(11, 11, 12, 0.1) 100%
+    ),
+    linear-gradient(135deg, #0b0b0c 0%, #161514 55%, #0b0b0c 100%);
+  color: var(--ui-text);
+}
+
+.bg-white,
+.bg-gray-50,
+.bg-gray-100 {
+  background-color: var(--color-cream-tile) !important;
+  color: #1b1a19;
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-gray-700 {
+  color: #1b1a19 !important;
+}
+
+.text-gray-600,
+.text-gray-500 {
+  color: #4a3a30 !important;
+}
