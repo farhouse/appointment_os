@@ -27,6 +27,7 @@ enum AppointmentStatus {
   CONFIRMED
   IN_PROGRESS
   FINISHED
+  PAID
   CANCELED
   NO_SHOW
 }
@@ -81,6 +82,7 @@ model User {
   branches      UserBranch[]
   appointments  Appointment[] // As the professional
   confirmedAppointments Appointment[] @relation("ConfirmedBy")
+  paidAppointments      Appointment[] @relation("PaidBy")
   sales         Sale[]
   auditLogs     AuditLog[]
 }
@@ -136,6 +138,11 @@ model Appointment {
   confirmedAt    DateTime?
   confirmedById  String?
   confirmedBy    User?    @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+
+  // Payment details
+  paidAt        DateTime?
+  paidById      String?
+  paidBy        User?    @relation("PaidBy", fields: [paidById], references: [id])
 
   // Notification toggles
   notifyEmail    Boolean  @default(true)

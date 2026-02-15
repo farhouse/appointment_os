@@ -71,7 +71,7 @@
       "weeks": "Weeks",
       "totalPaidAppointments": "Paid appointments (total)",
       "weekByWeek": "Week by week",
-      "paidDefinitionNote": "Note: for now we treat appointments with status FINISHED as “paid”.",
+      "paidDefinitionNote": "Note: we treat appointments with status PAID as “paid”.",
       "clientBook": "Client · Book",
       "clientAppointments": "Client · Appointments",
       "placeholder": "Placeholder page."

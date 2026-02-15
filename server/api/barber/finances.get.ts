@@ -6,7 +6,7 @@ import { getAuthUser } from '~/server/utils/permissions'
 import { badRequest, forbidden } from '~/server/utils/errors'
 
 // Read-only barber finance summary.
-// NOTE: until we add a dedicated PAID state, we treat FINISHED as "paid".
+// "Paid" = AppointmentStatus.PAID.
 export default defineEventHandler(async (event) => {
   const u = getAuthUser(event)
   if (u.role !== 'BARBER') forbidden('Forbidden')
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       professionalId: u.userId,
       ...(branchId ? { branchId } : {}),
       startTime: { gte: start, lt: end },
-      status: 'FINISHED'
+      status: 'PAID'
     },
     select: {
       id: true,

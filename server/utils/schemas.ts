@@ -52,5 +52,5 @@ export const appointmentSchema = z.object({
 })
 
 export const appointmentUpdateSchema = appointmentSchema.partial().extend({
-  status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'CANCELED', 'NO_SHOW']).optional()
+  status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW']).optional()
 })

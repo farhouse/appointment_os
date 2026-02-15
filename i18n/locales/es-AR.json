@@ -71,7 +71,7 @@
       "weeks": "Semanas",
       "totalPaidAppointments": "Turnos pagados (total)",
       "weekByWeek": "Semana a semana",
-      "paidDefinitionNote": "Nota: por ahora consideramos como “pagado” a los turnos con estado FINISHED.",
+      "paidDefinitionNote": "Nota: consideramos como “pagado” a los turnos con estado PAID.",
       "clientBook": "Cliente · Reservar",
       "clientAppointments": "Cliente · Turnos",
       "placeholder": "Página en construcción."

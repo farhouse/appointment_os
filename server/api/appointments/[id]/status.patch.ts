@@ -6,7 +6,7 @@ import { readBodyValidated, requireParam } from '~/server/utils/http'
 import { forbidden, notFound } from '~/server/utils/errors'
 
 const statusSchema = z.object({
-  status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'CANCELED', 'NO_SHOW'])
+  status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW'])
 })
 
 export default defineEventHandler(async (event) => {
@@ -14,24 +14,20 @@ export default defineEventHandler(async (event) => {
   const id = requireParam(event, 'id')
   const validation = await readBodyValidated(event, statusSchema)
 
-  if (u.role === 'BARBER') {
-    // Barbers can only update status for their own appointments.
-    const appt = await prisma.appointment.findUnique({ where: { id }, select: { professionalId: true } })
-    if (!appt) {
-      notFound('Appointment not found')
-    }
-    if (!appt.professionalId) {
-      forbidden('Forbidden')
-    }
-    if (appt.professionalId !== u.userId) {
-      forbidden('Forbidden')
-    }
+  // Only manager roles can update status.
+  if (u.role !== 'OWNER' && u.role !== 'ADMIN' && u.role !== 'MANAGER') {
+    forbidden('Forbidden')
   }
 
   try {
     const appointment = await prisma.appointment.update({
       where: { id },
-      data: { status: validation.status }
+      data: {
+        status: validation.status,
+        ...(validation.status === 'PAID'
+          ? { paidAt: new Date(), paidById: u.userId }
+          : {})
+      }
     })
     return appointment
   } catch (e) {
