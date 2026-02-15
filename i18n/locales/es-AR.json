@@ -54,7 +54,39 @@
       "redirecting": "Redirigiendo…",
       "managerTitle": "Gerencia",
       "managerSubtitle": "Espacio de gerencia/admin/owner (skeleton).",
-      "barberTitle": "Barbero",
+      
+      "manager": {
+        "dashboardSubtitle": "Panel de control de la sucursal.",
+        "cta": {
+          "openCalendar": "Abrir calendario"
+        },
+        "stats": {
+          "today": "Turnos hoy",
+          "todayHint": "Placeholder (vamos a contar por estado y sucursal)",
+          "pendingPayments": "Pagos pendientes",
+          "pendingPaymentsHint": "Placeholder (turnos FINISHED sin PAID)",
+          "weekRevenue": "Ingresos semana",
+          "weekRevenueHint": "Placeholder (sumatoria de turnos PAID)"
+        },
+        "shortcuts": {
+          "title": "Accesos rápidos",
+          "subtitle": "Entrá directo a cada módulo.",
+          "calendar": "Calendario",
+          "calendarDesc": "Ver y confirmar turnos.",
+          "cash": "Caja",
+          "cashDesc": "Abrir/cerrar caja y movimientos.",
+          "employees": "Empleados",
+          "employeesDesc": "Gestionar barberos y permisos.",
+          "products": "Productos",
+          "productsDesc": "Catálogo y precios.",
+          "stock": "Stock",
+          "stockDesc": "Inventario y movimientos.",
+          "settings": "Configuración",
+          "settingsDesc": "Notificaciones y reglas."
+        }
+      },
+
+      "barberTitle": "Barbero", 
       "barberSubtitle": "Espacio de barbero (skeleton).",
       "clientTitle": "Cliente",
       "clientSubtitle": "Espacio de cliente (skeleton).",

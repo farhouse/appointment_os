@@ -54,6 +54,38 @@
       "redirecting": "Redirecting…",
       "managerTitle": "Manager",
       "managerSubtitle": "Manager/Admin/Owner workspace (skeleton).",
+
+      "manager": {
+        "dashboardSubtitle": "Branch control panel.",
+        "cta": {
+          "openCalendar": "Open calendar"
+        },
+        "stats": {
+          "today": "Appointments today",
+          "todayHint": "Placeholder (we'll count by status and branch)",
+          "pendingPayments": "Pending payments",
+          "pendingPaymentsHint": "Placeholder (FINISHED without PAID)",
+          "weekRevenue": "Week revenue",
+          "weekRevenueHint": "Placeholder (sum of PAID appointments)"
+        },
+        "shortcuts": {
+          "title": "Shortcuts",
+          "subtitle": "Jump straight into a module.",
+          "calendar": "Calendar",
+          "calendarDesc": "View and confirm appointments.",
+          "cash": "Cash",
+          "cashDesc": "Open/close cash and movements.",
+          "employees": "Employees",
+          "employeesDesc": "Manage barbers and permissions.",
+          "products": "Products",
+          "productsDesc": "Catalog and prices.",
+          "stock": "Stock",
+          "stockDesc": "Inventory and movements.",
+          "settings": "Settings",
+          "settingsDesc": "Notifications and rules."
+        }
+      },
+
       "barberTitle": "Barber",
       "barberSubtitle": "Barber workspace (skeleton).",
       "clientTitle": "Client",
