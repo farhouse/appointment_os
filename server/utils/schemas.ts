@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 export const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  // Demo credentials use 1234; enforce basic length without blocking.
+  password: z.string().min(4),
 })
 
 export const branchSchema = z.object({
