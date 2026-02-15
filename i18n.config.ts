@@ -2,7 +2,8 @@ import en from './i18n/locales/en.json'
 import esAR from './i18n/locales/es-AR.json'
 
 export default defineI18nConfig(() => ({
-  legacy: false,
+  legacy: true,
+  globalInjection: true,
   locale: 'es-AR',
   fallbackLocale: 'es-AR',
   messages: {
