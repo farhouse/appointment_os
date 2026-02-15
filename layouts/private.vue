@@ -11,6 +11,7 @@ const me = useMeState()
 const role = computed<Role | undefined>(() => me.value?.role)
 
 const isAdmin = computed(() => role.value === 'OWNER' || role.value === 'ADMIN')
+const isOwner = computed(() => role.value === 'OWNER')
 const isManager = computed(() => role.value === 'MANAGER')
 const isBarber = computed(() => role.value === 'BARBER')
 const isClient = computed(() => role.value === 'CLIENT')
@@ -35,6 +36,7 @@ const adminLinks = computed(() => [
   { label: t('nav.stock'), to: '/private/manager/stock', icon: 'i-heroicons-archive-box' },
   { label: t('nav.employees'), to: '/private/manager/employees', icon: 'i-heroicons-users' },
   { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
+  ...(isOwner.value ? [{ label: t('nav.branches'), to: '/private/manager/branches', icon: 'i-heroicons-map-pin' }] : []),
   { label: t('nav.settings'), to: '/private/manager/settings', icon: 'i-heroicons-cog-6-tooth' },
 ])
 
