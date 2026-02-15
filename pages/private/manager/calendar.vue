@@ -67,7 +67,9 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
 const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
 const selectedEvent = ref<any | null>(null)
+const detailModalOpen = ref(false)
 const payModalOpen = ref(false)
+
 const cashBoxes = ref<{ id: string; name: string }[]>([])
 const isPaying = ref(false)
 const payError = ref('')
@@ -87,18 +89,27 @@ async function loadCashBoxes() {
   }
 }
 
-function openPayModal(event: any) {
+function openDetailModal(event: any) {
   selectedEvent.value = event
+  detailModalOpen.value = true
+}
+
+function closeDetailModal() {
+  detailModalOpen.value = false
+  selectedEvent.value = null
+}
+
+function openPayModal() {
+  if (!selectedEvent.value) return
   payModalOpen.value = true
   payError.value = ''
-  const totalPrice = Number(event?.extendedProps?.totalPrice ?? 0)
+  const totalPrice = Number(selectedEvent.value?.extendedProps?.totalPrice ?? 0)
   payForm.amount = Number.isFinite(totalPrice) ? totalPrice : 0
   if (!cashBoxes.value.length) void loadCashBoxes()
 }
 
 function closePayModal() {
   payModalOpen.value = false
-  selectedEvent.value = null
   payError.value = ''
   payForm.amount = 0
   payForm.cashBoxId = ''
@@ -119,6 +130,7 @@ async function confirmPayment() {
     })
     if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
     closePayModal()
+    closeDetailModal()
   } catch (e: any) {
     payError.value = e?.data?.statusMessage || 'No se pudo cobrar'
   } finally {
@@ -147,7 +159,7 @@ function handleViewChange(payload: any) {
 function handleEventClick(e: any) {
   const event = e?.event || e
   if (!event) return
-  openPayModal(event)
+  openDetailModal(event)
 }
 </script>
 
@@ -193,11 +205,51 @@ function handleEventClick(e: any) {
       />
     </div>
 
+    <!-- Detail modal (event click) -->
+    <div v-if="detailModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closeDetailModal">
+      <div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-lg font-semibold truncate">{{ $t('calendar.eventAlert') }}</div>
+            <div class="text-sm text-gray-600 mt-1">{{ selectedEvent?.title }}</div>
+          </div>
+          <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closeDetailModal">✕</button>
+        </div>
+
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="text-gray-700">
+            <span class="font-medium">{{ $t('calendar.status') }}</span>
+            {{ selectedEvent?.extendedProps?.status }}
+          </div>
+          <div v-if="selectedEvent?.extendedProps?.notes" class="text-sm">
+            <div class="font-medium">Notas</div>
+            <div class="text-gray-700 whitespace-pre-wrap">{{ selectedEvent.extendedProps.notes }}</div>
+          </div>
+          <div class="text-sm">
+            <div class="font-medium">Total</div>
+            <div class="text-gray-700">{{ selectedEvent?.extendedProps?.totalPrice ?? 0 }}</div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-end gap-2">
+          <UButton variant="outline" @click="closeDetailModal">{{ $t('common.close') }}</UButton>
+          <UButton
+            color="primary"
+            :disabled="selectedEvent?.extendedProps?.status !== 'FINISHED'"
+            @click="openPayModal"
+          >
+            {{ $t('pages.private.manager.pay.open') }}
+          </UButton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pay modal (opened from detail) -->
     <div v-if="payModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closePayModal">
       <div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
-            <div class="text-lg font-semibold truncate">Cobrar turno</div>
+            <div class="text-lg font-semibold truncate">{{ $t('pages.private.manager.pay.title') }}</div>
             <div class="text-sm text-gray-600 mt-1">{{ selectedEvent?.title }}</div>
           </div>
           <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closePayModal">✕</button>
@@ -205,25 +257,25 @@ function handleEventClick(e: any) {
 
         <div class="mt-4 space-y-4 text-sm">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Caja</label>
+            <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.cashbox') }}</label>
             <select v-model="payForm.cashBoxId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-              <option value="" disabled>Selecciona una caja</option>
+              <option value="" disabled>{{ $t('pages.private.manager.pay.selectCashbox') }}</option>
               <option v-for="cb in cashBoxes" :key="cb.id" :value="cb.id">
                 {{ cb.name }}
               </option>
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Monto</label>
+            <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.amount') }}</label>
             <input v-model.number="payForm.amount" type="number" min="0" step="0.01" class="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
           </div>
           <div v-if="payError" class="text-xs text-red-600">{{ payError }}</div>
         </div>
 
         <div class="mt-4 flex justify-end gap-2">
-          <UButton variant="outline" @click="closePayModal">Cancelar</UButton>
+          <UButton variant="outline" @click="closePayModal">{{ $t('common.cancel') }}</UButton>
           <UButton color="primary" :disabled="!payForm.cashBoxId || isPaying" @click="confirmPayment">
-            Confirmar
+            {{ $t('common.confirm') }}
           </UButton>
         </div>
       </div>

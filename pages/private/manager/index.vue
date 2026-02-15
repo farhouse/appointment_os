@@ -1,18 +1,33 @@
 <script setup lang="ts">
+import { loadMe, useMeState } from '~/composables/useMe'
+
 definePageMeta({
   layout: 'private',
   middleware: ['private', 'role'],
   roles: ['OWNER', 'ADMIN', 'MANAGER'],
 })
 
-const shortcuts = [
-  { to: '/private/manager/calendar', title: 'pages.private.manager.shortcuts.calendar', desc: 'pages.private.manager.shortcuts.calendarDesc' },
-  { to: '/private/manager/cash', title: 'pages.private.manager.shortcuts.cash', desc: 'pages.private.manager.shortcuts.cashDesc' },
-  { to: '/private/manager/products', title: 'pages.private.manager.shortcuts.products', desc: 'pages.private.manager.shortcuts.productsDesc' },
-  { to: '/private/manager/stock', title: 'pages.private.manager.shortcuts.stock', desc: 'pages.private.manager.shortcuts.stockDesc' },
-  { to: '/private/manager/employees', title: 'pages.private.manager.shortcuts.employees', desc: 'pages.private.manager.shortcuts.employeesDesc' },
-  { to: '/private/manager/settings', title: 'pages.private.manager.shortcuts.settings', desc: 'pages.private.manager.shortcuts.settingsDesc' },
-]
+await loadMe()
+const me = useMeState()
+
+const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
+
+const shortcuts = computed(() => {
+  const base = [
+    { to: '/private/manager/calendar', title: 'pages.private.manager.shortcuts.calendar', desc: 'pages.private.manager.shortcuts.calendarDesc' },
+    { to: '/private/manager/cash', title: 'pages.private.manager.shortcuts.cash', desc: 'pages.private.manager.shortcuts.cashDesc' },
+    { to: '/private/manager/stock', title: 'pages.private.manager.shortcuts.stock', desc: 'pages.private.manager.shortcuts.stockDesc' },
+  ]
+
+  if (!isAdmin.value) return base
+
+  return [
+    ...base,
+    { to: '/private/manager/employees', title: 'pages.private.manager.shortcuts.employees', desc: 'pages.private.manager.shortcuts.employeesDesc' },
+    { to: '/private/manager/products', title: 'pages.private.manager.shortcuts.products', desc: 'pages.private.manager.shortcuts.productsDesc' },
+    { to: '/private/manager/settings', title: 'pages.private.manager.shortcuts.settings', desc: 'pages.private.manager.shortcuts.settingsDesc' },
+  ]
+})
 </script>
 
 <template>

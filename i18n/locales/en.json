@@ -24,6 +24,12 @@
     "account": "Account",
     "book": "Book"
   },
+  "common": {
+    "loading": "Loading…",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
   "landing": {
     "brandEyebrow": "Barbershop",
     "brandName": "Emi Barber Club",
@@ -61,6 +67,33 @@
 
       "manager": {
         "dashboardSubtitle": "Branch control panel.",
+        "sections": {
+          "overview": { "title": "Overview", "subtitle": "Quick branch indicators." },
+          "modules": { "title": "Modules", "subtitle": "Jump straight into a module." }
+        },
+        "pay": {
+          "open": "Take payment",
+          "title": "Take payment",
+          "cashbox": "Cashbox",
+          "selectCashbox": "Select a cashbox",
+          "amount": "Amount"
+        },
+        "cashboxes": {
+          "subtitle": "Manage cashboxes per branch.",
+          "branch": "Branch",
+          "selectBranch": "Select a branch",
+          "newTitle": "New cashbox",
+          "namePlaceholder": "Cash",
+          "active": "Active",
+          "create": "Create cashbox",
+          "listTitle": "Cashboxes",
+          "empty": "No cashboxes yet.",
+          "activeState": "Active",
+          "inactiveState": "Inactive",
+          "activate": "Activate",
+          "deactivate": "Deactivate"
+        },
+
         "card": {
           "open": "Open module"
         },

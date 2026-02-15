@@ -94,53 +94,53 @@ onMounted(() => {
   <div class="space-y-6">
     <div>
       <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerSettings') }}</h1>
-      <p class="text-sm text-gray-600">Gestiona las cajas por sucursal.</p>
+      <p class="text-sm text-gray-600">{{ $t('pages.private.manager.cashboxes.subtitle') }}</p>
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <div class="flex flex-wrap items-center gap-3">
-        <label class="text-sm font-medium">Sucursal</label>
+        <label class="text-sm font-medium">{{ $t('pages.private.manager.cashboxes.branch') }}</label>
         <select v-model="selectedBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
-          <option value="" disabled>Selecciona una sucursal</option>
+          <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
           <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
             {{ branch.name }}
           </option>
         </select>
-        <div v-if="isLoading" class="text-xs text-gray-500">Cargando...</div>
+        <div v-if="isLoading" class="text-xs text-gray-500">{{ $t('common.loading') }}</div>
         <div v-if="errorMessage" class="text-xs text-red-600">{{ errorMessage }}</div>
       </div>
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="text-sm font-semibold text-gray-900">Nueva caja</div>
+      <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.newTitle') }}</div>
       <div class="mt-3 flex flex-wrap items-center gap-3">
         <input
           v-model="formState.name"
           type="text"
           class="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm"
-          placeholder="Efectivo"
+          :placeholder="$t('pages.private.manager.cashboxes.namePlaceholder')"
         />
         <label class="flex items-center gap-2 text-sm">
           <input v-model="formState.active" type="checkbox" class="rounded border-gray-300" />
-          Activa
+          {{ $t('pages.private.manager.cashboxes.active') }}
         </label>
         <UButton color="primary" :disabled="!formState.name.trim() || !selectedBranchId" @click="handleCreateCashBox">
-          Crear caja
+          {{ $t('pages.private.manager.cashboxes.create') }}
         </UButton>
       </div>
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="text-sm font-semibold text-gray-900">Cajas registradas</div>
-      <div v-if="!cashBoxes.length" class="mt-3 text-sm text-gray-600">Sin cajas cargadas.</div>
+      <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
+      <div v-if="!cashBoxes.length" class="mt-3 text-sm text-gray-600">{{ $t('pages.private.manager.cashboxes.empty') }}</div>
       <div v-else class="mt-3 space-y-2">
         <div v-for="cb in cashBoxes" :key="cb.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
           <div>
             <div class="text-sm font-medium text-gray-900">{{ cb.name }}</div>
-            <div class="text-xs text-gray-500">{{ cb.active ? 'Activa' : 'Inactiva' }}</div>
+            <div class="text-xs text-gray-500">{{ cb.active ? $t('pages.private.manager.cashboxes.activeState') : $t('pages.private.manager.cashboxes.inactiveState') }}</div>
           </div>
           <UButton variant="outline" size="sm" @click="toggleCashBox(cb)">
-            {{ cb.active ? 'Desactivar' : 'Activar' }}
+            {{ cb.active ? $t('pages.private.manager.cashboxes.deactivate') : $t('pages.private.manager.cashboxes.activate') }}
           </UButton>
         </div>
       </div>

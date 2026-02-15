@@ -24,6 +24,12 @@
     "account": "Cuenta",
     "book": "Reservar"
   },
+  "common": {
+    "loading": "Cargando…",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
+  },
   "landing": {
     "brandEyebrow": "Barbería",
     "brandName": "Emi Barber Club",
@@ -61,6 +67,33 @@
       
       "manager": {
         "dashboardSubtitle": "Panel de control de la sucursal.",
+        "sections": {
+          "overview": { "title": "Resumen", "subtitle": "Indicadores rápidos de la sucursal." },
+          "modules": { "title": "Módulos", "subtitle": "Entrá directo a cada módulo." }
+        },
+        "pay": {
+          "open": "Cobrar",
+          "title": "Cobrar turno",
+          "cashbox": "Caja",
+          "selectCashbox": "Seleccioná una caja",
+          "amount": "Monto"
+        },
+        "cashboxes": {
+          "subtitle": "Gestioná las cajas por sucursal.",
+          "branch": "Sucursal",
+          "selectBranch": "Seleccioná una sucursal",
+          "newTitle": "Nueva caja",
+          "namePlaceholder": "Efectivo",
+          "active": "Activa",
+          "create": "Crear caja",
+          "listTitle": "Cajas registradas",
+          "empty": "Sin cajas cargadas.",
+          "activeState": "Activa",
+          "inactiveState": "Inactiva",
+          "activate": "Activar",
+          "deactivate": "Desactivar"
+        },
+
         "card": {
           "open": "Abrir módulo"
         },

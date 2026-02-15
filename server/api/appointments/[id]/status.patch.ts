@@ -8,7 +8,7 @@ import { badRequest, forbidden, notFound } from '~/server/utils/errors'
 const statusSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW']),
   cashBoxId: z.string().uuid().optional(),
-  amount: z.number().positive().optional()
+  amount: z.number().min(0).optional()
 })
 
 export default defineEventHandler(async (event) => {
