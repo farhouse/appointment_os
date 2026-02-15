@@ -47,8 +47,13 @@ async function handleLogin() {
     // Avoid open-redirects / weird malformed paths
     const target = redirect.startsWith('/') ? redirect : '/private'
 
-    // Force a full navigation so cookie-based auth is definitely available
-    // (avoids edge cases where SPA navigation races cookie write / middleware)
+    // Force a full navigation so cookie-based auth is definitely available.
+    // Using location.assign avoids edge cases where SPA navigation gets stuck.
+    if (process.client) {
+      window.location.assign(target)
+      return
+    }
+
     await navigateTo(target, { external: true })
   } catch (e: any) {
     error.value = e.data?.statusMessage || t('login.error')
