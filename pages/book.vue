@@ -82,6 +82,12 @@ watch([branchId, barberId, date], async ([bId, brId, d]) => {
   busy.value = (await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId)}&date=${encodeURIComponent(d)}`)).busy || []
 })
 
+watch(serviceId, () => {
+  // Service changes affect duration → previously-selected slot might be invalid
+  selectedStart.value = null
+  selectedEnd.value = null
+})
+
 const selectedService = computed(() => services.value.find(s => s.id === serviceId.value) || null)
 
 const servicePriceLabel = computed(() => {
@@ -148,16 +154,42 @@ const calendarEvents = computed(() => {
   return evs
 })
 
+const detailsComplete = computed(() => {
+  return !!(branchId.value && serviceId.value && barberId.value && date.value)
+})
+
+const timeComplete = computed(() => {
+  return !!(selectedStart.value && selectedEnd.value)
+})
+
 const canSubmit = computed(() => {
   return !!(
-    branchId.value &&
-    serviceId.value &&
-    barberId.value &&
-    selectedStart.value &&
-    selectedEnd.value &&
+    detailsComplete.value &&
+    timeComplete.value &&
     clientFirstName.value.trim() &&
     clientPhone.value.trim()
   )
+})
+
+const detailsEl = ref<HTMLElement | null>(null)
+const slotsEl = ref<HTMLElement | null>(null)
+const contactEl = ref<HTMLElement | null>(null)
+
+function scrollTo(el: HTMLElement | null) {
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+watch(detailsComplete, async (v) => {
+  if (!v) return
+  await nextTick()
+  scrollTo(slotsEl.value)
+})
+
+watch(timeComplete, async (v) => {
+  if (!v) return
+  await nextTick()
+  scrollTo(contactEl.value)
 })
 
 async function submitBooking() {
@@ -218,7 +250,7 @@ async function submitBooking() {
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-1 space-y-4">
+        <div class="lg:col-span-1 space-y-4" ref="detailsEl">
           <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
             <h2 class="font-semibold mb-3">{{ $t('booking.details') }}</h2>
 
@@ -247,7 +279,60 @@ async function submitBooking() {
             <input v-model="date" type="date" class="w-full rounded border px-3 py-2 bg-white" />
           </div>
 
-          <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
+          <!-- Contact block is shown after selecting a time slot (see right column) -->
+        </div>
+
+        <div class="lg:col-span-2 space-y-4">
+          <div v-if="detailsComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="slotsEl">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <h2 class="font-semibold">{{ $t('booking.slots') }}</h2>
+              <div class="text-sm text-gray-600">
+                <span v-if="selectedService">{{ $t('booking.duration') }}: {{ slotDurationMin }} min</span>
+              </div>
+            </div>
+
+            <div class="mt-1 text-sm text-gray-600">
+              {{ $t('booking.pickFirst') }}
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                v-for="s in availableSlots"
+                :key="s.start.toISOString()"
+                type="button"
+                class="rounded border px-3 py-2 text-sm"
+                :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300'"
+                @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
+              >
+                {{ s.label }}
+              </button>
+              <div v-if="availableSlots.length === 0" class="col-span-full text-sm text-gray-600">
+                {{ $t('booking.noSlots') }}
+              </div>
+            </div>
+          </div>
+
+          <div v-if="detailsComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
+            <h2 class="font-semibold mb-3">{{ $t('booking.preview') }}</h2>
+            <div class="h-[520px] text-gray-900">
+              <VueCalClient
+                :config="{
+                  view: 'day',
+                  titleBar: false,
+                  viewsBar: false,
+                  todayButton: false,
+                  timeFrom: 8 * 60,
+                  timeTo: 20 * 60,
+                  editableEvents: false,
+                  events: calendarEvents,
+                  locale: 'es'
+                }"
+                class="h-full"
+              />
+            </div>
+          </div>
+
+          <div v-if="detailsComplete && timeComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="contactEl">
             <h2 class="font-semibold mb-3">{{ $t('booking.contact') }}</h2>
 
             <label class="block text-sm font-medium mb-1">{{ $t('booking.firstName') }}</label>
@@ -279,66 +364,15 @@ async function submitBooking() {
                 <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingUser.cta') }}</UButton>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="lg:col-span-2 space-y-4">
-          <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
-            <div class="flex items-center justify-between gap-3 flex-wrap">
-              <h2 class="font-semibold">{{ $t('booking.slots') }}</h2>
-              <div class="text-sm text-gray-600">
-                <span v-if="selectedService">{{ $t('booking.duration') }}: {{ slotDurationMin }} min</span>
-              </div>
+            <div class="mt-5">
+              <div v-if="errorMsg" class="mb-3 text-sm text-red-700">{{ errorMsg }}</div>
+              <div v-if="successMsg" class="mb-3 text-sm text-green-700">{{ successMsg }}</div>
+
+              <UButton :disabled="!canSubmit || loading" color="primary" @click="submitBooking">
+                {{ loading ? $t('booking.saving') : $t('booking.confirm') }}
+              </UButton>
             </div>
-
-            <div v-if="!branchId || !serviceId || !barberId" class="text-sm text-gray-600 mt-3">
-              {{ $t('booking.pickFirst') }}
-            </div>
-
-            <div v-else class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-              <button
-                v-for="s in availableSlots"
-                :key="s.start.toISOString()"
-                type="button"
-                class="rounded border px-3 py-2 text-sm"
-                :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300'"
-                @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
-              >
-                {{ s.label }}
-              </button>
-              <div v-if="availableSlots.length === 0" class="col-span-full text-sm text-gray-600">
-                {{ $t('booking.noSlots') }}
-              </div>
-            </div>
-          </div>
-
-          <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
-            <h2 class="font-semibold mb-3">{{ $t('booking.preview') }}</h2>
-            <div class="h-[520px] text-gray-900">
-              <VueCalClient
-                :config="{
-                  view: 'day',
-                  titleBar: false,
-                  viewsBar: false,
-                  todayButton: false,
-                  timeFrom: 8 * 60,
-                  timeTo: 20 * 60,
-                  editableEvents: false,
-                  events: calendarEvents,
-                  locale: 'es'
-                }"
-                class="h-full"
-              />
-            </div>
-          </div>
-
-          <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
-            <div v-if="errorMsg" class="mb-3 text-sm text-red-700">{{ errorMsg }}</div>
-            <div v-if="successMsg" class="mb-3 text-sm text-green-700">{{ successMsg }}</div>
-
-            <UButton :disabled="!canSubmit || loading" color="primary" @click="submitBooking">
-              {{ loading ? $t('booking.saving') : $t('booking.confirm') }}
-            </UButton>
           </div>
         </div>
       </div>
