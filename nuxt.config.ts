@@ -15,15 +15,18 @@ export default defineNuxtConfig({
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'es-AR',
-    vueI18n: './i18n.config.ts',
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'i18n_redirected',
       redirectOn: 'root'
     },
     locales: [
-      { code: 'es-AR', iso: 'es-AR', name: 'Español (AR)' },
-      { code: 'en', iso: 'en-US', name: 'English' }
-    ]
+      { code: 'es-AR', iso: 'es-AR', name: 'Español (AR)', file: 'es-AR.json' },
+      { code: 'en', iso: 'en-US', name: 'English', file: 'en.json' }
+    ],
+    // @ts-ignore - module runtime supports this option
+    lazy: true,
+    langDir: 'locales',
+    i18nDir: 'i18n'
   }
 })
