@@ -22,6 +22,10 @@ const editingNotes = ref('')
 const savingNotes = ref(false)
 const notesError = ref('')
 
+const recentHistory = ref<any[]>([])
+const historyLoading = ref(false)
+const historyError = ref('')
+
 const calendarConfig = computed(() => ({
   view: currentView.value,
   titleBar: false,
@@ -87,10 +91,30 @@ function handleViewChange(payload: any) {
   if (payload?.id === 'day' || payload?.id === 'week') currentView.value = payload.id
 }
 
-function handleEventClick(e: any) {
+async function loadRecentHistory() {
+  const clientId = selectedEvent.value?.extendedProps?.client?.id
+  if (!clientId) {
+    recentHistory.value = []
+    return
+  }
+
+  historyLoading.value = true
+  historyError.value = ''
+  try {
+    recentHistory.value = await $fetch(`/api/barber/clients/${clientId}/recent`)
+  } catch (e: any) {
+    recentHistory.value = []
+    historyError.value = e?.data?.statusMessage || 'No se pudo cargar'
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+async function handleEventClick(e: any) {
   selectedEvent.value = e?.event || e
   editingNotes.value = String(selectedEvent.value?.extendedProps?.notes || '')
   notesError.value = ''
+  await loadRecentHistory()
 }
 
 const statusLabel = (s?: string) => {
@@ -211,6 +235,27 @@ async function saveNotes() {
             </div>
             <div class="text-gray-700" v-if="selectedEvent.extendedProps?.client?.phone">
               Tel: <a class="underline" :href="`tel:${selectedEvent.extendedProps.client.phone}`">{{ selectedEvent.extendedProps.client.phone }}</a>
+            </div>
+          </div>
+
+          <div>
+            <div class="font-medium">Historial (últimos 3)</div>
+            <div v-if="historyLoading" class="text-gray-600">Cargando…</div>
+            <div v-else-if="historyError" class="text-xs text-red-600">{{ historyError }}</div>
+            <div v-else class="space-y-2">
+              <div v-for="h in recentHistory" :key="h.id" class="rounded border border-black/10 px-3 py-2">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="text-gray-700">
+                    {{ new Date(h.startTime).toLocaleString(locale === 'es-AR' ? 'es-AR' : 'en-US', { dateStyle: 'short', timeStyle: 'short' }) }}
+                  </div>
+                  <div class="text-xs text-gray-500">{{ statusLabel(h.status) }}</div>
+                </div>
+                <div class="mt-1 text-xs text-gray-600">
+                  {{ (h.services || []).join(', ') }}
+                  <span v-if="h.professionalName"> · {{ h.professionalName }}</span>
+                </div>
+              </div>
+              <div v-if="!recentHistory?.length" class="text-gray-600">Sin historial</div>
             </div>
           </div>
 
