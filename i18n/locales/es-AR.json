@@ -111,9 +111,9 @@
     "price": "Precio",
     "contactHint": "El teléfono es obligatorio. El email es opcional.",
 
-    "existingClient": {
-      "title": "Ya encontramos tus datos",
-      "subtitle": "Si ya tenés cuenta, iniciá sesión para ver tus turnos y tu historial.",
+    "existingUser": {
+      "title": "¿Ya tenés cuenta?",
+      "subtitle": "Detectamos un usuario registrado con ese email. Iniciá sesión para sumar puntos y ver tu historial.",
       "cta": "Iniciar sesión"
     },
 

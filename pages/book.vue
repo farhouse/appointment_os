@@ -25,8 +25,8 @@ const clientLastName = ref('')
 const clientEmail = ref('')
 const clientPhone = ref('')
 
-const existingClient = ref<{ id: string; firstName: string; lastName?: string | null; email?: string | null; phone?: string | null } | null>(null)
-const showLoginSuggestion = computed(() => !!existingClient.value)
+const existingClientUser = ref<{ id: string; name: string; email: string } | null>(null)
+const showLoginSuggestion = computed(() => !!existingClientUser.value)
 
 const selectedStart = ref<string | null>(null) // ISO
 const selectedEnd = ref<string | null>(null) // ISO
@@ -41,23 +41,19 @@ onMounted(async () => {
 })
 
 let lookupTimer: any = null
-watch([clientEmail, clientPhone], ([email, phone]) => {
-  existingClient.value = null
+watch(clientEmail, (email) => {
+  existingClientUser.value = null
   if (lookupTimer) clearTimeout(lookupTimer)
 
   const e = (email || '').trim()
-  const p = (phone || '').trim()
-  if (!e && !p) return
+  if (!e) return
 
   lookupTimer = setTimeout(async () => {
     try {
-      const query = new URLSearchParams()
-      if (e) query.set('email', e)
-      if (p) query.set('phone', p)
-      const res = await $fetch(`/api/public/clients/lookup?${query.toString()}`)
-      existingClient.value = (res as any)?.client || null
+      const res = await $fetch(`/api/public/users/lookup?email=${encodeURIComponent(e)}`)
+      existingClientUser.value = (res as any)?.user || null
     } catch {
-      existingClient.value = null
+      existingClientUser.value = null
     }
   }, 350)
 })
@@ -260,10 +256,10 @@ async function submitBooking() {
             <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
 
             <div v-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
-              <p class="font-medium">{{ $t('booking.existingClient.title') }}</p>
-              <p class="text-gray-600">{{ $t('booking.existingClient.subtitle') }}</p>
+              <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
+              <p class="text-gray-600">{{ $t('booking.existingUser.subtitle') }}</p>
               <div class="mt-3">
-                <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingClient.cta') }}</UButton>
+                <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingUser.cta') }}</UButton>
               </div>
             </div>
           </div>

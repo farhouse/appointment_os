@@ -111,9 +111,9 @@
     "price": "Price",
     "contactHint": "Phone is required. Email is optional.",
 
-    "existingClient": {
-      "title": "We found your details",
-      "subtitle": "If you already have an account, sign in to view your appointments and history.",
+    "existingUser": {
+      "title": "Already have an account?",
+      "subtitle": "We detected a registered user with that email. Sign in to earn points and see your history.",
       "cta": "Login"
     },
 
