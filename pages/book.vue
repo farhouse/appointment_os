@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { VueCalEvent } from 'vue-cal'
-
 const { t } = useI18n()
 
 type Branch = { id: string; name: string; address?: string | null; phone?: string | null }
@@ -131,28 +129,17 @@ const availableSlots = computed(() => {
   return slots
 })
 
-const calendarEvents = computed(() => {
-  const evs: VueCalEvent[] = []
-  // Busy events.
-  for (const b of busy.value) {
-    evs.push({
-      title: t('booking.busy'),
-      start: new Date(b.startTime),
-      end: new Date(b.endTime),
-      class: 'opacity-70'
-    } as any)
-  }
-  // Selected slot.
-  if (selectedStart.value && selectedEnd.value) {
-    evs.push({
-      title: t('booking.selected'),
-      start: new Date(selectedStart.value),
-      end: new Date(selectedEnd.value),
-      class: 'font-semibold'
-    } as any)
-  }
-  return evs
-})
+// Calendar preview removed (we keep slot buttons only)
+// const calendarEvents = computed(() => {
+//   const evs: VueCalEvent[] = []
+//   for (const b of busy.value) {
+//     evs.push({ title: t('booking.busy'), start: new Date(b.startTime), end: new Date(b.endTime) } as any)
+//   }
+//   if (selectedStart.value && selectedEnd.value) {
+//     evs.push({ title: t('booking.selected'), start: new Date(selectedStart.value), end: new Date(selectedEnd.value) } as any)
+//   }
+//   return evs
+// })
 
 const detailsComplete = computed(() => {
   return !!(branchId.value && serviceId.value && barberId.value && date.value)
@@ -312,25 +299,7 @@ async function submitBooking() {
             </div>
           </div>
 
-          <div v-if="detailsComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
-            <h2 class="font-semibold mb-3">{{ $t('booking.preview') }}</h2>
-            <div class="h-[520px] text-gray-900">
-              <VueCalClient
-                :config="{
-                  view: 'day',
-                  titleBar: false,
-                  viewsBar: false,
-                  todayButton: false,
-                  timeFrom: 8 * 60,
-                  timeTo: 20 * 60,
-                  editableEvents: false,
-                  events: calendarEvents,
-                  locale: 'es'
-                }"
-                class="h-full"
-              />
-            </div>
-          </div>
+          <!-- Preview removed -->
 
           <div v-if="detailsComplete && timeComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="contactEl">
             <h2 class="font-semibold mb-3">{{ $t('booking.contact') }}</h2>
