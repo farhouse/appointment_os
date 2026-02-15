@@ -35,21 +35,19 @@
     "brandName": "Emi Barber Club",
     "brandSubtitle": "Cortes clásicos y modernos. Reservá tu turno en segundos.",
     "photoAlt": "Interior de Emi Barber Club",
-
     "cta": {
       "book": "Sacar turno",
       "viewCalendar": "Ver calendario"
     },
-
     "actions": {
       "bookTitle": "Reservá tu turno",
       "bookSubtitle": "Mirá la agenda y elegí el horario que te quede cómodo.",
       "loginTitle": "Ya soy cliente",
       "loginSubtitle": "Iniciá sesión para ver tus turnos y tu cuenta."
     },
-
     "login": "Iniciar sesión",
-    "dashboard": "Ir al panel"
+    "dashboard": "Ir al panel",
+    "viewCalendar": "Ver calendario"
   },
   "login": {
     "title": "Iniciar sesión",
@@ -64,12 +62,17 @@
       "redirecting": "Redirigiendo…",
       "managerTitle": "Gerencia",
       "managerSubtitle": "Espacio de gerencia/admin/owner (skeleton).",
-      
       "manager": {
         "dashboardSubtitle": "Panel de control de la sucursal.",
         "sections": {
-          "overview": { "title": "Resumen", "subtitle": "Indicadores rápidos de la sucursal." },
-          "modules": { "title": "Módulos", "subtitle": "Entrá directo a cada módulo." }
+          "overview": {
+            "title": "Resumen",
+            "subtitle": "Vista rápida de la actividad de la sucursal."
+          },
+          "modules": {
+            "title": "Módulos",
+            "subtitle": "Entrá a las herramientas de gestión diaria."
+          }
         },
         "pay": {
           "open": "Cobrar",
@@ -93,19 +96,8 @@
           "activate": "Activar",
           "deactivate": "Desactivar"
         },
-
         "card": {
           "open": "Abrir módulo"
-        },
-        "sections": {
-          "overview": {
-            "title": "Resumen",
-            "subtitle": "Vista rápida de la actividad de la sucursal."
-          },
-          "modules": {
-            "title": "Módulos",
-            "subtitle": "Entrá a las herramientas de gestión diaria."
-          }
         },
         "cta": {
           "openCalendar": "Abrir calendario"
@@ -133,8 +125,7 @@
           "settingsDesc": "Notificaciones y reglas."
         }
       },
-
-      "barberTitle": "Barbero", 
+      "barberTitle": "Barbero",
       "barberSubtitle": "Espacio de barbero (skeleton).",
       "clientTitle": "Cliente",
       "clientSubtitle": "Espacio de cliente (skeleton).",
@@ -152,7 +143,6 @@
         "name": "Nombre",
         "role": "Rol"
       },
-
       "barberAppointments": "Barbero · Turnos",
       "barberFinances": "Barbero · Finanzas",
       "barberFinancesHint": "Resumen semanal de tu rendimiento (turnos pagados).",
@@ -168,7 +158,6 @@
   "calendar": {
     "schedule": "Agenda",
     "backToDashboard": "Volver al panel",
-
     "day": "Día",
     "week": "Semana",
     "month": "Mes",
@@ -177,7 +166,6 @@
       "today": "Hoy",
       "next": "Siguiente"
     },
-
     "confirmMove": "¿Confirmás este cambio?",
     "moveError": "No se pudo mover el turno",
     "eventAlert": "Turno:",
@@ -196,7 +184,6 @@
     "barber": "Barbero",
     "selectBarber": "Seleccioná un barbero",
     "date": "Fecha",
-
     "contact": "Tus datos",
     "firstName": "Nombre",
     "lastName": "Apellido",
@@ -204,27 +191,22 @@
     "phone": "Teléfono",
     "price": "Precio",
     "contactHint": "El teléfono es obligatorio. El email es opcional.",
-
     "existingUser": {
       "title": "¿Ya tenés cuenta?",
       "subtitle": "Detectamos un usuario registrado. Si iniciás sesión, el turno suma puntos y queda en tu historial.",
       "switch": "Sumar puntos",
       "cta": "Iniciar sesión"
     },
-
     "slots": "Horarios disponibles",
     "duration": "Duración",
     "pickFirst": "Primero elegí sucursal, servicio y barbero.",
     "noSlots": "No hay horarios disponibles para esta fecha.",
-
     "preview": "Vista",
     "busy": "Ocupado",
     "selected": "Seleccionado",
-
     "confirm": "Confirmar turno",
     "saving": "Guardando…",
     "success": "¡Listo! Tu turno quedó registrado (pendiente de confirmación).",
-
     "errors": {
       "missing": "Completá los datos y elegí un horario.",
       "generic": "No se pudo guardar el turno. Intentá de nuevo."

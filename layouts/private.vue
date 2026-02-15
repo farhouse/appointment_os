@@ -74,9 +74,9 @@ function localePrefix(code: string) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+  <div class="min-h-screen bg-stone-50 text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
     <div class="flex">
-      <aside class="w-72 border-r border-gray-200 bg-white min-h-screen p-4 dark:border-gray-800 dark:bg-gray-900">
+      <aside class="w-72 border-r border-stone-200 bg-white min-h-screen p-4 dark:border-[#3a2a1f] dark:bg-[#1a120d]">
         <div class="font-semibold">{{ $t('app.name') }}</div>
         <div class="text-xs text-gray-500 mt-1 dark:text-gray-400">{{ $t('app.private') }}</div>
 
@@ -111,11 +111,11 @@ function localePrefix(code: string) {
       <main class="flex-1 p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div class="flex items-center gap-2 text-sm">
-            <label class="text-gray-600 dark:text-gray-300" for="branch-selector">{{ $t('branch.label') }}</label>
+            <label class="text-stone-600 dark:text-stone-300" for="branch-selector">{{ $t('branch.label') }}</label>
             <select
               id="branch-selector"
               v-model="selectedBranchId"
-              class="border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-900 dark:border-gray-700"
+              class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
               :disabled="isLoading"
             >
               <option value="">{{ $t('branch.all') }}</option>
@@ -125,13 +125,18 @@ function localePrefix(code: string) {
             </select>
           </div>
           <div class="flex items-center gap-2 text-sm">
-            <span class="text-gray-600 dark:text-gray-300">{{ $t('language.label') }}</span>
-            <select v-model="locale" class="border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-900 dark:border-gray-700">
+            <span class="text-stone-600 dark:text-stone-300">{{ $t('language.label') }}</span>
+            <select v-model="locale" class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]">
               <option v-for="loc in locales" :key="loc.code" :value="loc.code">
                 {{ localePrefix(loc.code) }} · {{ (loc as any).name || loc.code }}
               </option>
             </select>
-            <UColorModeButton size="sm" color="neutral" variant="ghost" class="border border-gray-200 dark:border-gray-700" />
+            <UColorModeButton
+              size="sm"
+              color="neutral"
+              variant="ghost"
+              class="border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 dark:border-[#4a3426] dark:bg-[#20160f] dark:text-amber-100/90 dark:hover:bg-[#2a1d15]"
+            />
           </div>
         </div>
         <slot />

@@ -35,21 +35,19 @@
     "brandName": "Emi Barber Club",
     "brandSubtitle": "Classic and modern cuts. Book your appointment in seconds.",
     "photoAlt": "Emi Barber Club interior",
-
     "cta": {
       "book": "Book appointment",
       "viewCalendar": "View calendar"
     },
-
     "actions": {
       "bookTitle": "Book your appointment",
       "bookSubtitle": "Check the calendar and pick a time that works for you.",
       "loginTitle": "Already a client",
       "loginSubtitle": "Sign in to see your appointments and account."
     },
-
     "login": "Login",
-    "dashboard": "Go to dashboard"
+    "dashboard": "Go to dashboard",
+    "viewCalendar": "View calendar"
   },
   "login": {
     "title": "Login",
@@ -64,12 +62,17 @@
       "redirecting": "Redirecting…",
       "managerTitle": "Manager",
       "managerSubtitle": "Manager/Admin/Owner workspace (skeleton).",
-
       "manager": {
         "dashboardSubtitle": "Branch control panel.",
         "sections": {
-          "overview": { "title": "Overview", "subtitle": "Quick branch indicators." },
-          "modules": { "title": "Modules", "subtitle": "Jump straight into a module." }
+          "overview": {
+            "title": "Overview",
+            "subtitle": "Quick glance at branch activity."
+          },
+          "modules": {
+            "title": "Modules",
+            "subtitle": "Jump into daily management tools."
+          }
         },
         "pay": {
           "open": "Take payment",
@@ -93,19 +96,8 @@
           "activate": "Activate",
           "deactivate": "Deactivate"
         },
-
         "card": {
           "open": "Open module"
-        },
-        "sections": {
-          "overview": {
-            "title": "Overview",
-            "subtitle": "Quick glance at branch activity."
-          },
-          "modules": {
-            "title": "Modules",
-            "subtitle": "Jump into daily management tools."
-          }
         },
         "cta": {
           "openCalendar": "Open calendar"
@@ -133,7 +125,6 @@
           "settingsDesc": "Notifications and rules."
         }
       },
-
       "barberTitle": "Barber",
       "barberSubtitle": "Barber workspace (skeleton).",
       "clientTitle": "Client",
@@ -152,7 +143,6 @@
         "name": "Name",
         "role": "Role"
       },
-
       "barberAppointments": "Barber · Appointments",
       "barberFinances": "Barber · Finances",
       "barberFinancesHint": "Weekly summary of your performance (paid appointments).",
@@ -168,7 +158,6 @@
   "calendar": {
     "schedule": "Schedule",
     "backToDashboard": "Back to Dashboard",
-
     "day": "Day",
     "week": "Week",
     "month": "Month",
@@ -177,7 +166,6 @@
       "today": "Today",
       "next": "Next"
     },
-
     "confirmMove": "Are you sure about this change?",
     "moveError": "Failed to move appointment",
     "eventAlert": "Event:",
@@ -196,7 +184,6 @@
     "barber": "Barber",
     "selectBarber": "Select a barber",
     "date": "Date",
-
     "contact": "Your details",
     "firstName": "First name",
     "lastName": "Last name",
@@ -204,27 +191,22 @@
     "phone": "Phone",
     "price": "Price",
     "contactHint": "Phone is required. Email is optional.",
-
     "existingUser": {
       "title": "Already have an account?",
       "subtitle": "We detected a registered user. If you sign in, this booking earns points and shows in your history.",
       "switch": "Earn points",
       "cta": "Login"
     },
-
     "slots": "Available times",
     "duration": "Duration",
     "pickFirst": "First choose branch, service and barber.",
     "noSlots": "No available times for this date.",
-
     "preview": "Preview",
     "busy": "Busy",
     "selected": "Selected",
-
     "confirm": "Confirm appointment",
     "saving": "Saving…",
     "success": "Done! Your appointment was created (pending confirmation).",
-
     "errors": {
       "missing": "Fill the form and select a time.",
       "generic": "Could not save the appointment. Please try again."
