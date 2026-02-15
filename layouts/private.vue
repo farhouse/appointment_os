@@ -66,43 +66,43 @@ const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
 
-function flagForLocale(code: string) {
-  if (code === 'es-AR') return '🇦🇷'
-  if (code === 'en') return '🇺🇸'
-  return '🏳️'
+function localePrefix(code: string) {
+  if (code === 'es-AR') return 'AR'
+  if (code === 'en') return 'EN'
+  return code
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
     <div class="flex">
-      <aside class="w-72 border-r bg-white min-h-screen p-4">
+      <aside class="w-72 border-r border-gray-200 bg-white min-h-screen p-4 dark:border-gray-800 dark:bg-gray-900">
         <div class="font-semibold">{{ $t('app.name') }}</div>
-        <div class="text-xs text-gray-500 mt-1">{{ $t('app.private') }}</div>
+        <div class="text-xs text-gray-500 mt-1 dark:text-gray-400">{{ $t('app.private') }}</div>
 
         <div class="mt-6 space-y-5">
           <div v-if="isAdmin">
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.admin') }}</div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{{ $t('nav.admin') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="adminLinks" />
           </div>
 
           <div v-else-if="isManager">
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.manager') }}</div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{{ $t('nav.manager') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="managerLinks" />
           </div>
 
           <div v-if="isBarber">
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.barber') }}</div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{{ $t('nav.barber') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="barberLinks" />
           </div>
 
           <div v-if="isClient">
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.client') }}</div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{{ $t('nav.client') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="clientLinks" />
           </div>
 
           <div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.account') }}</div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{{ $t('nav.account') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="accountLinks" />
           </div>
         </div>
@@ -111,11 +111,11 @@ function flagForLocale(code: string) {
       <main class="flex-1 p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div class="flex items-center gap-2 text-sm">
-            <label class="text-gray-600" for="branch-selector">{{ $t('branch.label') }}</label>
+            <label class="text-gray-600 dark:text-gray-300" for="branch-selector">{{ $t('branch.label') }}</label>
             <select
               id="branch-selector"
               v-model="selectedBranchId"
-              class="border rounded px-2 py-1"
+              class="border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-900 dark:border-gray-700"
               :disabled="isLoading"
             >
               <option value="">{{ $t('branch.all') }}</option>
@@ -125,13 +125,13 @@ function flagForLocale(code: string) {
             </select>
           </div>
           <div class="flex items-center gap-2 text-sm">
-            <span class="text-gray-600">{{ $t('language.label') }}</span>
-            <select v-model="locale" class="border rounded px-2 py-1">
+            <span class="text-gray-600 dark:text-gray-300">{{ $t('language.label') }}</span>
+            <select v-model="locale" class="border border-gray-300 rounded px-2 py-1 bg-white dark:bg-gray-900 dark:border-gray-700">
               <option v-for="loc in locales" :key="loc.code" :value="loc.code">
-                {{ flagForLocale(loc.code) }} {{ loc.name }}
+                {{ localePrefix(loc.code) }} · {{ (loc as any).name || loc.code }}
               </option>
             </select>
-            <UColorModeButton size="sm" />
+            <UColorModeButton size="sm" color="neutral" variant="ghost" class="border border-gray-200 dark:border-gray-700" />
           </div>
         </div>
         <slot />
