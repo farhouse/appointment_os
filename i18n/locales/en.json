@@ -113,7 +113,8 @@
 
     "existingUser": {
       "title": "Already have an account?",
-      "subtitle": "We detected a registered user with that email. Sign in to earn points and see your history.",
+      "subtitle": "We detected a registered user. If you sign in, this booking earns points and shows in your history.",
+      "switch": "Earn points",
       "cta": "Login"
     },
 

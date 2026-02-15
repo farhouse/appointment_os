@@ -25,8 +25,13 @@ const clientLastName = ref('')
 const clientEmail = ref('')
 const clientPhone = ref('')
 
-const existingClientUser = ref<{ id: string; name: string; email: string } | null>(null)
+const existingClientUser = ref<{ id: string; name: string; email: string; phone?: string | null } | null>(null)
 const showLoginSuggestion = computed(() => !!existingClientUser.value)
+const earnPoints = ref(false)
+
+watch(showLoginSuggestion, (v) => {
+  if (!v) earnPoints.value = false
+})
 
 const selectedStart = ref<string | null>(null) // ISO
 const selectedEnd = ref<string | null>(null) // ISO
@@ -260,9 +265,17 @@ async function submitBooking() {
             <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
 
             <div v-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
-              <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
-              <p class="text-gray-600">{{ $t('booking.existingUser.subtitle') }}</p>
-              <div class="mt-3">
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
+                  <p class="text-gray-600">{{ $t('booking.existingUser.subtitle') }}</p>
+                </div>
+                <label class="flex items-center gap-2 text-xs font-medium select-none whitespace-nowrap">
+                  <input v-model="earnPoints" type="checkbox" class="accent-current" />
+                  {{ $t('booking.existingUser.switch') }}
+                </label>
+              </div>
+              <div v-if="earnPoints" class="mt-3">
                 <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingUser.cta') }}</UButton>
               </div>
             </div>

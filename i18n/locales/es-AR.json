@@ -113,7 +113,8 @@
 
     "existingUser": {
       "title": "¿Ya tenés cuenta?",
-      "subtitle": "Detectamos un usuario registrado con ese email. Iniciá sesión para sumar puntos y ver tu historial.",
+      "subtitle": "Detectamos un usuario registrado. Si iniciás sesión, el turno suma puntos y queda en tu historial.",
+      "switch": "Sumar puntos",
       "cta": "Iniciar sesión"
     },
 
