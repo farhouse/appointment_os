@@ -19,10 +19,12 @@ export async function loadMe(): Promise<MeUser | null> {
   const me = useMeState()
   if (me.value) return me.value
 
-  const { data, error } = await useFetch<MeResponse>('/api/me')
-  if (error.value) return null
-
-  const user = data.value?.user ?? null
-  me.value = user
-  return user
+  try {
+    const data = await $fetch<MeResponse>('/api/me')
+    const user = data?.user ?? null
+    me.value = user
+    return user
+  } catch {
+    return null
+  }
 }
