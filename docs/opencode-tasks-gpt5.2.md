@@ -45,8 +45,13 @@ Also ensure the manager navigation/sidebar has a link to this page (visible to O
 
 ### A1 Products
 - Replace placeholder with `UTable` list.
-- Columns: name, price, active, updatedAt.
+- Columns: name, price, **pointsCost**, active, updatedAt.
 - Actions: create/edit/delete.
+- IMPORTANT: products must have a loyalty redemption cost in points.
+  - Add field to Prisma: `Product.pointsCost Int @default(0)` (or nullable if you prefer, but default 0 is OK).
+  - Create the Prisma migration.
+  - Update all product API endpoints + UI form to include `pointsCost`.
+  - Show it in UTable and allow editing.
 - Use server endpoints (create list/update/delete). If missing, add them in `server/api/**`.
 
 ### A2 Employees
