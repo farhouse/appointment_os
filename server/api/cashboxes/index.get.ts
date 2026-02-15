@@ -8,9 +8,8 @@ export default defineEventHandler(async (event) => {
 
   const branchId = requireQueryString(event, 'branchId')
 
-  return prisma.cashSession.findMany({
-    where: { branchId },
-    include: { movements: true, cashBox: true },
-    orderBy: { date: 'desc' }
+  return prisma.cashBox.findMany({
+    where: { branchId, active: true },
+    orderBy: { name: 'asc' }
   })
 })

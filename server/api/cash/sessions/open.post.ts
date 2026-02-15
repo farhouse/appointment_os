@@ -6,6 +6,7 @@ import { readBodyValidated } from '~/server/utils/http'
 
 const schema = z.object({
   branchId: z.string().uuid(),
+  cashBoxId: z.string().uuid(),
   openingAmount: z.number().nonnegative()
 })
 
@@ -21,6 +22,7 @@ export default defineEventHandler(async (event) => {
   return prisma.cashSession.create({
     data: {
       branchId: parsed.branchId,
+      cashBoxId: parsed.cashBoxId,
       openedBy: u.userId,
       openingBalance: parsed.openingAmount as any,
       date: today

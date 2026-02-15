@@ -8,7 +8,8 @@ const schema = z.object({
   sessionId: z.string().uuid(),
   amount: z.number().positive(),
   type: z.enum(['DEPOSIT', 'WITHDRAWAL']),
-  reason: z.string().optional().nullable()
+  reason: z.string().optional().nullable(),
+  appointmentId: z.string().uuid().optional().nullable()
 })
 
 export default defineEventHandler(async (event) => {
@@ -21,7 +22,8 @@ export default defineEventHandler(async (event) => {
       sessionId: parsed.sessionId,
       amount: parsed.amount as any,
       type: parsed.type as any,
-      reason: parsed.reason ?? null
+      reason: parsed.reason ?? null,
+      appointmentId: parsed.appointmentId ?? null
     }
   })
 })

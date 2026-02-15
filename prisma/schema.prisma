@@ -65,6 +65,7 @@ model Branch {
   stock         BranchStock[]
   stockMovements StockMovement[]
   sales         Sale[]
+  cashBoxes     CashBox[]
   cashSessions  CashSession[]
 }
 
@@ -143,6 +144,9 @@ model Appointment {
   paidAt        DateTime?
   paidById      String?
   paidBy        User?    @relation("PaidBy", fields: [paidById], references: [id])
+  paidCashBoxId String?
+  paidAmount   Decimal?
+  paidCashBox  CashBox? @relation("PaidCashBox", fields: [paidCashBoxId], references: [id])
 
   // Notification toggles
   notifyEmail    Boolean  @default(true)
@@ -155,6 +159,7 @@ model Appointment {
   client       Client               @relation(fields: [clientId], references: [id])
   professional User?                @relation(fields: [professionalId], references: [id])
   services     AppointmentService[]
+  cashMovements CashMovement[]
   
   @@index([branchId])
   @@index([clientId])
@@ -258,9 +263,26 @@ model LoyaltyLedger {
   client Client @relation(fields: [clientId], references: [id])
 }
 
+model CashBox {
+  id        String   @id @default(uuid())
+  branchId  String
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch       Branch        @relation(fields: [branchId], references: [id])
+  cashSessions CashSession[]
+  paidAppointments Appointment[] @relation("PaidCashBox")
+
+  @@index([branchId])
+  @@unique([branchId, name])
+}
+
 model CashSession {
   id           String    @id @default(uuid())
   branchId     String
+  cashBoxId    String
   openedBy     String    // User ID
   closedBy     String?   // User ID
   openingTime  DateTime  @default(now())
@@ -269,6 +291,7 @@ model CashSession {
   closingBalance Decimal?
   
   branch Branch @relation(fields: [branchId], references: [id])
+  cashBox CashBox @relation(fields: [cashBoxId], references: [id])
   movements CashMovement[]
   
   // Note: Uniqueness by (branchId, date) is tricky because "date" isn't a field, 
@@ -277,18 +300,23 @@ model CashSession {
   // or just rely on business logic. I will add a date field for the unique constraint.
   date         DateTime // Store date at 00:00:00Z
   
-  @@unique([branchId, date])
+  @@unique([cashBoxId, date])
+  @@index([cashBoxId])
 }
 
 model CashMovement {
   id            String           @id @default(uuid())
   sessionId     String
+  appointmentId String?
   amount        Decimal
   type          CashMovementType
   reason        String?
   createdAt     DateTime         @default(now())
   
   session CashSession @relation(fields: [sessionId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([appointmentId])
 }
 
 model AuditLog {
