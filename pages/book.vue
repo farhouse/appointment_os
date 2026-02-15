@@ -41,16 +41,20 @@ onMounted(async () => {
 })
 
 let lookupTimer: any = null
-watch(clientEmail, (email) => {
+watch([clientEmail, clientPhone], ([email, phone]) => {
   existingClientUser.value = null
   if (lookupTimer) clearTimeout(lookupTimer)
 
   const e = (email || '').trim()
-  if (!e) return
+  const p = (phone || '').trim()
+  if (!e && !p) return
 
   lookupTimer = setTimeout(async () => {
     try {
-      const res = await $fetch(`/api/public/users/lookup?email=${encodeURIComponent(e)}`)
+      const query = new URLSearchParams()
+      if (e) query.set('email', e)
+      if (p) query.set('phone', p)
+      const res = await $fetch(`/api/public/users/lookup?${query.toString()}`)
       existingClientUser.value = (res as any)?.user || null
     } catch {
       existingClientUser.value = null
