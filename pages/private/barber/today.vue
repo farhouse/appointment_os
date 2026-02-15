@@ -18,6 +18,9 @@ const calendarEvents = ref<VueCalEvent[]>([])
 
 const currentView = ref<'day' | 'week'>('day')
 const selectedEvent = ref<any | null>(null)
+const editingNotes = ref('')
+const savingNotes = ref(false)
+const notesError = ref('')
 
 const calendarConfig = computed(() => ({
   view: currentView.value,
@@ -86,6 +89,8 @@ function handleViewChange(payload: any) {
 
 function handleEventClick(e: any) {
   selectedEvent.value = e?.event || e
+  editingNotes.value = String(selectedEvent.value?.extendedProps?.notes || '')
+  notesError.value = ''
 }
 
 const statusLabel = (s?: string) => {
@@ -95,10 +100,42 @@ const statusLabel = (s?: string) => {
     CONFIRMED: 'Confirmado',
     IN_PROGRESS: 'En progreso',
     FINISHED: 'Finalizado',
+    PAID: 'Pagado',
     CANCELED: 'Cancelado',
     NO_SHOW: 'No asistió'
   }
   return locale.value === 'es-AR' ? (map[s] || s) : s
+}
+
+async function saveNotes() {
+  if (!selectedEvent.value?.id) return
+  savingNotes.value = true
+  notesError.value = ''
+  try {
+    const updated = await $fetch(`/api/appointments/${selectedEvent.value.id}/notes`, {
+      method: 'PATCH',
+      body: { notes: editingNotes.value || null }
+    })
+
+    // Keep UI in sync.
+    selectedEvent.value.extendedProps = {
+      ...(selectedEvent.value.extendedProps || {}),
+      notes: (updated as any)?.notes ?? editingNotes.value
+    }
+
+    // Also update the event in the calendar list.
+    const idx = calendarEvents.value.findIndex((ev: any) => ev.id === selectedEvent.value.id)
+    if (idx >= 0) {
+      ;(calendarEvents.value[idx] as any).extendedProps = {
+        ...((calendarEvents.value[idx] as any).extendedProps || {}),
+        notes: selectedEvent.value.extendedProps.notes
+      }
+    }
+  } catch (e: any) {
+    notesError.value = e?.data?.statusMessage || 'No se pudo guardar'
+  } finally {
+    savingNotes.value = false
+  }
 }
 </script>
 
@@ -184,14 +221,23 @@ const statusLabel = (s?: string) => {
             </div>
           </div>
 
-          <div v-if="selectedEvent.extendedProps?.notes">
-            <div class="font-medium">Notas</div>
-            <div class="text-gray-700 whitespace-pre-wrap">{{ selectedEvent.extendedProps.notes }}</div>
+          <div>
+            <div class="font-medium">Notas internas</div>
+            <textarea
+              v-model="editingNotes"
+              rows="4"
+              class="mt-1 w-full rounded border border-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
+              placeholder="Escribí notas internas para este turno…"
+            />
+            <div v-if="notesError" class="mt-1 text-xs text-red-600">{{ notesError }}</div>
           </div>
         </div>
 
-        <div class="mt-4 flex justify-end">
+        <div class="mt-4 flex flex-wrap justify-end gap-2">
           <UButton variant="outline" @click="selectedEvent = null">Cerrar</UButton>
+          <UButton color="primary" :disabled="savingNotes" @click="saveNotes">
+            {{ savingNotes ? 'Guardando…' : 'Guardar notas' }}
+          </UButton>
         </div>
       </div>
     </div>
