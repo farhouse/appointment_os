@@ -23,7 +23,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const appointments = await prisma.appointment.findMany({
-    where: { clientId },
+    where: {
+      clientId,
+      status: { in: ['PAID', 'FINISHED'] }
+    },
     include: {
       services: { include: { service: { select: { name: true } } } },
       professional: { select: { name: true } }
