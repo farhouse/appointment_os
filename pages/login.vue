@@ -38,8 +38,11 @@ async function handleLogin() {
     // Prevent stale role/menu on repeated logins (e.g. switching users)
     useState('me', () => null).value = null
 
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/private'
-    router.push(redirect)
+    const redirectRaw = typeof route.query.redirect === 'string' ? route.query.redirect : '/private'
+    const redirect = decodeURIComponent(redirectRaw)
+
+    // Avoid open-redirects / weird malformed paths
+    router.push(redirect.startsWith('/') ? redirect : '/private')
   } catch (e: any) {
     error.value = e.data?.statusMessage || t('login.error')
   }
