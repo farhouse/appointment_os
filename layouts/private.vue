@@ -74,7 +74,7 @@ function localePrefix(code: string) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-stone-50 text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
+  <div class="min-h-screen bg-[#fbf5ea] text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
     <div class="flex">
       <aside class="w-72 border-r border-stone-200 bg-white min-h-screen p-4 dark:border-[#3a2a1f] dark:bg-[#1a120d]">
         <div class="font-semibold">{{ $t('app.name') }}</div>
