@@ -35,18 +35,18 @@ export default defineEventHandler(async (event) => {
     where: whereClause,
     include: {
       client: {
-        select: { firstName: true, lastName: true }
+        select: { id: true, firstName: true, lastName: true, phone: true, email: true }
       },
       professional: {
-        select: { name: true }
+        select: { id: true, name: true }
       },
       services: {
-        include: { service: { select: { name: true } } }
+        include: { service: { select: { id: true, name: true } } }
       }
     }
   })
 
-  // Format for FullCalendar
+  // Format for VueCal/FullCalendar-like events.
   return appointments.map(apt => ({
     id: apt.id,
     title: `${apt.client.firstName} ${apt.client.lastName || ''} - ${apt.services.map(s => s.service.name).join(', ')}`,
@@ -54,10 +54,17 @@ export default defineEventHandler(async (event) => {
     end: apt.endTime,
     extendedProps: {
       status: apt.status,
-      professionalName: apt.professional?.name,
-      notes: apt.notes
+      notes: apt.notes,
+      client: {
+        id: apt.client.id,
+        firstName: apt.client.firstName,
+        lastName: apt.client.lastName,
+        phone: apt.client.phone,
+        email: apt.client.email
+      },
+      professional: apt.professional ? { id: apt.professional.id, name: apt.professional.name } : null,
+      services: apt.services.map(s => ({ id: s.service.id, name: s.service.name }))
     },
-    // Color coding based on status could be done here or frontend
     classNames: [`status-${apt.status.toLowerCase()}`]
   }))
 })
