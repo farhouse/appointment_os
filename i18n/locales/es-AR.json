@@ -6,8 +6,8 @@
   "nav": {
     "home": "Inicio",
     "calendar": "Calendario",
-    "common": "Común",
-    "manager": "Gerencia",
+    "manager": "Manager",
+    "admin": "Admin",
     "barber": "Barbero",
     "client": "Cliente",
     "dashboard": "Panel",
@@ -19,6 +19,9 @@
     "today": "Hoy",
     "appointments": "Turnos",
     "finances": "Finanzas",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "account": "Cuenta",
     "book": "Reservar"
   },
   "landing": {
@@ -58,6 +61,19 @@
       
       "manager": {
         "dashboardSubtitle": "Panel de control de la sucursal.",
+        "card": {
+          "open": "Abrir módulo"
+        },
+        "sections": {
+          "overview": {
+            "title": "Resumen",
+            "subtitle": "Vista rápida de la actividad de la sucursal."
+          },
+          "modules": {
+            "title": "Módulos",
+            "subtitle": "Entrá a las herramientas de gestión diaria."
+          }
+        },
         "cta": {
           "openCalendar": "Abrir calendario"
         },
@@ -70,8 +86,6 @@
           "weekRevenueHint": "Placeholder (sumatoria de turnos PAID)"
         },
         "shortcuts": {
-          "title": "Accesos rápidos",
-          "subtitle": "Entrá directo a cada módulo.",
           "calendar": "Calendario",
           "calendarDesc": "Ver y confirmar turnos.",
           "cash": "Caja",
@@ -98,6 +112,14 @@
       "managerEmployees": "Gerencia · Empleados",
       "managerSettings": "Gerencia · Configuración",
       "barberToday": "Barbero · Hoy",
+      "profileTitle": "Perfil",
+      "profileSubtitle": "Tus datos de cuenta.",
+      "profile": {
+        "email": "Email",
+        "name": "Nombre",
+        "role": "Rol"
+      },
+
       "barberAppointments": "Barbero · Turnos",
       "barberFinances": "Barbero · Finanzas",
       "barberFinancesHint": "Resumen semanal de tu rendimiento (turnos pagados).",

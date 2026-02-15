@@ -6,8 +6,8 @@
   "nav": {
     "home": "Home",
     "calendar": "Calendar",
-    "common": "Common",
     "manager": "Manager",
+    "admin": "Admin",
     "barber": "Barber",
     "client": "Client",
     "dashboard": "Dashboard",
@@ -19,6 +19,9 @@
     "today": "Today",
     "appointments": "Appointments",
     "finances": "Finances",
+    "profile": "Profile",
+    "logout": "Logout",
+    "account": "Account",
     "book": "Book"
   },
   "landing": {
@@ -58,6 +61,19 @@
 
       "manager": {
         "dashboardSubtitle": "Branch control panel.",
+        "card": {
+          "open": "Open module"
+        },
+        "sections": {
+          "overview": {
+            "title": "Overview",
+            "subtitle": "Quick glance at branch activity."
+          },
+          "modules": {
+            "title": "Modules",
+            "subtitle": "Jump into daily management tools."
+          }
+        },
         "cta": {
           "openCalendar": "Open calendar"
         },
@@ -70,8 +86,6 @@
           "weekRevenueHint": "Placeholder (sum of PAID appointments)"
         },
         "shortcuts": {
-          "title": "Shortcuts",
-          "subtitle": "Jump straight into a module.",
           "calendar": "Calendar",
           "calendarDesc": "View and confirm appointments.",
           "cash": "Cash",
@@ -98,6 +112,14 @@
       "managerEmployees": "Manager · Employees",
       "managerSettings": "Manager · Settings",
       "barberToday": "Barber · Today",
+      "profileTitle": "Profile",
+      "profileSubtitle": "Your account details.",
+      "profile": {
+        "email": "Email",
+        "name": "Name",
+        "role": "Role"
+      },
+
       "barberAppointments": "Barber · Appointments",
       "barberFinances": "Barber · Finances",
       "barberFinancesHint": "Weekly summary of your performance (paid appointments).",

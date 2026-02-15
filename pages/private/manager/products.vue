@@ -2,7 +2,7 @@
 definePageMeta({
   layout: 'private',
   middleware: ['private', 'role'],
-  roles: ['OWNER', 'ADMIN', 'MANAGER'],
+  roles: ['OWNER', 'ADMIN'],
 })
 </script>
 

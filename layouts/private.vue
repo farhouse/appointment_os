@@ -10,7 +10,8 @@ const me = useMeState()
 
 const role = computed<Role | undefined>(() => me.value?.role)
 
-const isManager = computed(() => role.value === 'OWNER' || role.value === 'ADMIN' || role.value === 'MANAGER')
+const isAdmin = computed(() => role.value === 'OWNER' || role.value === 'ADMIN')
+const isManager = computed(() => role.value === 'MANAGER')
 const isBarber = computed(() => role.value === 'BARBER')
 const isClient = computed(() => role.value === 'CLIENT')
 
@@ -24,9 +25,16 @@ const managerLinks = computed(() => [
   { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
   { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
   { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
-  { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
+  { label: t('nav.stock'), to: '/private/manager/stock', icon: 'i-heroicons-archive-box' },
+])
+
+const adminLinks = computed(() => [
+  { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
+  { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.stock'), to: '/private/manager/stock', icon: 'i-heroicons-archive-box' },
   { label: t('nav.employees'), to: '/private/manager/employees', icon: 'i-heroicons-users' },
+  { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
   { label: t('nav.settings'), to: '/private/manager/settings', icon: 'i-heroicons-cog-6-tooth' },
 ])
 
@@ -42,6 +50,18 @@ const clientLinks = computed(() => [
   { label: t('nav.appointments'), to: '/private/client/appointments', icon: 'i-heroicons-clipboard-document-list' },
 ])
 
+async function logout() {
+  await $fetch('/api/auth/logout', { method: 'POST' })
+  // Clear cached user
+  useState('me', () => null).value = null
+  await navigateTo('/')
+}
+
+const accountLinks = computed(() => [
+  { label: t('nav.profile'), to: '/private/profile', icon: 'i-heroicons-user-circle' },
+  { label: t('nav.logout'), icon: 'i-heroicons-arrow-left-on-rectangle', onSelect: logout }
+])
+
 const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
@@ -55,12 +75,12 @@ const { locale, locales } = useI18n()
         <div class="text-xs text-gray-500 mt-1">{{ $t('app.private') }}</div>
 
         <div class="mt-6 space-y-5">
-          <div>
-            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.common') }}</div>
-            <UNavigationMenu class="mt-2" orientation="vertical" :items="commonLinks" />
+          <div v-if="isAdmin">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.admin') }}</div>
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="adminLinks" />
           </div>
 
-          <div v-if="isManager">
+          <div v-else-if="isManager">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.manager') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="managerLinks" />
           </div>
@@ -73,6 +93,11 @@ const { locale, locales } = useI18n()
           <div v-if="isClient">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.client') }}</div>
             <UNavigationMenu class="mt-2" orientation="vertical" :items="clientLinks" />
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.account') }}</div>
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="accountLinks" />
           </div>
         </div>
       </aside>
