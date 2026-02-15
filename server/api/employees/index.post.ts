@@ -7,7 +7,7 @@ import { readBodyValidated } from '~/server/utils/http'
 import { badRequest, conflict } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const { email, password, branchIds, ...rest } = await readBodyValidated(event, employeeSchema)
 

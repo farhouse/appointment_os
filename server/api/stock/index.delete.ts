@@ -7,9 +7,9 @@ export default defineEventHandler(async (event) => {
   requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const branchId = requireQueryString(event, 'branchId')
+  const productId = requireQueryString(event, 'productId')
 
-  return prisma.branchStock.findMany({
-    where: { branchId },
-    include: { product: true, branch: true }
+  return prisma.branchStock.delete({
+    where: { branchId_productId: { branchId, productId } }
   })
 })

@@ -9,7 +9,7 @@ import { requireParam } from '~/server/utils/http'
 const schema = z.object({ password: z.string().min(6) })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN'])
+  requireRole(event, ['OWNER', 'ADMIN'])
 
   const id = requireParam(event, 'id')
 

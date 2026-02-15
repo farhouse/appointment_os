@@ -13,7 +13,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const parsed = await readBodyValidated(event, schema)
   return prisma.product.create({ data: parsed as any })

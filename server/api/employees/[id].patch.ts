@@ -6,7 +6,7 @@ import { readBodyValidated } from '~/server/utils/http'
 import { requireParam } from '~/server/utils/http'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const id = requireParam(event, 'id')
 

@@ -3,7 +3,7 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
   const employees = await prisma.user.findMany({
     select: {
       id: true,
@@ -11,6 +11,8 @@ export default defineEventHandler(async (event) => {
       email: true,
       role: true,
       active: true,
+      createdAt: true,
+      updatedAt: true,
       branches: {
         include: {
           branch: true
