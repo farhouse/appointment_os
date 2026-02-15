@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Shared authenticated layout ("chrome").
-// The sidebar menu is filtered by role.
+// Sidebar menu is filtered by role.
 
 import type { Role } from '~/composables/useMe'
 import { useMeState } from '~/composables/useMe'
@@ -14,6 +14,34 @@ const isManager = computed(() => role.value === 'OWNER' || role.value === 'ADMIN
 const isBarber = computed(() => role.value === 'BARBER')
 const isClient = computed(() => role.value === 'CLIENT')
 
+const { t } = useI18n()
+
+const commonLinks = computed(() => [
+  { label: t('nav.home'), to: '/private', icon: 'i-heroicons-home' },
+])
+
+const managerLinks = computed(() => [
+  { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
+  { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
+  { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
+  { label: t('nav.stock'), to: '/private/manager/stock', icon: 'i-heroicons-archive-box' },
+  { label: t('nav.employees'), to: '/private/manager/employees', icon: 'i-heroicons-users' },
+  { label: t('nav.settings'), to: '/private/manager/settings', icon: 'i-heroicons-cog-6-tooth' },
+])
+
+const barberLinks = computed(() => [
+  { label: t('nav.today'), to: '/private/barber/today', icon: 'i-heroicons-calendar' },
+  { label: t('nav.finances'), to: '/private/barber/finances', icon: 'i-heroicons-chart-bar' },
+  { label: t('nav.appointments'), to: '/private/barber/appointments', icon: 'i-heroicons-clipboard-document-list' },
+])
+
+const clientLinks = computed(() => [
+  { label: t('nav.home'), to: '/private/client', icon: 'i-heroicons-home' },
+  { label: t('nav.book'), to: '/private/client/book', icon: 'i-heroicons-pencil-square' },
+  { label: t('nav.appointments'), to: '/private/client/appointments', icon: 'i-heroicons-clipboard-document-list' },
+])
+
 const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
@@ -22,49 +50,31 @@ const { locale, locales } = useI18n()
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="flex">
-      <aside class="w-64 border-r bg-white min-h-screen p-4">
+      <aside class="w-72 border-r bg-white min-h-screen p-4">
         <div class="font-semibold">{{ $t('app.name') }}</div>
         <div class="text-xs text-gray-500 mt-1">{{ $t('app.private') }}</div>
 
-        <nav class="mt-6 space-y-4 text-sm">
+        <div class="mt-6 space-y-5">
           <div>
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.common') }}</div>
-            <div class="mt-2 space-y-1">
-              <NuxtLink class="block hover:underline" to="/private">{{ $t('nav.home') }}</NuxtLink>
-            </div>
+            <UVerticalNavigation class="mt-2" :links="commonLinks" />
           </div>
 
           <div v-if="isManager">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.manager') }}</div>
-            <div class="mt-2 space-y-1">
-              <NuxtLink class="block hover:underline" to="/private/manager">{{ $t('nav.dashboard') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/manager/calendar">{{ $t('nav.calendar') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/manager/cash">{{ $t('nav.cash') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/manager/products">{{ $t('nav.products') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/manager/stock">{{ $t('nav.stock') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/manager/employees">{{ $t('nav.employees') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/manager/settings">{{ $t('nav.settings') }}</NuxtLink>
-            </div>
+            <UVerticalNavigation class="mt-2" :links="managerLinks" />
           </div>
 
           <div v-if="isBarber">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.barber') }}</div>
-            <div class="mt-2 space-y-1">
-              <NuxtLink class="block hover:underline" to="/private/barber/today">{{ $t('nav.today') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/barber/finances">{{ $t('nav.finances') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/barber/appointments">{{ $t('nav.appointments') }}</NuxtLink>
-            </div>
+            <UVerticalNavigation class="mt-2" :links="barberLinks" />
           </div>
 
           <div v-if="isClient">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.client') }}</div>
-            <div class="mt-2 space-y-1">
-              <NuxtLink class="block hover:underline" to="/private/client">{{ $t('nav.home') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/client/book">{{ $t('nav.book') }}</NuxtLink>
-              <NuxtLink class="block hover:underline" to="/private/client/appointments">{{ $t('nav.appointments') }}</NuxtLink>
-            </div>
+            <UVerticalNavigation class="mt-2" :links="clientLinks" />
           </div>
-        </nav>
+        </div>
       </aside>
 
       <main class="flex-1 p-6">
