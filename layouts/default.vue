@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#fbf5ea] text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
+  <div class="min-h-screen bg-[#fbf5ea] text-stone-900 dark:bg-[#1a120d] dark:text-stone-100">
     <div class="container mx-auto p-4">
     <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
       <h1 class="text-3xl font-bold">{{ $t('app.name') }}</h1>
