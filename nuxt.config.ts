@@ -2,11 +2,16 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
-  modules: ['@nuxt/ui', '@nuxtjs/i18n'],
+  modules: ['@nuxt/ui', '@nuxtjs/i18n', '@nuxtjs/color-mode'],
   css: [
     '~/assets/css/main.css',
     'vue-cal/style'
   ],
+  colorMode: {
+    classSuffix: '',
+    preference: 'system',
+    fallback: 'light'
+  },
   i18n: {
     defaultLocale: 'es-AR',
     locales: [

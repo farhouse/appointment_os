@@ -65,6 +65,12 @@ const accountLinks = computed(() => [
 const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
+
+function flagForLocale(code: string) {
+  if (code === 'es-AR') return '🇦🇷'
+  if (code === 'en') return '🇺🇸'
+  return '🏳️'
+}
 </script>
 
 <template>
@@ -122,9 +128,10 @@ const { locale, locales } = useI18n()
             <span class="text-gray-600">{{ $t('language.label') }}</span>
             <select v-model="locale" class="border rounded px-2 py-1">
               <option v-for="loc in locales" :key="loc.code" :value="loc.code">
-                {{ loc.name }}
+                {{ flagForLocale(loc.code) }} {{ loc.name }}
               </option>
             </select>
+            <UColorModeButton size="sm" />
           </div>
         </div>
         <slot />

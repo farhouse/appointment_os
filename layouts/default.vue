@@ -11,9 +11,10 @@
           :aria-label="$t('language.label')"
         >
           <option v-for="loc in locales" :key="loc.code" :value="loc.code">
-            {{ loc.name }}
+            {{ flagForLocale(loc.code) }} {{ loc.name }}
           </option>
         </select>
+        <UColorModeButton size="sm" />
       </div>
     </div>
     <slot />
@@ -22,4 +23,10 @@
 
 <script setup lang="ts">
 const { locale, locales } = useI18n()
+
+function flagForLocale(code: string) {
+  if (code === 'es-AR') return '🇦🇷'
+  if (code === 'en') return '🇺🇸'
+  return '🏳️'
+}
 </script>
