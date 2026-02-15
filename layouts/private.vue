@@ -57,22 +57,22 @@ const { locale, locales } = useI18n()
         <div class="mt-6 space-y-5">
           <div>
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.common') }}</div>
-            <UVerticalNavigation class="mt-2" :links="commonLinks" />
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="commonLinks" />
           </div>
 
           <div v-if="isManager">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.manager') }}</div>
-            <UVerticalNavigation class="mt-2" :links="managerLinks" />
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="managerLinks" />
           </div>
 
           <div v-if="isBarber">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.barber') }}</div>
-            <UVerticalNavigation class="mt-2" :links="barberLinks" />
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="barberLinks" />
           </div>
 
           <div v-if="isClient">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.client') }}</div>
-            <UVerticalNavigation class="mt-2" :links="clientLinks" />
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="clientLinks" />
           </div>
         </div>
       </aside>
