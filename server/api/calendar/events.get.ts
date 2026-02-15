@@ -41,13 +41,18 @@ export default defineEventHandler(async (event) => {
         select: { id: true, name: true }
       },
       services: {
-        include: { service: { select: { id: true, name: true } } }
+        select: {
+          price: true,
+          service: { select: { id: true, name: true } }
+        }
       }
     }
   })
 
   // Format for VueCal/FullCalendar-like events.
-  return appointments.map(apt => ({
+  return appointments.map(apt => {
+    const totalPrice = apt.services.reduce((sum, service) => sum + Number(service.price), 0)
+    return {
     id: apt.id,
     title: `${apt.client.firstName} ${apt.client.lastName || ''} - ${apt.services.map(s => s.service.name).join(', ')}`,
     start: apt.startTime,
@@ -55,6 +60,7 @@ export default defineEventHandler(async (event) => {
     extendedProps: {
       status: apt.status,
       notes: apt.notes,
+      totalPrice,
       client: {
         id: apt.client.id,
         firstName: apt.client.firstName,
@@ -63,8 +69,9 @@ export default defineEventHandler(async (event) => {
         email: apt.client.email
       },
       professional: apt.professional ? { id: apt.professional.id, name: apt.professional.name } : null,
-      services: apt.services.map(s => ({ id: s.service.id, name: s.service.name }))
+      services: apt.services.map(s => ({ id: s.service.id, name: s.service.name, price: s.price }))
     },
     classNames: [`status-${apt.status.toLowerCase()}`]
-  }))
+    }
+  })
 })

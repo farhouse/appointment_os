@@ -66,6 +66,66 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
 
 const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
+const selectedEvent = ref<any | null>(null)
+const payModalOpen = ref(false)
+const cashBoxes = ref<{ id: string; name: string }[]>([])
+const isPaying = ref(false)
+const payError = ref('')
+
+const payForm = reactive({
+  cashBoxId: '',
+  amount: 0
+})
+
+async function loadCashBoxes() {
+  if (!selectedBranchId.value) return
+  try {
+    const query = new URLSearchParams({ branchId: selectedBranchId.value })
+    cashBoxes.value = await $fetch(`/api/cashboxes?${query.toString()}`)
+  } catch {
+    cashBoxes.value = []
+  }
+}
+
+function openPayModal(event: any) {
+  selectedEvent.value = event
+  payModalOpen.value = true
+  payError.value = ''
+  const totalPrice = Number(event?.extendedProps?.totalPrice ?? 0)
+  payForm.amount = Number.isFinite(totalPrice) ? totalPrice : 0
+  if (!cashBoxes.value.length) void loadCashBoxes()
+}
+
+function closePayModal() {
+  payModalOpen.value = false
+  selectedEvent.value = null
+  payError.value = ''
+  payForm.amount = 0
+  payForm.cashBoxId = ''
+}
+
+async function confirmPayment() {
+  if (!selectedEvent.value?.id || !payForm.cashBoxId) return
+  isPaying.value = true
+  payError.value = ''
+  try {
+    await $fetch(`/api/appointments/${selectedEvent.value.id}/status`, {
+      method: 'PATCH',
+      body: {
+        status: 'PAID',
+        cashBoxId: payForm.cashBoxId,
+        amount: payForm.amount
+      }
+    })
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+    closePayModal()
+  } catch (e: any) {
+    payError.value = e?.data?.statusMessage || 'No se pudo cobrar'
+  } finally {
+    isPaying.value = false
+  }
+}
+
 function handleReady({ view }: { view: VueCalView }) {
   calendarView.value = view
   calendarApiView.value = view
@@ -82,6 +142,12 @@ function handleViewChange(payload: any) {
   if (payload?.id === 'day' || payload?.id === 'week' || payload?.id === 'month') {
     currentView.value = payload.id
   }
+}
+
+function handleEventClick(e: any) {
+  const event = e?.event || e
+  if (!event) return
+  openPayModal(event)
 }
 </script>
 
@@ -123,7 +189,44 @@ function handleViewChange(payload: any) {
         class="h-full"
         @ready="handleReady"
         @view-change="handleViewChange"
+        @event-click="handleEventClick"
       />
+    </div>
+
+    <div v-if="payModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closePayModal">
+      <div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-lg font-semibold truncate">Cobrar turno</div>
+            <div class="text-sm text-gray-600 mt-1">{{ selectedEvent?.title }}</div>
+          </div>
+          <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closePayModal">✕</button>
+        </div>
+
+        <div class="mt-4 space-y-4 text-sm">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Caja</label>
+            <select v-model="payForm.cashBoxId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
+              <option value="" disabled>Selecciona una caja</option>
+              <option v-for="cb in cashBoxes" :key="cb.id" :value="cb.id">
+                {{ cb.name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Monto</label>
+            <input v-model.number="payForm.amount" type="number" min="0" step="0.01" class="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
+          </div>
+          <div v-if="payError" class="text-xs text-red-600">{{ payError }}</div>
+        </div>
+
+        <div class="mt-4 flex justify-end gap-2">
+          <UButton variant="outline" @click="closePayModal">Cancelar</UButton>
+          <UButton color="primary" :disabled="!payForm.cashBoxId || isPaying" @click="confirmPayment">
+            Confirmar
+          </UButton>
+        </div>
+      </div>
     </div>
   </div>
 </template>
