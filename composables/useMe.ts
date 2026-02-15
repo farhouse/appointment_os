@@ -20,7 +20,11 @@ export async function loadMe(): Promise<MeUser | null> {
   if (me.value) return me.value
 
   try {
-    const data = await $fetch<MeResponse>('/api/me', { credentials: 'include' })
+    const headers = process.server ? useRequestHeaders(['cookie']) : undefined
+    const data = await $fetch<MeResponse>('/api/me', {
+      credentials: 'include',
+      headers,
+    })
     const user = data?.user ?? null
     me.value = user
     return user
