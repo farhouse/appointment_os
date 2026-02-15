@@ -1,5 +1,6 @@
 <template>
-  <div class="container mx-auto p-4 text-stone-900 dark:text-stone-100">
+  <div class="min-h-screen bg-stone-50 text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
+    <div class="container mx-auto p-4">
     <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
       <h1 class="text-3xl font-bold">{{ $t('app.name') }}</h1>
       <div class="flex items-center gap-2">
@@ -22,7 +23,8 @@
         />
       </div>
     </div>
-    <slot />
+      <slot />
+    </div>
   </div>
 </template>
 

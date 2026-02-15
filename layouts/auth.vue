@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-stone-100 text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
+  <div class="min-h-screen bg-stone-50 text-stone-900 dark:bg-[#120c08] dark:text-stone-100">
     <div class="flex items-center justify-between px-6 py-4">
       <div class="text-lg font-semibold">{{ $t('app.name') }}</div>
       <div class="flex items-center gap-2 text-sm">
