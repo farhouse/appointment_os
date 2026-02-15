@@ -50,8 +50,8 @@ const { locale, locales } = useI18n()
           <div v-if="isBarber">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $t('nav.barber') }}</div>
             <div class="mt-2 space-y-1">
-              <NuxtLink class="block hover:underline" to="/private/barber">{{ $t('nav.home') }}</NuxtLink>
               <NuxtLink class="block hover:underline" to="/private/barber/today">{{ $t('nav.today') }}</NuxtLink>
+              <NuxtLink class="block hover:underline" to="/private/barber/finances">{{ $t('nav.finances') }}</NuxtLink>
               <NuxtLink class="block hover:underline" to="/private/barber/appointments">{{ $t('nav.appointments') }}</NuxtLink>
             </div>
           </div>
