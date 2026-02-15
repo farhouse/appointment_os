@@ -225,5 +225,126 @@
   },
   "language": {
     "label": "Language"
+  },
+  "admin": {
+    "common": {
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "create": "Create",
+      "retry": "Retry",
+      "active": "Active",
+      "inactive": "Inactive",
+      "count": "{count} items",
+      "sorting": "Sort: {value}",
+      "pageInfo": "Page {page} · {total} total",
+      "loadError": "Could not load",
+      "saveError": "Could not save",
+      "deleteError": "Could not delete",
+      "errorTitle": "Something went wrong"
+    },
+    "products": {
+      "new": "New",
+      "newTitle": "New product",
+      "editTitle": "Edit product",
+      "deleteTitle": "Delete product",
+      "deleteConfirm": "Delete {name}?",
+      "searchPlaceholder": "Search products",
+      "emptyTitle": "No products yet",
+      "emptyDescription": "Create your first product to start selling.",
+      "columns": {
+        "name": "Product",
+        "price": "Price",
+        "updatedAt": "Updated"
+      },
+      "form": {
+        "name": "Name",
+        "nameRequired": "Enter a name",
+        "sku": "SKU",
+        "skuRequired": "Enter a SKU",
+        "description": "Description",
+        "price": "Price",
+        "cost": "Cost"
+      },
+      "toast": {
+        "created": "Product created",
+        "updated": "Product updated",
+        "deleted": "Product deleted"
+      }
+    },
+    "stock": {
+      "new": "New",
+      "newTitle": "New stock",
+      "editTitle": "Edit stock",
+      "deleteTitle": "Delete stock",
+      "deleteConfirm": "Delete stock for {name}?",
+      "searchPlaceholder": "Search stock",
+      "emptyTitle": "No stock",
+      "emptyDescription": "Add stock for this branch.",
+      "noBranchTitle": "Select a branch",
+      "noBranchDescription": "Choose a branch to view stock.",
+      "columns": {
+        "product": "Product",
+        "branch": "Branch",
+        "quantity": "Quantity",
+        "minStock": "Min"
+      },
+      "form": {
+        "branch": "Branch",
+        "branchRequired": "Select a branch",
+        "product": "Product",
+        "productRequired": "Select a product",
+        "quantity": "Quantity",
+        "minStock": "Min stock"
+      },
+      "toast": {
+        "created": "Stock created",
+        "updated": "Stock updated",
+        "deleted": "Stock deleted"
+      }
+    },
+    "employees": {
+      "new": "New",
+      "newTitle": "New employee",
+      "editTitle": "Edit employee",
+      "deleteTitle": "Delete employee",
+      "deleteConfirm": "Delete {name}?",
+      "resetTitle": "Reset password",
+      "resetPassword": "Reset password",
+      "searchPlaceholder": "Search employees",
+      "emptyTitle": "No employees",
+      "emptyDescription": "Add barbers or managers to operate.",
+      "columns": {
+        "name": "Employee",
+        "role": "Role",
+        "active": "Active",
+        "branches": "Branches"
+      },
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "manager": "Manager",
+        "barber": "Barber",
+        "client": "Client"
+      },
+      "form": {
+        "name": "Name",
+        "nameRequired": "Enter a name",
+        "email": "Email",
+        "emailInvalid": "Invalid email",
+        "role": "Role",
+        "branches": "Branches",
+        "active": "Active",
+        "password": "Password",
+        "passwordRequired": "Minimum 6 characters"
+      },
+      "toast": {
+        "created": "Employee created",
+        "updated": "Employee updated",
+        "deleted": "Employee deleted",
+        "passwordReset": "Password reset"
+      }
+    }
   }
 }

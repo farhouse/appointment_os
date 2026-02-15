@@ -225,5 +225,126 @@
   },
   "language": {
     "label": "Idioma"
+  },
+  "admin": {
+    "common": {
+      "actions": "Acciones",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "create": "Crear",
+      "retry": "Reintentar",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "count": "{count} items",
+      "sorting": "Orden: {value}",
+      "pageInfo": "Página {page} · {total} total",
+      "loadError": "No se pudo cargar",
+      "saveError": "No se pudo guardar",
+      "deleteError": "No se pudo eliminar",
+      "errorTitle": "Algo salió mal"
+    },
+    "products": {
+      "new": "Nuevo",
+      "newTitle": "Nuevo producto",
+      "editTitle": "Editar producto",
+      "deleteTitle": "Eliminar producto",
+      "deleteConfirm": "¿Querés eliminar {name}?",
+      "searchPlaceholder": "Buscar productos",
+      "emptyTitle": "No hay productos",
+      "emptyDescription": "Creá tu primer producto para empezar a vender.",
+      "columns": {
+        "name": "Producto",
+        "price": "Precio",
+        "updatedAt": "Actualizado"
+      },
+      "form": {
+        "name": "Nombre",
+        "nameRequired": "Ingresá un nombre",
+        "sku": "SKU",
+        "skuRequired": "Ingresá un SKU",
+        "description": "Descripción",
+        "price": "Precio",
+        "cost": "Costo"
+      },
+      "toast": {
+        "created": "Producto creado",
+        "updated": "Producto actualizado",
+        "deleted": "Producto eliminado"
+      }
+    },
+    "stock": {
+      "new": "Nuevo",
+      "newTitle": "Nuevo stock",
+      "editTitle": "Editar stock",
+      "deleteTitle": "Eliminar stock",
+      "deleteConfirm": "¿Querés eliminar el stock de {name}?",
+      "searchPlaceholder": "Buscar stock",
+      "emptyTitle": "No hay stock",
+      "emptyDescription": "Cargá stock para esta sucursal.",
+      "noBranchTitle": "Elegí una sucursal",
+      "noBranchDescription": "Seleccioná una sucursal para ver su stock.",
+      "columns": {
+        "product": "Producto",
+        "branch": "Sucursal",
+        "quantity": "Cantidad",
+        "minStock": "Mínimo"
+      },
+      "form": {
+        "branch": "Sucursal",
+        "branchRequired": "Elegí una sucursal",
+        "product": "Producto",
+        "productRequired": "Elegí un producto",
+        "quantity": "Cantidad",
+        "minStock": "Mínimo"
+      },
+      "toast": {
+        "created": "Stock creado",
+        "updated": "Stock actualizado",
+        "deleted": "Stock eliminado"
+      }
+    },
+    "employees": {
+      "new": "Nuevo",
+      "newTitle": "Nuevo empleado",
+      "editTitle": "Editar empleado",
+      "deleteTitle": "Eliminar empleado",
+      "deleteConfirm": "¿Querés eliminar a {name}?",
+      "resetTitle": "Resetear contraseña",
+      "resetPassword": "Resetear contraseña",
+      "searchPlaceholder": "Buscar empleados",
+      "emptyTitle": "No hay empleados",
+      "emptyDescription": "Sumá barberos o managers para operar.",
+      "columns": {
+        "name": "Empleado",
+        "role": "Rol",
+        "active": "Activo",
+        "branches": "Sucursales"
+      },
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "manager": "Manager",
+        "barber": "Barbero",
+        "client": "Cliente"
+      },
+      "form": {
+        "name": "Nombre",
+        "nameRequired": "Ingresá un nombre",
+        "email": "Email",
+        "emailInvalid": "Email inválido",
+        "role": "Rol",
+        "branches": "Sucursales",
+        "active": "Activo",
+        "password": "Contraseña",
+        "passwordRequired": "Mínimo 6 caracteres"
+      },
+      "toast": {
+        "created": "Empleado creado",
+        "updated": "Empleado actualizado",
+        "deleted": "Empleado eliminado",
+        "passwordReset": "Contraseña reseteada"
+      }
+    }
   }
 }
