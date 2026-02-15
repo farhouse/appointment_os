@@ -66,6 +66,12 @@
       "managerSettings": "Gerencia · Configuración",
       "barberToday": "Barbero · Hoy",
       "barberAppointments": "Barbero · Turnos",
+      "barberFinances": "Barbero · Finanzas",
+      "barberFinancesHint": "Resumen semanal de tu rendimiento (turnos pagados).",
+      "weeks": "Semanas",
+      "totalPaidAppointments": "Turnos pagados (total)",
+      "weekByWeek": "Semana a semana",
+      "paidDefinitionNote": "Nota: por ahora consideramos como “pagado” a los turnos con estado FINISHED.",
       "clientBook": "Cliente · Reservar",
       "clientAppointments": "Cliente · Turnos",
       "placeholder": "Página en construcción."

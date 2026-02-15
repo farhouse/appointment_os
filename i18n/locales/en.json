@@ -66,6 +66,12 @@
       "managerSettings": "Manager · Settings",
       "barberToday": "Barber · Today",
       "barberAppointments": "Barber · Appointments",
+      "barberFinances": "Barber · Finances",
+      "barberFinancesHint": "Weekly summary of your performance (paid appointments).",
+      "weeks": "Weeks",
+      "totalPaidAppointments": "Paid appointments (total)",
+      "weekByWeek": "Week by week",
+      "paidDefinitionNote": "Note: for now we treat appointments with status FINISHED as “paid”.",
       "clientBook": "Client · Book",
       "clientAppointments": "Client · Appointments",
       "placeholder": "Placeholder page."
