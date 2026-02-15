@@ -45,7 +45,11 @@ async function handleLogin() {
     const redirect = decodeURIComponent(redirectRaw)
 
     // Avoid open-redirects / weird malformed paths
-    router.push(redirect.startsWith('/') ? redirect : '/private')
+    const target = redirect.startsWith('/') ? redirect : '/private'
+
+    // Force a full navigation so cookie-based auth is definitely available
+    // (avoids edge cases where SPA navigation races cookie write / middleware)
+    await navigateTo(target, { external: true })
   } catch (e: any) {
     error.value = e.data?.statusMessage || t('login.error')
   }
