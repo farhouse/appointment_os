@@ -1,15 +1,19 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
-import { requireQueryString } from '~/server/utils/http'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
-  const branchId = requireQueryString(event, 'branchId')
+  const query = getQuery(event)
+  const branchId = query.branchId as string | undefined
+  const cashBoxId = query.cashBoxId as string | undefined
 
   return prisma.cashSession.findMany({
-    where: { branchId },
+    where: {
+      ...(branchId ? { branchId } : {}),
+      ...(cashBoxId ? { cashBoxId } : {})
+    },
     include: { movements: true, cashBox: true },
     orderBy: { date: 'desc' }
   })

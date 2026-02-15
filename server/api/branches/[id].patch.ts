@@ -6,7 +6,7 @@ import { readBodyValidated, requireParam } from '~/server/utils/http'
 import { notFound } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER'])
   const id = requireParam(event, 'id')
   const validation = await readBodyValidated(event, branchUpdateSchema)
 
