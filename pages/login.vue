@@ -30,14 +30,16 @@ const route = useRoute()
 
 async function handleLogin() {
   try {
-    await $fetch('/api/auth/login', {
+    const res = await $fetch<{ user: any }>('/api/auth/login', {
       method: 'POST',
       credentials: 'include',
       body: { email: email.value, password: password.value }
     })
 
-    // Prevent stale role/menu on repeated logins (e.g. switching users)
-    useState('me', () => null).value = null
+    // Set session state immediately so route middleware doesn't race the cookie write
+    // (cookie is still the source of truth for the API)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useState<any>('me', () => null).value = res?.user ?? null
 
     const redirectRaw = typeof route.query.redirect === 'string' ? route.query.redirect : '/private'
     const redirect = decodeURIComponent(redirectRaw)
