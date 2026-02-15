@@ -32,6 +32,7 @@ async function handleLogin() {
   try {
     await $fetch('/api/auth/login', {
       method: 'POST',
+      credentials: 'include',
       body: { email: email.value, password: password.value }
     })
 
