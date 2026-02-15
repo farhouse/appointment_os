@@ -15,6 +15,7 @@
     "products": "Products",
     "stock": "Stock",
     "employees": "Employees",
+    "branches": "Branches",
     "settings": "Settings",
     "today": "Today",
     "appointments": "Appointments",
@@ -135,6 +136,7 @@
       "managerStock": "Manager · Stock",
       "managerEmployees": "Manager · Employees",
       "managerSettings": "Manager · Settings",
+      "managerBranches": "Manager · Branches",
       "barberToday": "Barber · Today",
       "profileTitle": "Profile",
       "profileSubtitle": "Your account details.",
@@ -212,6 +214,64 @@
       "generic": "Could not save the appointment. Please try again."
     }
   },
+  "appointments": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "in_progress": "In progress",
+      "finished": "Finished",
+      "paid": "Paid",
+      "canceled": "Canceled",
+      "no_show": "No show"
+    },
+    "sections": {
+      "upcoming": "Upcoming",
+      "past": "Past"
+    },
+    "filters": {
+      "status": "Status",
+      "range": "Range",
+      "week": "This week",
+      "month": "This month"
+    },
+    "empty": {
+      "upcomingTitle": "No upcoming appointments",
+      "upcomingDescription": "Your future appointments will appear here.",
+      "pastTitle": "No past appointments",
+      "pastDescription": "Your completed appointments will appear here."
+    },
+    "labels": {
+      "branch": "Branch",
+      "services": "Services",
+      "professional": "Professional",
+      "status": "Status",
+      "time": "Time"
+    }
+  },
+  "manager": {
+    "cash": {
+      "title": "Cash sessions",
+      "subtitle": "Open and close cash sessions per cashbox.",
+      "cashboxes": "Cashboxes",
+      "selectCashbox": "Select a cashbox",
+      "sessions": "Sessions",
+      "openSession": "Open session",
+      "closeSession": "Close session",
+      "openingAmount": "Opening amount",
+      "closingAmount": "Closing amount",
+      "movements": "Movements",
+      "movementType": "Movement type",
+      "movementReason": "Reason",
+      "movementAmount": "Amount",
+      "deposit": "Deposit",
+      "withdrawal": "Withdrawal",
+      "openSuccess": "Session opened",
+      "closeSuccess": "Session closed",
+      "movementSuccess": "Movement created",
+      "emptySessions": "No sessions yet",
+      "emptyMovements": "No movements yet"
+    }
+  }
   "dashboard": {
     "manageStaff": "Manage staff and roles",
     "reports": "Reports",
@@ -344,6 +404,33 @@
         "updated": "Employee updated",
         "deleted": "Employee deleted",
         "passwordReset": "Password reset"
+      }
+    },
+    "branches": {
+      "new": "New",
+      "newTitle": "New branch",
+      "editTitle": "Edit branch",
+      "deleteTitle": "Delete branch",
+      "deleteConfirm": "Delete {name}?",
+      "searchPlaceholder": "Search branches",
+      "emptyTitle": "No branches",
+      "emptyDescription": "Add a branch to start organizing operations.",
+      "columns": {
+        "name": "Branch",
+        "address": "Address",
+        "phone": "Phone",
+        "updatedAt": "Updated"
+      },
+      "form": {
+        "name": "Name",
+        "nameRequired": "Enter a name",
+        "address": "Address",
+        "phone": "Phone"
+      },
+      "toast": {
+        "created": "Branch created",
+        "updated": "Branch updated",
+        "deleted": "Branch deleted"
       }
     }
   }

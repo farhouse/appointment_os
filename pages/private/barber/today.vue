@@ -10,6 +10,7 @@ definePageMeta({
 
 const { selectedBranchId } = useSelectedBranch()
 const { locale, t } = useI18n()
+const { statusLabel } = useAppointmentStatus()
 
 const calendarView = ref<VueCalView | null>(null)
 const calendarApiView = ref<VueCalView | null>(null)
@@ -115,20 +116,6 @@ async function handleEventClick(e: any) {
   editingNotes.value = String(selectedEvent.value?.extendedProps?.notes || '')
   notesError.value = ''
   await loadRecentHistory()
-}
-
-const statusLabel = (s?: string) => {
-  if (!s) return ''
-  const map: Record<string, string> = {
-    PENDING: 'Pendiente',
-    CONFIRMED: 'Confirmado',
-    IN_PROGRESS: 'En progreso',
-    FINISHED: 'Finalizado',
-    PAID: 'Pagado',
-    CANCELED: 'Cancelado',
-    NO_SHOW: 'No asistió'
-  }
-  return locale.value === 'es-AR' ? (map[s] || s) : s
 }
 
 async function saveNotes() {

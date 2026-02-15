@@ -15,6 +15,7 @@
     "products": "Productos",
     "stock": "Stock",
     "employees": "Empleados",
+    "branches": "Sucursales",
     "settings": "Configuración",
     "today": "Hoy",
     "appointments": "Turnos",
@@ -135,6 +136,7 @@
       "managerStock": "Gerencia · Stock",
       "managerEmployees": "Gerencia · Empleados",
       "managerSettings": "Gerencia · Configuración",
+      "managerBranches": "Gerencia · Sucursales",
       "barberToday": "Barbero · Hoy",
       "profileTitle": "Perfil",
       "profileSubtitle": "Tus datos de cuenta.",
@@ -212,6 +214,64 @@
       "generic": "No se pudo guardar el turno. Intentá de nuevo."
     }
   },
+  "appointments": {
+    "status": {
+      "pending": "Pendiente",
+      "confirmed": "Confirmado",
+      "in_progress": "En progreso",
+      "finished": "Finalizado",
+      "paid": "Pagado",
+      "canceled": "Cancelado",
+      "no_show": "No asistió"
+    },
+    "sections": {
+      "upcoming": "Próximos",
+      "past": "Pasados"
+    },
+    "filters": {
+      "status": "Estado",
+      "range": "Rango",
+      "week": "Semana",
+      "month": "Mes"
+    },
+    "empty": {
+      "upcomingTitle": "Sin próximos turnos",
+      "upcomingDescription": "Tus próximos turnos van a aparecer acá.",
+      "pastTitle": "Sin turnos pasados",
+      "pastDescription": "Tus turnos finalizados van a aparecer acá."
+    },
+    "labels": {
+      "branch": "Sucursal",
+      "services": "Servicios",
+      "professional": "Profesional",
+      "status": "Estado",
+      "time": "Horario"
+    }
+  },
+  "manager": {
+    "cash": {
+      "title": "Sesiones de caja",
+      "subtitle": "Abrí y cerrá sesiones por caja.",
+      "cashboxes": "Cajas",
+      "selectCashbox": "Seleccioná una caja",
+      "sessions": "Sesiones",
+      "openSession": "Abrir sesión",
+      "closeSession": "Cerrar sesión",
+      "openingAmount": "Monto de apertura",
+      "closingAmount": "Monto de cierre",
+      "movements": "Movimientos",
+      "movementType": "Tipo de movimiento",
+      "movementReason": "Motivo",
+      "movementAmount": "Monto",
+      "deposit": "Ingreso",
+      "withdrawal": "Egreso",
+      "openSuccess": "Sesión abierta",
+      "closeSuccess": "Sesión cerrada",
+      "movementSuccess": "Movimiento creado",
+      "emptySessions": "Sin sesiones",
+      "emptyMovements": "Sin movimientos"
+    }
+  }
   "dashboard": {
     "manageStaff": "Gestionar personal y roles",
     "reports": "Reportes",
@@ -344,6 +404,33 @@
         "updated": "Empleado actualizado",
         "deleted": "Empleado eliminado",
         "passwordReset": "Contraseña reseteada"
+      }
+    },
+    "branches": {
+      "new": "Nuevo",
+      "newTitle": "Nueva sucursal",
+      "editTitle": "Editar sucursal",
+      "deleteTitle": "Eliminar sucursal",
+      "deleteConfirm": "¿Querés eliminar {name}?",
+      "searchPlaceholder": "Buscar sucursales",
+      "emptyTitle": "Sin sucursales",
+      "emptyDescription": "Sumá una sucursal para organizar la operación.",
+      "columns": {
+        "name": "Sucursal",
+        "address": "Dirección",
+        "phone": "Teléfono",
+        "updatedAt": "Actualizado"
+      },
+      "form": {
+        "name": "Nombre",
+        "nameRequired": "Ingresá un nombre",
+        "address": "Dirección",
+        "phone": "Teléfono"
+      },
+      "toast": {
+        "created": "Sucursal creada",
+        "updated": "Sucursal actualizada",
+        "deleted": "Sucursal eliminada"
       }
     }
   }
