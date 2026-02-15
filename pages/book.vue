@@ -25,6 +25,9 @@ const clientLastName = ref('')
 const clientEmail = ref('')
 const clientPhone = ref('')
 
+const existingClient = ref<{ id: string; firstName: string; lastName?: string | null; email?: string | null; phone?: string | null } | null>(null)
+const showLoginSuggestion = computed(() => !!existingClient.value)
+
 const selectedStart = ref<string | null>(null) // ISO
 const selectedEnd = ref<string | null>(null) // ISO
 
@@ -35,6 +38,28 @@ const successMsg = ref<string | null>(null)
 onMounted(async () => {
   branches.value = await $fetch('/api/public/branches')
   services.value = await $fetch('/api/public/services')
+})
+
+let lookupTimer: any = null
+watch([clientEmail, clientPhone], ([email, phone]) => {
+  existingClient.value = null
+  if (lookupTimer) clearTimeout(lookupTimer)
+
+  const e = (email || '').trim()
+  const p = (phone || '').trim()
+  if (!e && !p) return
+
+  lookupTimer = setTimeout(async () => {
+    try {
+      const query = new URLSearchParams()
+      if (e) query.set('email', e)
+      if (p) query.set('phone', p)
+      const res = await $fetch(`/api/public/clients/lookup?${query.toString()}`)
+      existingClient.value = (res as any)?.client || null
+    } catch {
+      existingClient.value = null
+    }
+  }, 350)
 })
 
 watch(branchId, async (id) => {
@@ -53,6 +78,14 @@ watch([branchId, barberId, date], async ([bId, brId, d]) => {
 })
 
 const selectedService = computed(() => services.value.find(s => s.id === serviceId.value) || null)
+
+const servicePriceLabel = computed(() => {
+  const s = selectedService.value
+  if (!s) return ''
+  const n = typeof s.price === 'string' ? Number(s.price) : Number(s.price)
+  if (!Number.isFinite(n)) return ''
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n)
+})
 
 function overlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
   return aStart < bEnd && aEnd > bStart
@@ -118,7 +151,7 @@ const canSubmit = computed(() => {
     selectedStart.value &&
     selectedEnd.value &&
     clientFirstName.value.trim() &&
-    (clientEmail.value.trim() || clientPhone.value.trim())
+    clientPhone.value.trim()
   )
 })
 
@@ -129,6 +162,11 @@ async function submitBooking() {
   if (!canSubmit.value) {
     errorMsg.value = t('booking.errors.missing')
     return
+  }
+
+  if (showLoginSuggestion.value) {
+    // Don't block, but hint user.
+    // (They might want to book anyway with the same phone.)
   }
 
   loading.value = true
@@ -185,7 +223,10 @@ async function submitBooking() {
               <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
             </select>
 
-            <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.service') }}</label>
+            <div class="flex items-baseline justify-between gap-3 mt-3">
+              <label class="block text-sm font-medium">{{ $t('booking.service') }}</label>
+              <span v-if="servicePriceLabel" class="text-xs text-gray-600">{{ $t('booking.price') }}: {{ servicePriceLabel }}</span>
+            </div>
             <select v-model="serviceId" class="w-full rounded border px-3 py-2 bg-white">
               <option value="">{{ $t('booking.selectService') }}</option>
               <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -213,10 +254,18 @@ async function submitBooking() {
             <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }}</label>
             <input v-model="clientEmail" type="email" class="w-full rounded border px-3 py-2 bg-white" />
 
-            <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }}</label>
+            <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
             <input v-model="clientPhone" class="w-full rounded border px-3 py-2 bg-white" />
 
             <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
+
+            <div v-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+              <p class="font-medium">{{ $t('booking.existingClient.title') }}</p>
+              <p class="text-gray-600">{{ $t('booking.existingClient.subtitle') }}</p>
+              <div class="mt-3">
+                <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingClient.cta') }}</UButton>
+              </div>
+            </div>
           </div>
         </div>
 

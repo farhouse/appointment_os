@@ -108,7 +108,14 @@
     "lastName": "Apellido",
     "email": "Email",
     "phone": "Teléfono",
-    "contactHint": "Ingresá al menos email o teléfono para poder confirmarte el turno.",
+    "price": "Precio",
+    "contactHint": "El teléfono es obligatorio. El email es opcional.",
+
+    "existingClient": {
+      "title": "Ya encontramos tus datos",
+      "subtitle": "Si ya tenés cuenta, iniciá sesión para ver tus turnos y tu historial.",
+      "cta": "Iniciar sesión"
+    },
 
     "slots": "Horarios disponibles",
     "duration": "Duración",

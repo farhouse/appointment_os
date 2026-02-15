@@ -108,7 +108,14 @@
     "lastName": "Last name",
     "email": "Email",
     "phone": "Phone",
-    "contactHint": "Please provide at least email or phone so we can confirm your appointment.",
+    "price": "Price",
+    "contactHint": "Phone is required. Email is optional.",
+
+    "existingClient": {
+      "title": "We found your details",
+      "subtitle": "If you already have an account, sign in to view your appointments and history.",
+      "cta": "Login"
+    },
 
     "slots": "Available times",
     "duration": "Duration",
