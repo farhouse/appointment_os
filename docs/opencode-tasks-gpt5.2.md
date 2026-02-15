@@ -28,6 +28,21 @@ Search key: `pages.private.placeholder`
 ## Part A — Admin/Manager CRUD (UTable)
 Implement per `docs/admin-crud-utables.md`.
 
+### A0 Branches (Sucursales) — OWNER only
+Add a new manager page to create/edit/delete branches.
+- New page: `pages/private/manager/branches.vue`
+- Page meta: `roles: ['OWNER']`
+- Use existing endpoints:
+  - `GET /api/branches`
+  - `POST /api/branches`
+  - `PATCH /api/branches/:id`
+  - `DELETE /api/branches/:id`
+- UTable columns: name, address, phone, updatedAt
+- Create/Edit modal: name (required), address, phone
+- Delete confirm
+
+Also ensure the manager navigation/sidebar has a link to this page (visible to OWNER).
+
 ### A1 Products
 - Replace placeholder with `UTable` list.
 - Columns: name, price, active, updatedAt.
@@ -109,5 +124,8 @@ If APIs are incomplete, implement the missing endpoints minimally and safely.
   3) each page UI
 
 ## Finish
-When completely finished, run:
-`clawdbot gateway wake --text "Done: Remaining private pages implemented (CRUD + client/barber appointments + manager cash)" --mode now`
+When completely finished, do NOT call `clawdbot gateway wake` (not a valid CLI command here).
+Instead, just print a final summary in the terminal output:
+- list commits
+- list new/changed files
+- quick manual test checklist
