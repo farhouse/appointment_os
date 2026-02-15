@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     ],
     // @ts-ignore - module runtime supports this option
     lazy: true,
-    langDir: 'locales'
+    langDir: 'locales',
+    i18nDir: 'i18n'
   }
 })
