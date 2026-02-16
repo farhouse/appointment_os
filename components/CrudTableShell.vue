@@ -16,8 +16,8 @@ defineEmits<{ search: [value: string]; create: [] }>()
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold text-stone-900">{{ title }}</h1>
-        <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
+        <h1 class="text-2xl font-semibold text-stone-900 dark:text-amber-100">{{ title }}</h1>
+        <p v-if="errorMessage" class="text-sm text-red-600 dark:text-red-400">{{ errorMessage }}</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <UInput
@@ -34,7 +34,7 @@ defineEmits<{ search: [value: string]; create: [] }>()
       </div>
     </div>
 
-    <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
+    <div class="rounded-lg border border-stone-200 bg-white shadow-sm dark:border-[#3a2a1f] dark:bg-[#1a120d]">
       <slot />
     </div>
   </div>
