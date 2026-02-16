@@ -486,5 +486,14 @@
         "deleted": "Service deleted"
       }
     }
+  },
+  "setup": {
+    "title": "Initial setup",
+    "subtitle": "Create the first OWNER user to start using the app.",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "create": "Create owner",
+    "success": "Owner created"
   }
 }

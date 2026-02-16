@@ -486,5 +486,14 @@
         "deleted": "Servicio eliminado"
       }
     }
+  },
+  "setup": {
+    "title": "Configuración inicial",
+    "subtitle": "Creá el primer usuario OWNER para empezar a usar la app.",
+    "name": "Nombre",
+    "email": "Email",
+    "password": "Contraseña",
+    "create": "Crear owner",
+    "success": "Owner creado"
   }
 }

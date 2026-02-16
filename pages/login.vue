@@ -2,7 +2,7 @@
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
       <h1 class="text-2xl font-bold text-center">{{ $t('login.title') }}</h1>
-      <form @submit.prevent="handleLogin" class="space-y-4">
+      <form v-if="!checkingSetup" @submit.prevent="handleLogin" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700">{{ $t('login.email') }}</label>
           <input v-model="email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500" />
@@ -25,8 +25,23 @@ const email = ref('')
 const password = ref('')
 const error = ref('')
 const { t } = useI18n()
-const router = useRouter()
 const route = useRoute()
+
+const checkingSetup = ref(true)
+
+onMounted(async () => {
+  try {
+    const res = await $fetch<{ needsSetup: boolean }>('/api/setup/status')
+    if (res.needsSetup) {
+      await navigateTo('/setup')
+      return
+    }
+  } catch {
+    // ignore
+  } finally {
+    checkingSetup.value = false
+  }
+})
 
 async function handleLogin() {
   try {
