@@ -50,6 +50,7 @@ const clientLinks = computed(() => [
   { label: t('nav.home'), to: '/private/client', icon: 'i-heroicons-home' },
   { label: t('nav.book'), to: '/private/client/book', icon: 'i-heroicons-pencil-square' },
   { label: t('nav.appointments'), to: '/private/client/appointments', icon: 'i-heroicons-clipboard-document-list' },
+  { label: t('nav.redeem'), to: '/private/client/redeem', icon: 'i-heroicons-gift' },
 ])
 
 async function logout() {
