@@ -306,35 +306,29 @@ onMounted(() => {
           <div class="text-xs text-gray-500">{{ $t('pages.private.manager.cashboxes.subtitle') }}</div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <label class="text-sm font-medium">{{ $t('pages.private.manager.cashboxes.branch') }}</label>
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            v-model="formState.name"
+            type="text"
+            class="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm"
+            :placeholder="$t('pages.private.manager.cashboxes.namePlaceholder')"
+          />
+
           <select v-model="cashBoxBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
             <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
             <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
               {{ branch.name }}
             </option>
           </select>
+
+          <UButton color="primary" :disabled="!formState.name.trim() || !cashBoxBranchId" @click="handleCreateCashBox">
+            {{ $t('pages.private.manager.cashboxes.create') }}
+          </UButton>
         </div>
       </div>
 
       <div v-if="isLoading" class="mt-2 text-xs text-gray-500">{{ $t('common.loading') }}</div>
       <div v-if="errorMessage" class="mt-2 text-xs text-red-600">{{ errorMessage }}</div>
-
-      <div class="mt-3 flex flex-wrap items-center gap-3">
-        <input
-          v-model="formState.name"
-          type="text"
-          class="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm"
-          :placeholder="$t('pages.private.manager.cashboxes.namePlaceholder')"
-        />
-        <label class="flex items-center gap-2 text-sm">
-          <input v-model="formState.active" type="checkbox" class="rounded border-gray-300" />
-          {{ $t('pages.private.manager.cashboxes.active') }}
-        </label>
-        <UButton color="primary" :disabled="!formState.name.trim() || !cashBoxBranchId" @click="handleCreateCashBox">
-          {{ $t('pages.private.manager.cashboxes.create') }}
-        </UButton>
-      </div>
 
       <div class="mt-6 flex items-start justify-between gap-3">
         <div>
