@@ -327,7 +327,7 @@ onMounted(() => {
       <CrudState
         :title="$t('admin.services.emptyTitle')"
         :description="$t('admin.services.emptyDescription')"
-        icon="i-lucide-scissors"
+        icon="i-lucide-wand-sparkles"
         :action-label="$t('admin.services.new')"
         @action="openCreate"
       />

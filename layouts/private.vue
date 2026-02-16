@@ -27,7 +27,7 @@ const managerLinks = computed(() => [
   { label: t('nav.calendar'), to: '/private/backoffice/calendar', icon: 'i-heroicons-calendar-days' },
   { label: t('nav.cash'), to: '/private/backoffice/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.products'), to: '/private/backoffice/products', icon: 'i-heroicons-tag' },
-  { label: t('nav.services'), to: '/private/backoffice/services', icon: 'i-lucide-scissors' },
+  { label: t('nav.services'), to: '/private/backoffice/services', icon: 'i-lucide-wand-sparkles' },
 ])
 
 const adminLinks = computed(() => [
@@ -36,7 +36,7 @@ const adminLinks = computed(() => [
   { label: t('nav.cash'), to: '/private/backoffice/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.employees'), to: '/private/backoffice/employees', icon: 'i-heroicons-users' },
   { label: t('nav.products'), to: '/private/backoffice/products', icon: 'i-heroicons-tag' },
-  { label: t('nav.services'), to: '/private/backoffice/services', icon: 'i-lucide-scissors' },
+  { label: t('nav.services'), to: '/private/backoffice/services', icon: 'i-lucide-wand-sparkles' },
   ...(isOwner.value ? [{ label: t('nav.branches'), to: '/private/backoffice/branches', icon: 'i-heroicons-map-pin' }] : []),
   { label: t('nav.settings'), to: '/private/backoffice/settings', icon: 'i-heroicons-cog-6-tooth' },
 ])
