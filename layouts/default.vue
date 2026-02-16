@@ -15,12 +15,7 @@
             {{ localePrefix(loc.code) }} · {{ (loc as any).name || loc.code }}
           </option>
         </select>
-        <UColorModeButton
-          size="sm"
-          color="neutral"
-          variant="ghost"
-          class="border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 dark:border-[#4a3426] dark:bg-[#20160f] dark:text-amber-100/90 dark:hover:bg-[#2a1d15]"
-        />
+        <!-- Dark mode toggle removed -->
       </div>
     </div>
       <slot />

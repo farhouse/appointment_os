@@ -67,7 +67,7 @@ const accountLinks = computed(() => [
 ])
 
 const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
-const { selectedBranchId, branchOptions, isLoading } = useSelectedBranch(primaryBranchId)
+const { selectedBranchId, branchOptions, isLoading, isSwitching } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
 
 function localePrefix(code: string) {
@@ -116,17 +116,26 @@ function localePrefix(code: string) {
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div class="flex items-center gap-2 text-sm">
             <label class="text-stone-600 dark:text-stone-300" for="branch-selector">{{ $t('branch.label') }}</label>
-            <select
-              id="branch-selector"
-              v-model="selectedBranchId"
-              class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
-              :disabled="isLoading"
-            >
-              <option value="">{{ $t('branch.all') }}</option>
-              <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
-                {{ branch.name }}
-              </option>
-            </select>
+
+            <div class="flex items-center gap-2">
+              <select
+                id="branch-selector"
+                v-model="selectedBranchId"
+                class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
+                :disabled="isLoading"
+                :aria-busy="(isLoading || isSwitching) ? 'true' : 'false'"
+              >
+                <option value="">{{ $t('branch.all') }}</option>
+                <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
+                  {{ branch.name }}
+                </option>
+              </select>
+
+              <div v-if="isLoading || isSwitching" class="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-300">
+                <USpinner size="xs" />
+                <span>{{ isLoading ? 'Cargando sucursales…' : 'Aplicando…' }}</span>
+              </div>
+            </div>
           </div>
           <div class="flex items-center gap-2 text-sm">
             <span class="text-stone-600 dark:text-stone-300">{{ $t('language.label') }}</span>
@@ -135,12 +144,7 @@ function localePrefix(code: string) {
                 {{ localePrefix(loc.code) }} · {{ (loc as any).name || loc.code }}
               </option>
             </select>
-            <UColorModeButton
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              class="border border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 dark:border-[#4a3426] dark:bg-[#20160f] dark:text-amber-100/90 dark:hover:bg-[#2a1d15]"
-            />
+            <!-- Dark mode toggle removed -->
           </div>
         </div>
         <slot />
