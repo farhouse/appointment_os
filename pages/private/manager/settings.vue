@@ -48,6 +48,7 @@ const formState = reactive({
 })
 
 const canLoadCashBoxes = computed(() => !!selectedBranchId.value)
+const selectedBranchName = computed(() => branchOptions.value.find(b => b.id === selectedBranchId.value)?.name || '')
 
 watch(selectedBranchId, () => {
   if (!canLoadCashBoxes.value) return
@@ -316,7 +317,15 @@ onMounted(() => {
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
+          <div v-if="selectedBranchName" class="text-xs text-gray-500">
+            {{ $t('pages.private.manager.cashboxes.branch') }}: {{ selectedBranchName }}
+          </div>
+        </div>
+      </div>
+
       <div v-if="!cashBoxes.length" class="mt-3 text-sm text-gray-600">{{ $t('pages.private.manager.cashboxes.empty') }}</div>
       <div v-else class="mt-3 space-y-2">
         <div v-for="cb in cashBoxes" :key="cb.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
