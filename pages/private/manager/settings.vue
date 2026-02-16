@@ -12,6 +12,7 @@ type CashBox = {
   id: string
   name: string
   active: boolean
+  branch: { id: string; name: string }
 }
 
 const me = useMeState()
@@ -50,12 +51,23 @@ const formState = reactive({
   active: true
 })
 
-const canLoadCashBoxes = computed(() => !!cashBoxBranchId.value)
-const selectedBranchName = computed(() => branchOptions.value.find(b => b.id === cashBoxBranchId.value)?.name || '')
+const groupedCashBoxes = computed(() => {
+  const map = new Map<string, { branchId: string; branchName: string; items: CashBox[] }>()
+  for (const cb of cashBoxes.value) {
+    const branchId = cb.branch?.id || ''
+    const branchName = cb.branch?.name || ''
+    const key = branchId || branchName || 'unknown'
 
-watch(cashBoxBranchId, () => {
-  if (!canLoadCashBoxes.value) return
-  void loadCashBoxes()
+    if (!map.has(key)) {
+      map.set(key, { branchId, branchName, items: [] })
+    }
+    map.get(key)!.items.push(cb)
+  }
+
+  const groups = Array.from(map.values())
+  groups.sort((a, b) => a.branchName.localeCompare(b.branchName))
+  for (const g of groups) g.items.sort((a, b) => a.name.localeCompare(b.name))
+  return groups
 })
 
 watchEffect(() => {
@@ -66,12 +78,10 @@ watchEffect(() => {
 })
 
 async function loadCashBoxes() {
-  if (!cashBoxBranchId.value) return
   isLoading.value = true
   errorMessage.value = ''
   try {
-    const query = new URLSearchParams({ branchId: cashBoxBranchId.value })
-    cashBoxes.value = await $fetch(`/api/cashboxes?${query.toString()}`)
+    cashBoxes.value = await $fetch('/api/cashboxes')
   } catch (e: any) {
     cashBoxes.value = []
     errorMessage.value = e?.data?.statusMessage || 'No se pudo cargar'
@@ -220,7 +230,7 @@ async function toggleCashBox(cb: CashBox) {
 onMounted(() => {
   void loadMe()
   void loadBranches()
-  if (canLoadCashBoxes.value) void loadCashBoxes()
+  void loadCashBoxes()
 })
 </script>
 
@@ -329,22 +339,29 @@ onMounted(() => {
       <div class="mt-6 flex items-start justify-between gap-3">
         <div>
           <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
-          <div v-if="selectedBranchName" class="text-xs text-gray-500">
-            {{ $t('pages.private.manager.cashboxes.branch') }}: {{ selectedBranchName }}
-          </div>
+          <div class="text-xs text-gray-500">{{ $t('pages.private.manager.cashboxes.branch') }}: {{ $t('common.all') || 'Todas' }}</div>
         </div>
       </div>
 
       <div v-if="!cashBoxes.length" class="mt-3 text-sm text-gray-600">{{ $t('pages.private.manager.cashboxes.empty') }}</div>
-      <div v-else class="mt-3 space-y-2">
-        <div v-for="cb in cashBoxes" :key="cb.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
-          <div>
-            <div class="text-sm font-medium text-gray-900">{{ cb.name }}</div>
-            <div class="text-xs text-gray-500">{{ cb.active ? $t('pages.private.manager.cashboxes.activeState') : $t('pages.private.manager.cashboxes.inactiveState') }}</div>
+      <div v-else class="mt-3 space-y-4">
+        <div v-for="group in groupedCashBoxes" :key="group.branchId || group.branchName" class="rounded border border-gray-200">
+          <div class="flex items-center justify-between border-b border-gray-200 px-3 py-2">
+            <div class="text-sm font-semibold text-gray-900">{{ group.branchName || 'Sucursal' }}</div>
+            <div class="text-xs text-gray-500">{{ group.items.length }}</div>
           </div>
-          <UButton variant="outline" size="sm" @click="toggleCashBox(cb)">
-            {{ cb.active ? $t('pages.private.manager.cashboxes.deactivate') : $t('pages.private.manager.cashboxes.activate') }}
-          </UButton>
+
+          <div class="divide-y divide-gray-200">
+            <div v-for="cb in group.items" :key="cb.id" class="flex items-center justify-between px-3 py-2">
+              <div>
+                <div class="text-sm font-medium text-gray-900">{{ cb.name }}</div>
+                <div class="text-xs text-gray-500">{{ cb.active ? $t('pages.private.manager.cashboxes.activeState') : $t('pages.private.manager.cashboxes.inactiveState') }}</div>
+              </div>
+              <UButton variant="outline" size="sm" @click="toggleCashBox(cb)">
+                {{ cb.active ? $t('pages.private.manager.cashboxes.deactivate') : $t('pages.private.manager.cashboxes.activate') }}
+              </UButton>
+            </div>
+          </div>
         </div>
       </div>
     </div>
