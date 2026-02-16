@@ -5,7 +5,7 @@ definePageMeta({
   roles: ['OWNER', 'ADMIN', 'MANAGER'],
 })
 
-await navigateTo('/private/backoffice', { replace: true })
+await navigateTo({ path: '/private/backoffice/products', query: { tab: 'stock' } })
 </script>
 
 <template />

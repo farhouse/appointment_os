@@ -23,22 +23,22 @@ const commonLinks = computed(() => [
 ])
 
 const managerLinks = computed(() => [
-  { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
-  { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
-  { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
-  { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
-  { label: t('nav.services'), to: '/private/manager/services', icon: 'i-lucide-scissors' },
+  { label: t('nav.dashboard'), to: '/private/backoffice', icon: 'i-heroicons-squares-2x2' },
+  { label: t('nav.calendar'), to: '/private/backoffice/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: t('nav.cash'), to: '/private/backoffice/cash', icon: 'i-heroicons-banknotes' },
+  { label: t('nav.products'), to: '/private/backoffice/products', icon: 'i-heroicons-tag' },
+  { label: t('nav.services'), to: '/private/backoffice/services', icon: 'i-lucide-scissors' },
 ])
 
 const adminLinks = computed(() => [
-  { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
-  { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
-  { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
-  { label: t('nav.employees'), to: '/private/manager/employees', icon: 'i-heroicons-users' },
-  { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
-  { label: t('nav.services'), to: '/private/manager/services', icon: 'i-lucide-scissors' },
-  ...(isOwner.value ? [{ label: t('nav.branches'), to: '/private/manager/branches', icon: 'i-heroicons-map-pin' }] : []),
-  { label: t('nav.settings'), to: '/private/manager/settings', icon: 'i-heroicons-cog-6-tooth' },
+  { label: t('nav.dashboard'), to: '/private/backoffice', icon: 'i-heroicons-squares-2x2' },
+  { label: t('nav.calendar'), to: '/private/backoffice/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: t('nav.cash'), to: '/private/backoffice/cash', icon: 'i-heroicons-banknotes' },
+  { label: t('nav.employees'), to: '/private/backoffice/employees', icon: 'i-heroicons-users' },
+  { label: t('nav.products'), to: '/private/backoffice/products', icon: 'i-heroicons-tag' },
+  { label: t('nav.services'), to: '/private/backoffice/services', icon: 'i-lucide-scissors' },
+  ...(isOwner.value ? [{ label: t('nav.branches'), to: '/private/backoffice/branches', icon: 'i-heroicons-map-pin' }] : []),
+  { label: t('nav.settings'), to: '/private/backoffice/settings', icon: 'i-heroicons-cog-6-tooth' },
 ])
 
 const barberLinks = computed(() => [
