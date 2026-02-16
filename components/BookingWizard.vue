@@ -101,8 +101,12 @@ watch(branchId, async (id) => {
   barberId.value = ''
   barbers.value = []
   if (!id) return
-  barbers.value = await $fetch(`/api/public/barbers?branchId=${encodeURIComponent(id)}`)
-})
+  try {
+    barbers.value = await $fetch(`/api/public/barbers?branchId=${encodeURIComponent(id)}`)
+  } catch {
+    barbers.value = []
+  }
+}, { immediate: true })
 
 watch([branchId, barberId, date], async ([bId, brId, d]) => {
   busy.value = []
