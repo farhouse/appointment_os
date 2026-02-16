@@ -4,6 +4,8 @@ import { z } from 'zod'
 import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
+import { getPaginationRowModel } from '@tanstack/vue-table'
+import type { PaginationState } from '@tanstack/table-core'
 
 definePageMeta({
   layout: 'private',
@@ -51,14 +53,43 @@ const formState = reactive<Partial<BranchForm>>({
   phone: ''
 })
 
-const { search: globalFilter, paged, total, page, pageSize, sortBy, sortDir, toggleSort } = useCrudTable(branches, {
+const tableRef = useTemplateRef('table')
+
+const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(branches, {
   search: (item, query) => {
     const q = query.toLowerCase()
     return [item.name, item.address, item.phone].filter(Boolean).some(value => value!.toLowerCase().includes(q))
   },
   initialSortBy: 'updatedAt',
-  initialSortDir: 'desc',
-  pageSize: 8
+  initialSortDir: 'desc'
+})
+
+const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 8 })
+
+const page = computed({
+  get: () => pagination.value.pageIndex + 1,
+  set: (value: number) => {
+    pagination.value.pageIndex = Math.max(0, value - 1)
+  }
+})
+
+const pageSize = computed({
+  get: () => pagination.value.pageSize,
+  set: (value: number) => {
+    pagination.value.pageSize = value
+    pagination.value.pageIndex = 0
+  }
+})
+
+watch(globalFilter, () => {
+  pagination.value.pageIndex = 0
+})
+
+const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
+const pageCount = computed(() => tableRef.value?.tableApi.getPageCount?.() ?? Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+
+watch([pageCount], () => {
+  if (page.value > pageCount.value) page.value = pageCount.value
 })
 
 const columns: TableColumn<Branch>[] = [
@@ -236,7 +267,7 @@ onMounted(() => {
     @create="openCreate"
   >
     <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
-      <div>{{ $t('admin.common.count', { count: total }) }}</div>
+      <div>{{ $t('admin.common.count', { count: filteredTotal }) }}</div>
       <div v-if="sortLabel">{{ $t('admin.common.sorting', { value: sortLabel }) }}</div>
     </div>
 
@@ -268,17 +299,20 @@ onMounted(() => {
 
     <div v-else>
       <UTable
+        ref="table"
         v-model:global-filter="globalFilter"
-        :data="paged"
+        v-model:pagination="pagination"
+        :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
+        :data="sorted"
         :columns="columns"
         :meta="tableMeta"
         @select="(_e, row) => openEdit(row.original)"
       />
       <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
         <div class="text-xs text-stone-500">
-          {{ $t('admin.common.pageInfo', { page, total: total, size: pageSize }) }}
+          {{ $t('admin.common.pageInfo', { page, total: filteredTotal, size: pageSize }) }}
         </div>
-        <UPagination v-model:page="page" :total="total" :items-per-page="pageSize" />
+        <UPagination v-model:page="page" :total="filteredTotal" :items-per-page="pageSize" />
       </div>
     </div>
   </CrudTableShell>
