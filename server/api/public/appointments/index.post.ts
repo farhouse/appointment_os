@@ -7,6 +7,22 @@ import { badRequest } from '~/server/utils/errors'
 export default defineEventHandler(async (event) => {
   const { serviceIds, ...data } = await readBodyValidated(event, appointmentSchema)
 
+  // Prevent creating appointments in the past (client booking)
+  const start = new Date(data.startTime)
+  const end = new Date(data.endTime)
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+    badRequest('Invalid startTime/endTime')
+  }
+  if (end <= start) {
+    badRequest('endTime must be after startTime')
+  }
+  const now = new Date()
+  // Small grace to avoid edge cases with clock skew
+  const graceMs = 60 * 1000
+  if (start.getTime() < now.getTime() - graceMs) {
+    badRequest('Cannot book appointments in the past')
+  }
+
   const services = await prisma.service.findMany({
     where: { id: { in: serviceIds } }
   })

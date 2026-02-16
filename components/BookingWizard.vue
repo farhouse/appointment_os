@@ -154,8 +154,14 @@ const availableSlots = computed(() => {
   }))
 
   const slots: { start: Date; end: Date; label: string }[] = []
+  const now = new Date()
+
   for (let cur = new Date(startDay); cur.getTime() + dur * 60000 <= endDay.getTime(); cur = new Date(cur.getTime() + stepMin * 60000)) {
     const end = new Date(cur.getTime() + dur * 60000)
+
+    // Don't allow selecting slots in the past (for today)
+    if (cur.getTime() < now.getTime()) continue
+
     const isBusy = busyRanges.some(r => overlap(cur, end, r.start, r.end))
     if (isBusy) continue
     const label = `${cur.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
