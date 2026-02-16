@@ -20,6 +20,7 @@ const initialClient = computed(() => {
     firstName,
     lastName,
     email: me.email,
+    phone: (me as any).phone || undefined,
   }
 })
 </script>
