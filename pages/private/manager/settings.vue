@@ -300,21 +300,21 @@ onMounted(() => {
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center justify-between gap-3">
         <div>
           <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.newTitle') }}</div>
           <div class="text-xs text-gray-500">{{ $t('pages.private.manager.cashboxes.subtitle') }}</div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2">
           <input
             v-model="formState.name"
             type="text"
-            class="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm"
+            class="w-56 rounded border border-gray-300 px-3 py-2 text-sm"
             :placeholder="$t('pages.private.manager.cashboxes.namePlaceholder')"
           />
 
-          <select v-model="cashBoxBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
+          <select v-model="cashBoxBranchId" class="w-56 rounded border border-gray-300 px-3 py-2 text-sm">
             <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
             <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
               {{ branch.name }}
