@@ -19,6 +19,7 @@ type Service = {
   description: string | null
   price: string
   duration: number
+  pointsReward: number
   active: boolean
   createdAt: string
   updatedAt: string
@@ -46,6 +47,7 @@ const serviceSchema = z.object({
   description: z.string().optional().nullable(),
   price: z.number().positive(),
   duration: z.number().int().positive(),
+  pointsReward: z.number().int().nonnegative(),
 })
 
 type ServiceForm = z.output<typeof serviceSchema>
@@ -55,6 +57,7 @@ const formState = reactive<Partial<ServiceForm>>({
   description: '',
   price: 0,
   duration: 30,
+  pointsReward: 0,
 })
 
 const tableRef = useTemplateRef('table')
@@ -129,6 +132,15 @@ const columns: TableColumn<Service>[] = [
     meta: { class: { td: 'text-right', th: 'text-right' } }
   },
   {
+    accessorKey: 'pointsReward',
+    header: () => h('button', {
+      class: 'text-right font-semibold w-full',
+      onClick: () => toggleSort('pointsReward')
+    }, t('admin.services.columns.pointsReward')),
+    cell: ({ row }) => row.original.pointsReward ? row.original.pointsReward.toString() : '—',
+    meta: { class: { td: 'text-right', th: 'text-right' } }
+  },
+  {
     accessorKey: 'updatedAt',
     header: () => h('button', {
       class: 'text-left font-semibold',
@@ -167,6 +179,7 @@ function resetForm() {
   formState.description = ''
   formState.price = 0
   formState.duration = 30
+  formState.pointsReward = 0
 }
 
 function openCreate() {
@@ -181,6 +194,7 @@ function openEdit(item: Service) {
   formState.description = item.description || ''
   formState.price = Number(item.price)
   formState.duration = Number(item.duration)
+  formState.pointsReward = Number(item.pointsReward || 0)
   modalOpen.value = true
 }
 
@@ -362,6 +376,11 @@ onMounted(() => {
           </UFormField>
           <UFormField :label="$t('admin.services.form.price')" name="price">
             <UInputNumber v-model="formState.price" :min="1" />
+          </UFormField>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <UFormField :label="$t('admin.services.form.pointsReward')" name="pointsReward">
+            <UInputNumber v-model="formState.pointsReward" :min="0" />
           </UFormField>
         </div>
         <div class="hidden">

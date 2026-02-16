@@ -469,14 +469,16 @@
         "name": "Service",
         "duration": "Duration",
         "price": "Price",
-        "updatedAt": "Updated"
+        "updatedAt": "Updated",
+        "pointsReward": "Points"
       },
       "form": {
         "name": "Name",
         "nameRequired": "Enter a name",
         "description": "Description",
         "duration": "Duration (min)",
-        "price": "Price"
+        "price": "Price",
+        "pointsReward": "Points awarded"
       },
       "toast": {
         "created": "Service created",

@@ -65,6 +65,7 @@ async function ensureService() {
       description: 'Corte clásico con tijera y máquina',
       price: 15000,
       duration: 30,
+      pointsReward: 50,
       active: true
     }
   })

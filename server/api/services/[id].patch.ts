@@ -9,6 +9,7 @@ const schema = z.object({
   description: z.string().optional().nullable(),
   price: z.number().positive().optional(),
   duration: z.number().int().positive().optional(),
+  pointsReward: z.number().int().nonnegative().optional(),
   active: z.boolean().optional(),
 })
 

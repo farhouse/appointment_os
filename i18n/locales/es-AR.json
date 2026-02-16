@@ -469,14 +469,16 @@
         "name": "Servicio",
         "duration": "Duración",
         "price": "Precio",
-        "updatedAt": "Actualizado"
+        "updatedAt": "Actualizado",
+        "pointsReward": "Puntos"
       },
       "form": {
         "name": "Nombre",
         "nameRequired": "Ingresá un nombre",
         "description": "Descripción",
         "duration": "Duración (min)",
-        "price": "Precio"
+        "price": "Precio",
+        "pointsReward": "Puntos que otorga"
       },
       "toast": {
         "created": "Servicio creado",

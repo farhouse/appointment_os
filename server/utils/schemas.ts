@@ -28,6 +28,7 @@ export const serviceSchema = z.object({
   description: z.string().optional(),
   price: z.number().positive(),
   duration: z.number().int().positive(),
+  pointsReward: z.number().int().nonnegative().optional(),
   active: z.boolean().optional(),
 })
 

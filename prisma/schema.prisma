@@ -103,6 +103,7 @@ model Service {
   description String?
   price       Decimal
   duration    Int      // in minutes
+  pointsReward Int     @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
