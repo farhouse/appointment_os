@@ -18,6 +18,9 @@ const me = useMeState()
 
 const { selectedBranchId, branchOptions, refresh: refreshBranches } = useSelectedBranch()
 
+// CashBoxes should be manageable across branches without changing the global branch context
+const cashBoxBranchId = ref('')
+
 const cashBoxes = ref<CashBox[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -47,20 +50,27 @@ const formState = reactive({
   active: true
 })
 
-const canLoadCashBoxes = computed(() => !!selectedBranchId.value)
-const selectedBranchName = computed(() => branchOptions.value.find(b => b.id === selectedBranchId.value)?.name || '')
+const canLoadCashBoxes = computed(() => !!cashBoxBranchId.value)
+const selectedBranchName = computed(() => branchOptions.value.find(b => b.id === cashBoxBranchId.value)?.name || '')
 
-watch(selectedBranchId, () => {
+watch(cashBoxBranchId, () => {
   if (!canLoadCashBoxes.value) return
   void loadCashBoxes()
 })
 
+watchEffect(() => {
+  // initialize once branch options load
+  if (!cashBoxBranchId.value && selectedBranchId.value) {
+    cashBoxBranchId.value = selectedBranchId.value
+  }
+})
+
 async function loadCashBoxes() {
-  if (!selectedBranchId.value) return
+  if (!cashBoxBranchId.value) return
   isLoading.value = true
   errorMessage.value = ''
   try {
-    const query = new URLSearchParams({ branchId: selectedBranchId.value })
+    const query = new URLSearchParams({ branchId: cashBoxBranchId.value })
     cashBoxes.value = await $fetch(`/api/cashboxes?${query.toString()}`)
   } catch (e: any) {
     cashBoxes.value = []
@@ -169,14 +179,14 @@ async function handleDeleteBranch() {
 }
 
 async function handleCreateCashBox() {
-  if (!selectedBranchId.value || !formState.name.trim()) return
+  if (!cashBoxBranchId.value || !formState.name.trim()) return
   isLoading.value = true
   errorMessage.value = ''
   try {
     await $fetch('/api/cashboxes', {
       method: 'POST',
       body: {
-        branchId: selectedBranchId.value,
+        branchId: cashBoxBranchId.value,
         name: formState.name.trim(),
         active: formState.active
       }
@@ -288,7 +298,7 @@ onMounted(() => {
 
         <div class="flex flex-wrap items-center gap-3">
           <label class="text-sm font-medium">{{ $t('pages.private.manager.cashboxes.branch') }}</label>
-          <select v-model="selectedBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
+          <select v-model="cashBoxBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
             <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
             <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
               {{ branch.name }}
@@ -311,7 +321,7 @@ onMounted(() => {
           <input v-model="formState.active" type="checkbox" class="rounded border-gray-300" />
           {{ $t('pages.private.manager.cashboxes.active') }}
         </label>
-        <UButton color="primary" :disabled="!formState.name.trim() || !selectedBranchId" @click="handleCreateCashBox">
+        <UButton color="primary" :disabled="!formState.name.trim() || !cashBoxBranchId" @click="handleCreateCashBox">
           {{ $t('pages.private.manager.cashboxes.create') }}
         </UButton>
       </div>
