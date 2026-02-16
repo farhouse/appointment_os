@@ -4,12 +4,17 @@ import { employeeSchema } from '~/server/utils/schemas'
 import bcrypt from 'bcrypt'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
-import { badRequest, conflict } from '~/server/utils/errors'
+import { badRequest, conflict, forbidden } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const { email, password, branchIds, ...rest } = await readBodyValidated(event, employeeSchema)
+
+  // Only OWNER can create ADMIN users.
+  if ((rest as any).role === 'ADMIN' && u.role !== 'OWNER') {
+    forbidden('Only OWNER can create ADMIN users')
+  }
 
   if (!password) {
     badRequest('Password required for new employee')

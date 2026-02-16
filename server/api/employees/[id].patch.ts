@@ -4,13 +4,19 @@ import { employeeSchema } from '~/server/utils/schemas'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { requireParam } from '~/server/utils/http'
+import { forbidden } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const id = requireParam(event, 'id')
 
   const parsed = await readBodyValidated(event, employeeSchema.partial())
+
+  // Only OWNER can promote/create ADMIN users.
+  if ((parsed as any).role === 'ADMIN' && u.role !== 'OWNER') {
+    forbidden('Only OWNER can assign ADMIN role')
+  }
 
   // NOTE: password updates should be via separate endpoint.
   const { branchIds, password, ...data } = parsed as any

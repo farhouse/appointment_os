@@ -7,6 +7,7 @@ import type { Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { PaginationState } from '@tanstack/table-core'
 import { useSelectedBranch } from '~/composables/useSelectedBranch'
+import { useMeState } from '~/composables/useMe'
 
 definePageMeta({
   layout: 'private',
@@ -36,6 +37,9 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const { t } = useI18n()
 const toast = useToast()
+
+const me = useMeState()
+const myRole = computed(() => me.value?.role)
 
 const tableUi = useBackofficeTableUi()
 
@@ -96,13 +100,22 @@ const passwordState = reactive<Partial<PasswordForm>>({
 })
 
 const branchItems = computed(() => branchOptions.value.map(branch => ({ label: branch.name, value: branch.id })))
-const roleItems = computed(() => [
-  { label: t('admin.employees.roles.owner'), value: 'OWNER' },
-  { label: t('admin.employees.roles.admin'), value: 'ADMIN' },
-  { label: t('admin.employees.roles.manager'), value: 'MANAGER' },
-  { label: t('admin.employees.roles.barber'), value: 'BARBER' },
-  { label: t('admin.employees.roles.client'), value: 'CLIENT' }
-])
+const roleItems = computed(() => {
+  const all = [
+    { label: t('admin.employees.roles.owner'), value: 'OWNER' },
+    { label: t('admin.employees.roles.admin'), value: 'ADMIN' },
+    { label: t('admin.employees.roles.manager'), value: 'MANAGER' },
+    { label: t('admin.employees.roles.barber'), value: 'BARBER' },
+    { label: t('admin.employees.roles.client'), value: 'CLIENT' }
+  ]
+
+  // UX guard: only OWNER can create/promote to ADMIN/OWNER.
+  if (myRole.value !== 'OWNER') {
+    return all.filter(i => i.value !== 'ADMIN' && i.value !== 'OWNER')
+  }
+
+  return all
+})
 
 const tableRef = useTemplateRef('table')
 
