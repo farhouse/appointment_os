@@ -10,7 +10,8 @@ const schema = z.object({
   sku: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
   price: z.number().nonnegative().optional(),
-  cost: z.number().nonnegative().optional().nullable()
+  cost: z.number().nonnegative().optional().nullable(),
+  pointsCost: z.number().int().nonnegative().optional()
 })
 
 export default defineEventHandler(async (event) => {

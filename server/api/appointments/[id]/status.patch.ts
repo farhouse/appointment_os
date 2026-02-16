@@ -78,6 +78,25 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    if (updatedAppointment.clientId && finalAmount > 0) {
+      const existingLedger = await tx.loyaltyLedger.findFirst({
+        where: { appointmentId: updatedAppointment.id } as any
+      })
+      if (!existingLedger) {
+        const points = Math.floor(Number(finalAmount) / 1000)
+        if (points > 0) {
+          await tx.loyaltyLedger.create({
+            data: {
+              clientId: updatedAppointment.clientId,
+              appointmentId: updatedAppointment.id,
+              points,
+              reason: `APPOINTMENT: ${updatedAppointment.id}`
+            } as any
+          })
+        }
+      }
+    }
+
     await tx.cashMovement.create({
       data: {
         sessionId: session.id,
