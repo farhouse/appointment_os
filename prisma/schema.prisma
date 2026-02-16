@@ -123,6 +123,7 @@ model Client {
   appointments  Appointment[]
   sales         Sale[]
   loyaltyLedger LoyaltyLedger[]
+  redemptions   Redemption[]
 }
 
 model Appointment {
@@ -160,6 +161,7 @@ model Appointment {
   professional User?                @relation(fields: [professionalId], references: [id])
   services     AppointmentService[]
   cashMovements CashMovement[]
+  loyaltyLedger LoyaltyLedger?
   
   @@index([branchId])
   @@index([clientId])
@@ -186,12 +188,14 @@ model Product {
   description String?
   price       Decimal
   cost        Decimal?
+  pointsCost  Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   branchStock    BranchStock[]
   stockMovements StockMovementItem[]
   saleItems      SaleItem[]
+  redemptions    Redemption[]
 }
 
 model BranchStock {
@@ -256,11 +260,28 @@ model SaleItem {
 model LoyaltyLedger {
   id          String   @id @default(uuid())
   clientId    String
+  appointmentId String? @unique
   points      Int      // Can be negative for usage
   reason      String?
   createdAt   DateTime @default(now())
-  
-  client Client @relation(fields: [clientId], references: [id])
+
+  client      Client       @relation(fields: [clientId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+}
+
+model Redemption {
+  id         String   @id @default(uuid())
+  clientId   String
+  productId  String
+  quantity   Int
+  pointsCost Int
+  createdAt  DateTime @default(now())
+
+  client  Client  @relation(fields: [clientId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([clientId])
+  @@index([productId])
 }
 
 model CashBox {
