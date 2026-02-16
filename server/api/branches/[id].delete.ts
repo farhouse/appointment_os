@@ -5,7 +5,7 @@ import { requireParam } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER'])
+  requireRole(event, ['OWNER', 'ADMIN'])
   const id = requireParam(event, 'id')
 
   try {

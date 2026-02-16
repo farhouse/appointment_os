@@ -36,7 +36,11 @@ const branchForm = reactive({
   phone: ''
 })
 
-const canManageBranches = computed(() => me.value?.role === 'OWNER')
+const branchEditOpen = ref(false)
+const branchDeleteOpen = ref(false)
+const selectedBranch = ref<Branch | null>(null)
+
+const canManageBranches = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 
 const formState = reactive({
   name: '',
@@ -97,6 +101,67 @@ async function handleCreateBranch() {
     await loadBranches()
   } catch (e: any) {
     errorMessage.value = e?.data?.statusMessage || 'No se pudo crear'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+function openEditBranch(branch: Branch) {
+  selectedBranch.value = branch
+  branchForm.name = branch.name
+  branchForm.address = branch.address || ''
+  branchForm.phone = branch.phone || ''
+  branchEditOpen.value = true
+}
+
+function openDeleteBranch(branch: Branch) {
+  selectedBranch.value = branch
+  branchDeleteOpen.value = true
+}
+
+async function handleUpdateBranch() {
+  if (!canManageBranches.value || !selectedBranch.value) return
+  isLoading.value = true
+  errorMessage.value = ''
+  try {
+    await $fetch(`/api/branches/${selectedBranch.value.id}`, {
+      method: 'PATCH',
+      body: {
+        name: branchForm.name.trim(),
+        address: branchForm.address?.trim() || null,
+        phone: branchForm.phone?.trim() || null
+      }
+    })
+
+    branchEditOpen.value = false
+    selectedBranch.value = null
+    branchForm.name = ''
+    branchForm.address = ''
+    branchForm.phone = ''
+
+    await refreshBranches()
+    await loadBranches()
+  } catch (e: any) {
+    errorMessage.value = e?.data?.statusMessage || 'No se pudo actualizar'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function handleDeleteBranch() {
+  if (!canManageBranches.value || !selectedBranch.value) return
+  isLoading.value = true
+  errorMessage.value = ''
+  try {
+    await $fetch(`/api/branches/${selectedBranch.value.id}`, { method: 'DELETE' })
+
+    branchDeleteOpen.value = false
+    selectedBranch.value = null
+
+    await refreshBranches()
+    await loadBranches()
+  } catch (e: any) {
+    errorMessage.value = e?.data?.statusMessage || 'No se pudo eliminar'
   } finally {
     isLoading.value = false
   }
@@ -199,27 +264,40 @@ onMounted(() => {
               <div class="text-sm font-medium text-gray-900">{{ b.name }}</div>
               <div class="text-xs text-gray-500">{{ [b.address, b.phone].filter(Boolean).join(' · ') }}</div>
             </div>
+
+            <div v-if="canManageBranches" class="flex items-center gap-2">
+              <UButton size="sm" variant="outline" @click="openEditBranch(b)">
+                {{ $t('admin.common.edit') }}
+              </UButton>
+              <UButton size="sm" color="error" variant="outline" @click="openDeleteBranch(b)">
+                {{ $t('admin.common.delete') }}
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
-        <label class="text-sm font-medium">{{ $t('pages.private.manager.cashboxes.branch') }}</label>
-        <select v-model="selectedBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
-          <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
-          <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
-            {{ branch.name }}
-          </option>
-        </select>
-        <div v-if="isLoading" class="text-xs text-gray-500">{{ $t('common.loading') }}</div>
-        <div v-if="errorMessage" class="text-xs text-red-600">{{ errorMessage }}</div>
-      </div>
-    </div>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.newTitle') }}</div>
+          <div class="text-xs text-gray-500">{{ $t('pages.private.manager.cashboxes.subtitle') }}</div>
+        </div>
 
-    <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.newTitle') }}</div>
+        <div class="flex flex-wrap items-center gap-3">
+          <label class="text-sm font-medium">{{ $t('pages.private.manager.cashboxes.branch') }}</label>
+          <select v-model="selectedBranchId" class="rounded border border-gray-300 px-3 py-2 text-sm">
+            <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
+            <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
+              {{ branch.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div v-if="isLoading" class="mt-2 text-xs text-gray-500">{{ $t('common.loading') }}</div>
+      <div v-if="errorMessage" class="mt-2 text-xs text-red-600">{{ errorMessage }}</div>
       <div class="mt-3 flex flex-wrap items-center gap-3">
         <input
           v-model="formState.name"
@@ -253,4 +331,37 @@ onMounted(() => {
       </div>
     </div>
   </div>
+
+  <UModal v-model:open="branchEditOpen" :title="$t('admin.branches.editTitle')" :ui="{ footer: 'justify-end' }">
+    <template #body>
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-medium">{{ $t('admin.branches.form.name') }}</label>
+          <input v-model="branchForm.name" type="text" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="text-sm font-medium">{{ $t('admin.branches.form.address') }}</label>
+          <input v-model="branchForm.address" type="text" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="text-sm font-medium">{{ $t('admin.branches.form.phone') }}</label>
+          <input v-model="branchForm.phone" type="text" class="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm" />
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <UButton color="neutral" variant="outline" @click="branchEditOpen = false">{{ $t('common.cancel') }}</UButton>
+      <UButton color="primary" :loading="isLoading" :disabled="!branchForm.name.trim()" @click="handleUpdateBranch">{{ $t('admin.common.save') }}</UButton>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="branchDeleteOpen" :title="$t('admin.branches.deleteTitle')" :ui="{ footer: 'justify-end' }">
+    <template #body>
+      <p class="text-sm text-stone-600">{{ $t('admin.branches.deleteConfirm', { name: selectedBranch?.name || '' }) }}</p>
+    </template>
+    <template #footer>
+      <UButton color="neutral" variant="outline" @click="branchDeleteOpen = false">{{ $t('common.cancel') }}</UButton>
+      <UButton color="error" :loading="isLoading" @click="handleDeleteBranch">{{ $t('admin.common.delete') }}</UButton>
+    </template>
+  </UModal>
 </template>
