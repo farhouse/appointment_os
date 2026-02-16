@@ -299,6 +299,7 @@ onMounted(() => {
 
       <div v-if="isLoading" class="mt-2 text-xs text-gray-500">{{ $t('common.loading') }}</div>
       <div v-if="errorMessage" class="mt-2 text-xs text-red-600">{{ errorMessage }}</div>
+
       <div class="mt-3 flex flex-wrap items-center gap-3">
         <input
           v-model="formState.name"
@@ -314,10 +315,8 @@ onMounted(() => {
           {{ $t('pages.private.manager.cashboxes.create') }}
         </UButton>
       </div>
-    </div>
 
-    <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-      <div class="flex items-start justify-between gap-3">
+      <div class="mt-6 flex items-start justify-between gap-3">
         <div>
           <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
           <div v-if="selectedBranchName" class="text-xs text-gray-500">
