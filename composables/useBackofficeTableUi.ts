@@ -16,7 +16,7 @@ export function useBackofficeTableUi() {
       '[&>tr]:data-[selectable=true]:focus-visible:outline-amber-500'
     ].join(' '),
 
-    tr: 'data-[selected=true]:bg-amber-50/70 dark:data-[selected=true]:bg-[#2a1d15]',
+    tr: 'bg-white dark:bg-[#1a120d] data-[selected=true]:bg-amber-50/70 dark:data-[selected=true]:bg-[#2a1d15]',
     td: 'p-4 text-sm text-stone-800 dark:text-amber-100/85 whitespace-nowrap',
     empty: 'py-6 text-center text-sm text-stone-500 dark:text-amber-100/70'
   } as const
