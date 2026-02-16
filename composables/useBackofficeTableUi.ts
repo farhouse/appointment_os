@@ -7,7 +7,7 @@ export function useBackofficeTableUi() {
     base: 'min-w-full bg-white dark:bg-[#1a120d]',
 
     thead: 'relative bg-white/90 dark:bg-[#1a120d]/90 backdrop-blur',
-    th: 'px-4 py-3.5 text-xs font-semibold uppercase tracking-wide text-stone-600 dark:text-amber-100/45',
+    th: 'px-4 py-3.5 text-xs font-semibold uppercase tracking-wide text-stone-600 dark:text-amber-100/35',
 
     tbody: [
       'isolate bg-white dark:bg-[#1a120d]',
@@ -17,7 +17,7 @@ export function useBackofficeTableUi() {
     ].join(' '),
 
     tr: 'data-[selected=true]:bg-amber-50/70 dark:data-[selected=true]:bg-[#2a1d15]',
-    td: 'p-4 text-sm text-stone-800 dark:text-amber-100/55 whitespace-nowrap',
+    td: 'p-4 text-sm text-stone-800 dark:text-amber-100/40 whitespace-nowrap',
     empty: 'py-6 text-center text-sm text-stone-500 dark:text-amber-100/70'
   } as const
 }

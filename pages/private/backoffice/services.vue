@@ -109,9 +109,9 @@ const columns: TableColumn<Service>[] = [
       onClick: () => toggleSort('name')
     }, t('admin.services.columns.name')),
     cell: ({ row }) => h('div', { class: 'space-y-0.5' }, [
-      h('div', { class: 'text-sm font-medium text-stone-900 dark:text-amber-100/70' }, row.original.name),
+      h('div', { class: 'text-sm font-medium text-stone-900 dark:text-amber-100/50' }, row.original.name),
       row.original.description
-        ? h('div', { class: 'text-xs text-stone-500 dark:text-amber-100/45 line-clamp-1' }, row.original.description)
+        ? h('div', { class: 'text-xs text-stone-500 dark:text-amber-100/35 line-clamp-1' }, row.original.description)
         : null
     ])
   },
