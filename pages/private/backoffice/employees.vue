@@ -37,6 +37,8 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 const { t } = useI18n()
 const toast = useToast()
 
+const tableUi = useBackofficeTableUi()
+
 const { branchOptions } = useSelectedBranch()
 
 const employees = ref<Employee[]>([])
@@ -392,6 +394,7 @@ onMounted(() => {
         :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
         :data="sorted"
         :columns="columns"
+        :ui="tableUi"
         :meta="tableMeta"
         @select="(_e, row) => openEdit(row.original)"
       />

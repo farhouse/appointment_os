@@ -28,6 +28,8 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 const { t, locale } = useI18n()
 const toast = useToast()
 
+const tableUi = useBackofficeTableUi()
+
 const branches = ref<Branch[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -305,6 +307,7 @@ onMounted(() => {
         :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
         :data="sorted"
         :columns="columns"
+        :ui="tableUi"
         :meta="tableMeta"
         @select="(_e, row) => openEdit(row.original)"
       />

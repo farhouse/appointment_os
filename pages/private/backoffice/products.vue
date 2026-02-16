@@ -31,6 +31,8 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 const toast = useToast()
 const { t } = useI18n()
 
+const tableUi = useBackofficeTableUi()
+
 const route = useRoute()
 const activeTab = ref<'products' | 'stock'>((route.query.tab === 'stock') ? 'stock' : 'products')
 
@@ -364,6 +366,7 @@ onMounted(() => {
             :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
             :data="sorted"
             :columns="columns"
+            :ui="tableUi"
             :meta="tableMeta"
             @select="(_e, row) => openEdit(row.original)"
           />
