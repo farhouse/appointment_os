@@ -217,6 +217,16 @@ async function loadServices() {
   }
 }
 
+function formatCurrency(value: string) {
+  const numberValue = Number(value)
+  if (Number.isNaN(numberValue)) return value
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(numberValue)
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleString('es-AR', { year: 'numeric', month: 'short', day: '2-digit' })
+}
+
 async function saveService(event: FormSubmitEvent<ServiceForm>) {
   isSaving.value = true
   try {
