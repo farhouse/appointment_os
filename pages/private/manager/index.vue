@@ -16,7 +16,7 @@ const shortcuts = computed(() => {
   const base = [
     { to: '/private/manager/calendar', title: 'pages.private.manager.shortcuts.calendar', desc: 'pages.private.manager.shortcuts.calendarDesc' },
     { to: '/private/manager/cash', title: 'pages.private.manager.shortcuts.cash', desc: 'pages.private.manager.shortcuts.cashDesc' },
-    { to: '/private/manager/stock', title: 'pages.private.manager.shortcuts.stock', desc: 'pages.private.manager.shortcuts.stockDesc' },
+    { to: '/private/manager/products?tab=stock', title: 'pages.private.manager.shortcuts.stock', desc: 'pages.private.manager.shortcuts.stockDesc' },
   ]
 
   if (!isAdmin.value) return base

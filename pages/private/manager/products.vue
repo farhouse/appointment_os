@@ -31,6 +31,27 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 const toast = useToast()
 const { t } = useI18n()
 
+const route = useRoute()
+const activeTab = ref<'products' | 'stock'>((route.query.tab === 'stock') ? 'stock' : 'products')
+
+const tabItems = computed(() => [
+  { label: t('nav.products'), value: 'products', slot: 'products' },
+  { label: t('nav.stock'), value: 'stock', slot: 'stock' }
+])
+
+watch(() => route.query.tab, (value) => {
+  activeTab.value = value === 'stock' ? 'stock' : 'products'
+})
+
+watch(activeTab, async (value) => {
+  await navigateTo({
+    path: route.path,
+    query: value === 'stock'
+      ? { ...route.query, tab: 'stock' }
+      : Object.fromEntries(Object.entries(route.query).filter(([key]) => key !== 'tab'))
+  }, { replace: true })
+})
+
 const products = ref<Product[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -287,117 +308,129 @@ onMounted(() => {
 </script>
 
 <template>
-  <CrudTableShell
-    :title="$t('pages.private.managerProducts')"
-    :search-placeholder="$t('admin.products.searchPlaceholder')"
-    :search-value="globalFilter"
-    :is-loading="isLoading"
-    :error-message="errorMessage"
-    :can-create="true"
-    :create-label="$t('admin.products.new')"
-    @search="globalFilter = $event"
-    @create="openCreate"
+  <UTabs
+    v-model="activeTab"
+    :items="tabItems"
+    class="w-full"
   >
-    <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
-      <div>{{ $t('admin.common.count', { count: filteredTotal }) }}</div>
-      <div v-if="sortLabel">{{ $t('admin.common.sorting', { value: sortLabel }) }}</div>
-    </div>
-
-    <div v-if="isLoading" class="p-6">
-      <USkeleton class="h-8 w-full" />
-      <USkeleton class="mt-3 h-8 w-full" />
-      <USkeleton class="mt-3 h-8 w-full" />
-    </div>
-
-    <div v-else-if="isEmpty" class="p-6">
-      <CrudState
-        :title="$t('admin.products.emptyTitle')"
-        :description="$t('admin.products.emptyDescription')"
-        icon="i-lucide-box"
-        :action-label="$t('admin.products.new')"
-        @action="openCreate"
-      />
-    </div>
-
-    <div v-else-if="errorMessage" class="p-6">
-      <CrudState
-        :title="$t('admin.common.errorTitle')"
-        :description="errorMessage"
-        icon="i-lucide-alert-triangle"
-        :action-label="$t('admin.common.retry')"
-        @action="loadProducts"
-      />
-    </div>
-
-    <div v-else>
-      <UTable
-        ref="table"
-        v-model:global-filter="globalFilter"
-        v-model:pagination="pagination"
-        :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
-        :data="sorted"
-        :columns="columns"
-        :meta="tableMeta"
-        @select="(_e, row) => openEdit(row.original)"
-      />
-      <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
-        <div class="text-xs text-stone-500">
-          {{ $t('admin.common.pageInfo', { page, total: filteredTotal, size: pageSize }) }}
+    <template #products>
+      <CrudTableShell
+        :title="$t('pages.private.managerProducts')"
+        :search-placeholder="$t('admin.products.searchPlaceholder')"
+        :search-value="globalFilter"
+        :is-loading="isLoading"
+        :error-message="errorMessage"
+        :can-create="true"
+        :create-label="$t('admin.products.new')"
+        @search="globalFilter = $event"
+        @create="openCreate"
+      >
+        <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
+          <div>{{ $t('admin.common.count', { count: filteredTotal }) }}</div>
+          <div v-if="sortLabel">{{ $t('admin.common.sorting', { value: sortLabel }) }}</div>
         </div>
-        <UPagination v-model:page="page" :total="filteredTotal" :items-per-page="pageSize" />
-      </div>
-    </div>
-  </CrudTableShell>
 
-  <UModal v-model:open="modalOpen" :title="isEditing ? $t('admin.products.editTitle') : $t('admin.products.newTitle')" :ui="{ footer: 'justify-end' }">
-    <template #body>
-      <UForm ref="productForm" :schema="productSchema" :state="formState" class="space-y-4" @submit="saveProduct">
-        <UFormField :label="$t('admin.products.form.name')" name="name">
-          <UInput v-model="formState.name" />
-        </UFormField>
-        <UFormField :label="$t('admin.products.form.sku')" name="sku">
-          <UInput v-model="formState.sku" />
-        </UFormField>
-        <UFormField :label="$t('admin.products.form.description')" name="description">
-          <UTextarea v-model="formState.description" />
-        </UFormField>
-        <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField :label="$t('admin.products.form.price')" name="price">
-            <UInputNumber v-model="formState.price" :min="0" />
-          </UFormField>
-          <UFormField :label="$t('admin.products.form.cost')" name="cost">
-            <UInputNumber v-model="formState.cost" :min="0" />
-          </UFormField>
+        <div v-if="isLoading" class="p-6">
+          <USkeleton class="h-8 w-full" />
+          <USkeleton class="mt-3 h-8 w-full" />
+          <USkeleton class="mt-3 h-8 w-full" />
         </div>
-        <UFormField :label="$t('admin.products.form.pointsCost')" name="pointsCost">
-          <UInputNumber v-model="formState.pointsCost" :min="0" />
-        </UFormField>
-        <div class="hidden">
-          <UButton type="submit" />
-        </div>
-      </UForm>
-    </template>
-    <template #footer>
-      <UButton color="neutral" variant="outline" @click="modalOpen = false">
-        {{ $t('common.cancel') }}
-      </UButton>
-      <UButton color="primary" :loading="isSaving" @click="formRef?.submit()">
-        {{ isEditing ? $t('admin.common.save') : $t('admin.common.create') }}
-      </UButton>
-    </template>
-  </UModal>
 
-  <UModal v-model:open="deleteOpen" :title="$t('admin.products.deleteTitle')" :ui="{ footer: 'justify-end' }">
-    <template #body>
-      <p class="text-sm text-stone-600">{{ $t('admin.products.deleteConfirm', { name: selected?.name || '' }) }}</p>
+        <div v-else-if="isEmpty" class="p-6">
+          <CrudState
+            :title="$t('admin.products.emptyTitle')"
+            :description="$t('admin.products.emptyDescription')"
+            icon="i-lucide-box"
+            :action-label="$t('admin.products.new')"
+            @action="openCreate"
+          />
+        </div>
+
+        <div v-else-if="errorMessage" class="p-6">
+          <CrudState
+            :title="$t('admin.common.errorTitle')"
+            :description="errorMessage"
+            icon="i-lucide-alert-triangle"
+            :action-label="$t('admin.common.retry')"
+            @action="loadProducts"
+          />
+        </div>
+
+        <div v-else>
+          <UTable
+            ref="table"
+            v-model:global-filter="globalFilter"
+            v-model:pagination="pagination"
+            :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
+            :data="sorted"
+            :columns="columns"
+            :meta="tableMeta"
+            @select="(_e, row) => openEdit(row.original)"
+          />
+          <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
+            <div class="text-xs text-stone-500">
+              {{ $t('admin.common.pageInfo', { page, total: filteredTotal, size: pageSize }) }}
+            </div>
+            <UPagination v-model:page="page" :total="filteredTotal" :items-per-page="pageSize" />
+          </div>
+        </div>
+      </CrudTableShell>
+
+      <UModal v-model:open="modalOpen" :title="isEditing ? $t('admin.products.editTitle') : $t('admin.products.newTitle')" :ui="{ footer: 'justify-end' }">
+        <template #body>
+          <UForm ref="productForm" :schema="productSchema" :state="formState" class="space-y-4" @submit="saveProduct">
+            <UFormField :label="$t('admin.products.form.name')" name="name">
+              <UInput v-model="formState.name" />
+            </UFormField>
+            <UFormField :label="$t('admin.products.form.sku')" name="sku">
+              <UInput v-model="formState.sku" />
+            </UFormField>
+            <UFormField :label="$t('admin.products.form.description')" name="description">
+              <UTextarea v-model="formState.description" />
+            </UFormField>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <UFormField :label="$t('admin.products.form.price')" name="price">
+                <UInputNumber v-model="formState.price" :min="0" />
+              </UFormField>
+              <UFormField :label="$t('admin.products.form.cost')" name="cost">
+                <UInputNumber v-model="formState.cost" :min="0" />
+              </UFormField>
+            </div>
+            <UFormField :label="$t('admin.products.form.pointsCost')" name="pointsCost">
+              <UInputNumber v-model="formState.pointsCost" :min="0" />
+            </UFormField>
+            <div class="hidden">
+              <UButton type="submit" />
+            </div>
+          </UForm>
+        </template>
+        <template #footer>
+          <UButton color="neutral" variant="outline" @click="modalOpen = false">
+            {{ $t('common.cancel') }}
+          </UButton>
+          <UButton color="primary" :loading="isSaving" @click="formRef?.submit()">
+            {{ isEditing ? $t('admin.common.save') : $t('admin.common.create') }}
+          </UButton>
+        </template>
+      </UModal>
+
+      <UModal v-model:open="deleteOpen" :title="$t('admin.products.deleteTitle')" :ui="{ footer: 'justify-end' }">
+        <template #body>
+          <p class="text-sm text-stone-600">{{ $t('admin.products.deleteConfirm', { name: selected?.name || '' }) }}</p>
+        </template>
+        <template #footer>
+          <UButton color="neutral" variant="outline" @click="deleteOpen = false">
+            {{ $t('common.cancel') }}
+          </UButton>
+          <UButton color="error" :loading="isDeleting" @click="confirmDelete">
+            {{ $t('admin.common.delete') }}
+          </UButton>
+        </template>
+      </UModal>
     </template>
-    <template #footer>
-      <UButton color="neutral" variant="outline" @click="deleteOpen = false">
-        {{ $t('common.cancel') }}
-      </UButton>
-      <UButton color="error" :loading="isDeleting" @click="confirmDelete">
-        {{ $t('admin.common.delete') }}
-      </UButton>
+
+    <template #stock>
+      <ManagerStockPanel />
     </template>
-  </UModal>
+  </UTabs>
 </template>

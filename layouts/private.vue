@@ -26,14 +26,13 @@ const managerLinks = computed(() => [
   { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
   { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
   { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
-  { label: t('nav.stock'), to: '/private/manager/stock', icon: 'i-heroicons-archive-box' },
+  { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
 ])
 
 const adminLinks = computed(() => [
   { label: t('nav.dashboard'), to: '/private/manager', icon: 'i-heroicons-squares-2x2' },
   { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
   { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
-  { label: t('nav.stock'), to: '/private/manager/stock', icon: 'i-heroicons-archive-box' },
   { label: t('nav.employees'), to: '/private/manager/employees', icon: 'i-heroicons-users' },
   { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
   ...(isOwner.value ? [{ label: t('nav.branches'), to: '/private/manager/branches', icon: 'i-heroicons-map-pin' }] : []),
