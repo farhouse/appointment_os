@@ -13,6 +13,7 @@
     "dashboard": "Panel",
     "cash": "Caja",
     "products": "Productos",
+    "services": "Servicios",
     "stock": "Stock",
     "employees": "Empleados",
     "branches": "Sucursales",
@@ -134,6 +135,7 @@
       "managerCalendar": "Gerencia · Calendario",
       "managerCash": "Gerencia · Caja",
       "managerProducts": "Gerencia · Productos",
+      "managerServices": "Gerencia · Servicios",
       "managerStock": "Gerencia · Stock",
       "managerEmployees": "Gerencia · Empleados",
       "managerSettings": "Gerencia · Configuración",
@@ -352,8 +354,8 @@
         "created": "Producto creado",
         "updated": "Producto actualizado",
         "deleted": "Producto eliminado"
-    }
-  },
+      }
+    },
     "stock": {
       "new": "Nuevo",
       "newTitle": "Nuevo stock",
@@ -452,6 +454,34 @@
         "created": "Sucursal creada",
         "updated": "Sucursal actualizada",
         "deleted": "Sucursal eliminada"
+      }
+    },
+    "services": {
+      "new": "Nuevo",
+      "newTitle": "Nuevo servicio",
+      "editTitle": "Editar servicio",
+      "deleteTitle": "Eliminar servicio",
+      "deleteConfirm": "¿Querés eliminar {name}?",
+      "searchPlaceholder": "Buscar servicios",
+      "emptyTitle": "Sin servicios",
+      "emptyDescription": "Sumá un servicio para empezar a tomar reservas.",
+      "columns": {
+        "name": "Servicio",
+        "duration": "Duración",
+        "price": "Precio",
+        "updatedAt": "Actualizado"
+      },
+      "form": {
+        "name": "Nombre",
+        "nameRequired": "Ingresá un nombre",
+        "description": "Descripción",
+        "duration": "Duración (min)",
+        "price": "Precio"
+      },
+      "toast": {
+        "created": "Servicio creado",
+        "updated": "Servicio actualizado",
+        "deleted": "Servicio eliminado"
       }
     }
   }

@@ -27,6 +27,7 @@ const managerLinks = computed(() => [
   { label: t('nav.calendar'), to: '/private/manager/calendar', icon: 'i-heroicons-calendar-days' },
   { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
+  { label: t('nav.services'), to: '/private/manager/services', icon: 'i-lucide-scissors' },
 ])
 
 const adminLinks = computed(() => [
@@ -35,6 +36,7 @@ const adminLinks = computed(() => [
   { label: t('nav.cash'), to: '/private/manager/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.employees'), to: '/private/manager/employees', icon: 'i-heroicons-users' },
   { label: t('nav.products'), to: '/private/manager/products', icon: 'i-heroicons-tag' },
+  { label: t('nav.services'), to: '/private/manager/services', icon: 'i-lucide-scissors' },
   ...(isOwner.value ? [{ label: t('nav.branches'), to: '/private/manager/branches', icon: 'i-heroicons-map-pin' }] : []),
   { label: t('nav.settings'), to: '/private/manager/settings', icon: 'i-heroicons-cog-6-tooth' },
 ])

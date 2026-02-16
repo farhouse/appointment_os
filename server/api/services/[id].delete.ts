@@ -3,7 +3,10 @@ import prisma from '~/server/utils/prisma'
 import { requireParam } from '~/server/utils/http'
 import { notFound } from '~/server/utils/errors'
 
+import { requireRole } from '~/server/utils/permissions'
+
 export default defineEventHandler(async (event) => {
+  requireRole(event, ['ADMIN', 'MANAGER'])
   const id = requireParam(event, 'id')
 
   try {
