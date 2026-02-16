@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSelectedBranch } from '~/composables/useSelectedBranch'
+import { loadMe, useMeState } from '~/composables/useMe'
 
 definePageMeta({
   layout: 'private',
@@ -13,11 +14,29 @@ type CashBox = {
   active: boolean
 }
 
-const { selectedBranchId, branchOptions } = useSelectedBranch()
+const me = useMeState()
+
+const { selectedBranchId, branchOptions, refresh: refreshBranches } = useSelectedBranch()
 
 const cashBoxes = ref<CashBox[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
+
+type Branch = {
+  id: string
+  name: string
+  address?: string | null
+  phone?: string | null
+}
+
+const branches = ref<Branch[]>([])
+const branchForm = reactive({
+  name: '',
+  address: '',
+  phone: ''
+})
+
+const canManageBranches = computed(() => me.value?.role === 'OWNER')
 
 const formState = reactive({
   name: '',
@@ -41,6 +60,43 @@ async function loadCashBoxes() {
   } catch (e: any) {
     cashBoxes.value = []
     errorMessage.value = e?.data?.statusMessage || 'No se pudo cargar'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function loadBranches() {
+  errorMessage.value = ''
+  try {
+    branches.value = await $fetch('/api/public/branches')
+  } catch (e: any) {
+    branches.value = []
+    errorMessage.value = e?.data?.statusMessage || 'No se pudo cargar'
+  }
+}
+
+async function handleCreateBranch() {
+  if (!canManageBranches.value || !branchForm.name.trim()) return
+  isLoading.value = true
+  errorMessage.value = ''
+  try {
+    await $fetch('/api/branches', {
+      method: 'POST',
+      body: {
+        name: branchForm.name.trim(),
+        address: branchForm.address?.trim() || null,
+        phone: branchForm.phone?.trim() || null
+      }
+    })
+
+    branchForm.name = ''
+    branchForm.address = ''
+    branchForm.phone = ''
+
+    await refreshBranches()
+    await loadBranches()
+  } catch (e: any) {
+    errorMessage.value = e?.data?.statusMessage || 'No se pudo crear'
   } finally {
     isLoading.value = false
   }
@@ -86,6 +142,8 @@ async function toggleCashBox(cb: CashBox) {
 }
 
 onMounted(() => {
+  void loadMe()
+  void loadBranches()
   if (canLoadCashBoxes.value) void loadCashBoxes()
 })
 </script>
@@ -95,6 +153,55 @@ onMounted(() => {
     <div>
       <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerSettings') }}</h1>
       <p class="text-sm text-gray-600">{{ $t('pages.private.manager.cashboxes.subtitle') }}</p>
+    </div>
+
+    <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold text-gray-900">{{ $t('nav.branches') }}</div>
+          <div class="text-xs text-gray-500">
+            {{ canManageBranches ? $t('admin.branches.emptyDescription') : '' }}
+          </div>
+        </div>
+      </div>
+
+      <div v-if="canManageBranches" class="mt-3 grid gap-3 sm:grid-cols-3">
+        <input
+          v-model="branchForm.name"
+          type="text"
+          class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+          :placeholder="$t('admin.branches.form.name')"
+        />
+        <input
+          v-model="branchForm.address"
+          type="text"
+          class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+          :placeholder="$t('admin.branches.form.address')"
+        />
+        <div class="flex gap-2">
+          <input
+            v-model="branchForm.phone"
+            type="text"
+            class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+            :placeholder="$t('admin.branches.form.phone')"
+          />
+          <UButton color="primary" :disabled="!branchForm.name.trim()" :loading="isLoading" @click="handleCreateBranch">
+            {{ $t('admin.branches.new') }}
+          </UButton>
+        </div>
+      </div>
+
+      <div class="mt-4 space-y-2">
+        <div v-if="!branches.length" class="text-sm text-gray-600">{{ $t('admin.branches.emptyTitle') }}</div>
+        <div v-else>
+          <div v-for="b in branches" :key="b.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
+            <div>
+              <div class="text-sm font-medium text-gray-900">{{ b.name }}</div>
+              <div class="text-xs text-gray-500">{{ [b.address, b.phone].filter(Boolean).join(' · ') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
