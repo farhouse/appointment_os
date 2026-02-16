@@ -332,7 +332,7 @@ onMounted(() => {
           <div v-if="sortLabel">{{ $t('admin.common.sorting', { value: sortLabel }) }}</div>
         </div>
 
-        <div v-if="isLoading" class="p-6">
+        <div v-if="isLoading && !hasData" class="p-6">
           <USkeleton class="h-8 w-full" />
           <USkeleton class="mt-3 h-8 w-full" />
           <USkeleton class="mt-3 h-8 w-full" />
@@ -366,6 +366,7 @@ onMounted(() => {
             :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
             :data="sorted"
             :columns="columns"
+            :loading="isLoading"
             :ui="tableUi"
             :meta="tableMeta"
             @select="(_e, row) => openEdit(row.original)"
