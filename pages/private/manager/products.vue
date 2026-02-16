@@ -60,7 +60,7 @@ const formState = reactive<Partial<ProductForm>>({
   pointsCost: 0
 })
 
-const { search, paged, total, page, pageSize, sortBy, sortDir, toggleSort } = useCrudTable(products, {
+const { search: globalFilter, paged, total, page, pageSize, sortBy, sortDir, toggleSort } = useCrudTable(products, {
   search: (item, query) => {
     const q = query.toLowerCase()
     return [item.name, item.sku, item.description].filter(Boolean).some(value => value!.toLowerCase().includes(q))
@@ -259,12 +259,12 @@ onMounted(() => {
   <CrudTableShell
     :title="$t('pages.private.managerProducts')"
     :search-placeholder="$t('admin.products.searchPlaceholder')"
-    :search-value="search"
+    :search-value="globalFilter"
     :is-loading="isLoading"
     :error-message="errorMessage"
     :can-create="true"
     :create-label="$t('admin.products.new')"
-    @search="search = $event"
+    @search="globalFilter = $event"
     @create="openCreate"
   >
     <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
@@ -300,6 +300,7 @@ onMounted(() => {
 
     <div v-else>
       <UTable
+        v-model:global-filter="globalFilter"
         :data="paged"
         :columns="columns"
         :meta="tableMeta"

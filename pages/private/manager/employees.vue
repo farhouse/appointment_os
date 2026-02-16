@@ -100,7 +100,7 @@ const roleItems = computed(() => [
   { label: t('admin.employees.roles.client'), value: 'CLIENT' }
 ])
 
-const { search, paged, total, page, pageSize, sortBy, sortDir, toggleSort } = useCrudTable(employees, {
+const { search: globalFilter, paged, total, page, pageSize, sortBy, sortDir, toggleSort } = useCrudTable(employees, {
   search: (item, query) => {
     const q = query.toLowerCase()
     return [item.name, item.email, item.role].some(value => value.toLowerCase().includes(q))
@@ -314,12 +314,12 @@ onMounted(() => {
   <CrudTableShell
     :title="$t('pages.private.managerEmployees')"
     :search-placeholder="$t('admin.employees.searchPlaceholder')"
-    :search-value="search"
+    :search-value="globalFilter"
     :is-loading="isLoading"
     :error-message="errorMessage"
     :can-create="true"
     :create-label="$t('admin.employees.new')"
-    @search="search = $event"
+    @search="globalFilter = $event"
     @create="openCreate"
   >
     <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
@@ -355,6 +355,7 @@ onMounted(() => {
 
     <div v-else>
       <UTable
+        v-model:global-filter="globalFilter"
         :data="paged"
         :columns="columns"
         :meta="tableMeta"
