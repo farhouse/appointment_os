@@ -23,7 +23,8 @@
     "profile": "Perfil",
     "logout": "Cerrar sesión",
     "account": "Cuenta",
-    "book": "Reservar"
+    "book": "Reservar",
+    "redeem": "Canjear"
   },
   "common": {
     "loading": "Cargando…",
@@ -154,6 +155,7 @@
       "paidDefinitionNote": "Nota: consideramos como “pagado” a los turnos con estado PAID.",
       "clientBook": "Cliente · Reservar",
       "clientAppointments": "Cliente · Turnos",
+      "clientRedeem": "Cliente · Canjear",
       "placeholder": "Página en construcción."
     }
   },
@@ -286,6 +288,23 @@
   "language": {
     "label": "Idioma"
   },
+  "client": {
+    "redeem": {
+      "subtitle": "Canjeá productos con tus puntos.",
+      "balanceLabel": "Saldo",
+      "pointsUnit": "Puntos",
+      "recentTitle": "Actividad reciente",
+      "recentEmpty": "Todavía no hay actividad de puntos.",
+      "productsTitle": "Productos canjeables",
+      "costLabel": "Costo",
+      "redeemAction": "Canjear",
+      "emptyTitle": "Sin recompensas",
+      "emptyDescription": "Más adelante vas a ver productos para canjear.",
+      "success": "Canje realizado",
+      "error": "No se pudo canjear",
+      "insufficient": "No alcanzan los puntos"
+    }
+  },
   "admin": {
     "common": {
       "actions": "Acciones",
@@ -316,6 +335,7 @@
       "columns": {
         "name": "Producto",
         "price": "Precio",
+        "pointsCost": "Puntos",
         "updatedAt": "Actualizado"
       },
       "form": {
@@ -325,14 +345,15 @@
         "skuRequired": "Ingresá un SKU",
         "description": "Descripción",
         "price": "Precio",
-        "cost": "Costo"
+        "cost": "Costo",
+        "pointsCost": "Costo en puntos"
       },
       "toast": {
         "created": "Producto creado",
         "updated": "Producto actualizado",
         "deleted": "Producto eliminado"
-      }
-    },
+    }
+  },
     "stock": {
       "new": "Nuevo",
       "newTitle": "Nuevo stock",

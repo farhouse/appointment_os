@@ -18,6 +18,7 @@ type Product = {
   description: string | null
   price: string
   cost: string | null
+  pointsCost: number
   createdAt: string
   updatedAt: string
 }
@@ -44,7 +45,8 @@ const productSchema = z.object({
   sku: z.string().min(1, t('admin.products.form.skuRequired')),
   description: z.string().optional().nullable(),
   price: z.number().nonnegative(),
-  cost: z.number().nonnegative().optional().nullable()
+  cost: z.number().nonnegative().optional().nullable(),
+  pointsCost: z.number().int().nonnegative().default(0)
 })
 
 type ProductForm = z.output<typeof productSchema>
@@ -54,7 +56,8 @@ const formState = reactive<Partial<ProductForm>>({
   sku: '',
   description: '',
   price: 0,
-  cost: undefined
+  cost: undefined,
+  pointsCost: 0
 })
 
 const { search, paged, total, page, pageSize, sortBy, sortDir, toggleSort } = useCrudTable(products, {
@@ -82,6 +85,24 @@ const columns: TableColumn<Product>[] = [
       onClick: () => toggleSort('price')
     }, t('admin.products.columns.price')),
     cell: ({ row }) => formatCurrency(row.original.price),
+    meta: { class: { td: 'text-right', th: 'text-right' } }
+  },
+  {
+    accessorKey: 'pointsCost',
+    header: () => h('button', {
+      class: 'text-left font-semibold',
+      onClick: () => toggleSort('pointsCost')
+    }, t('admin.products.columns.pointsCost')),
+    cell: ({ row }) => row.original.pointsCost ? row.original.pointsCost.toString() : '—',
+    meta: { class: { td: 'text-right', th: 'text-right' } }
+  },
+  {
+    accessorKey: 'pointsCost',
+    header: () => h('button', {
+      class: 'text-left font-semibold',
+      onClick: () => toggleSort('pointsCost')
+    }, t('admin.products.columns.pointsCost')),
+    cell: ({ row }) => row.original.pointsCost ? row.original.pointsCost.toString() : '—',
     meta: { class: { td: 'text-right', th: 'text-right' } }
   },
   {
@@ -147,6 +168,7 @@ function resetForm() {
   formState.description = ''
   formState.price = 0
   formState.cost = undefined
+  formState.pointsCost = 0
 }
 
 function openCreate() {
@@ -162,6 +184,7 @@ function openEdit(product: Product) {
   formState.description = product.description ?? ''
   formState.price = Number(product.price)
   formState.cost = product.cost ? Number(product.cost) : undefined
+  formState.pointsCost = Number(product.pointsCost ?? 0)
   modalOpen.value = true
 }
 
@@ -311,6 +334,9 @@ onMounted(() => {
             <UInputNumber v-model="formState.cost" :min="0" />
           </UFormField>
         </div>
+        <UFormField :label="$t('admin.products.form.pointsCost')" name="pointsCost">
+          <UInputNumber v-model="formState.pointsCost" :min="0" />
+        </UFormField>
         <div class="hidden">
           <UButton type="submit" />
         </div>

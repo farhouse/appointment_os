@@ -23,7 +23,8 @@
     "profile": "Profile",
     "logout": "Logout",
     "account": "Account",
-    "book": "Book"
+    "book": "Book",
+    "redeem": "Redeem"
   },
   "common": {
     "loading": "Loading…",
@@ -154,6 +155,7 @@
       "paidDefinitionNote": "Note: we treat appointments with status PAID as “paid”.",
       "clientBook": "Client · Book",
       "clientAppointments": "Client · Appointments",
+      "clientRedeem": "Client · Redeem",
       "placeholder": "Placeholder page."
     }
   },
@@ -286,6 +288,23 @@
   "language": {
     "label": "Language"
   },
+  "client": {
+    "redeem": {
+      "subtitle": "Redeem products with your loyalty points.",
+      "balanceLabel": "Balance",
+      "pointsUnit": "Points",
+      "recentTitle": "Recent activity",
+      "recentEmpty": "No points activity yet.",
+      "productsTitle": "Redeemable products",
+      "costLabel": "Cost",
+      "redeemAction": "Redeem",
+      "emptyTitle": "No rewards yet",
+      "emptyDescription": "Check back later for redeemable products.",
+      "success": "Redemption complete",
+      "error": "Could not redeem",
+      "insufficient": "Not enough points"
+    }
+  },
   "admin": {
     "common": {
       "actions": "Actions",
@@ -316,6 +335,7 @@
       "columns": {
         "name": "Product",
         "price": "Price",
+        "pointsCost": "Points",
         "updatedAt": "Updated"
       },
       "form": {
@@ -325,14 +345,15 @@
         "skuRequired": "Enter a SKU",
         "description": "Description",
         "price": "Price",
-        "cost": "Cost"
+        "cost": "Cost",
+        "pointsCost": "Points cost"
       },
       "toast": {
         "created": "Product created",
         "updated": "Product updated",
         "deleted": "Product deleted"
-      }
-    },
+    }
+  },
     "stock": {
       "new": "New",
       "newTitle": "New stock",
