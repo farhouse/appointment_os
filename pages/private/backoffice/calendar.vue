@@ -27,6 +27,8 @@ const calendarConfig = computed(() => ({
   todayButton: false,
   timeFrom: 8 * 60,
   timeTo: 20 * 60,
+  // Make rows taller so appointments are easier to read (more scrolling, less compression).
+  timeCellHeight: 70,
   editableEvents: true,
   events: calendarEvents.value,
   // Schedules = columns (one per barber) for day/week views.
