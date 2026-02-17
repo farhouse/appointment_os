@@ -347,7 +347,7 @@ async function submitBooking() {
 
         <!-- Day timeline (calendar-like) -->
         <div class="mt-4">
-          <div class="relative rounded-lg border border-gray-200 bg-white overflow-hidden" style="height: 520px;">
+          <div class="relative rounded-lg border border-gray-200 bg-white overflow-y-auto" style="height: 520px;">
             <!-- Time rail -->
             <div class="absolute inset-0 grid" :style="{ gridTemplateRows: 'repeat(10, 1fr)' }">
               <div v-for="h in 10" :key="h" class="border-t border-gray-100"></div>
@@ -377,7 +377,8 @@ async function submitBooking() {
                   const pxPerMin = 520 / (10 * 60)
                   const top = Math.max(0, minutes * pxPerMin)
                   const height = Math.max(18, slotDurationMin * pxPerMin)
-                  return { top: top + 'px', height: height + 'px' }
+                  const isSelected = selectedStart === s.start.toISOString()
+                  return { top: top + 'px', height: height + 'px', zIndex: isSelected ? 10 : 1 }
                 })()"
                 @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
               />
