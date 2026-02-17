@@ -70,6 +70,22 @@ watch(locale, () => {
   if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
 })
 
+// Keep calendar fresh: new appointments can be created from other tabs/pages.
+let refreshTimer: any
+onMounted(() => {
+  refreshTimer = setInterval(() => {
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+  }, 15000)
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+  })
+})
+
+onBeforeUnmount(() => {
+  if (refreshTimer) clearInterval(refreshTimer)
+})
+
 async function loadEvents(view: VueCalView, branchId?: string | null) {
   const query = new URLSearchParams({
     start: view.start.toISOString(),
