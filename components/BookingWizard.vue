@@ -284,6 +284,7 @@ async function submitBooking() {
 
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left column: details + contact (on large screens, contact sits under details) -->
     <div class="lg:col-span-1 space-y-4">
       <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
         <h2 v-if="!hideDetailsTitle" class="font-semibold mb-3">{{ $t('booking.details') }}</h2>
@@ -330,8 +331,53 @@ async function submitBooking() {
           </button>
         </div>
       </div>
+
+      <!-- Contact (shown under details on lg+) -->
+      <div v-if="detailsComplete && timeComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="contactEl">
+        <h2 v-if="!hideContactTitle" class="font-semibold mb-3">{{ $t('booking.contact') }}</h2>
+
+        <label class="block text-sm font-medium mb-1">{{ $t('booking.firstName') }}</label>
+        <input v-model="clientFirstName" class="w-full rounded border px-3 py-2 bg-white" />
+
+        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.lastName') }}</label>
+        <input v-model="clientLastName" class="w-full rounded border px-3 py-2 bg-white" />
+
+        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }}</label>
+        <input v-model="clientEmail" type="email" class="w-full rounded border px-3 py-2 bg-white" />
+
+        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
+        <input v-model="clientPhone" class="w-full rounded border px-3 py-2 bg-white" />
+
+        <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
+
+        <div v-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
+              <p class="text-gray-600">{{ $t('booking.existingUser.subtitle') }}</p>
+            </div>
+            <label class="flex items-center gap-2 text-xs font-medium select-none whitespace-nowrap">
+              <input v-model="earnPoints" type="checkbox" class="accent-current" />
+              {{ $t('booking.existingUser.switch') }}
+            </label>
+          </div>
+          <div v-if="earnPoints" class="mt-3">
+            <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingUser.cta') }}</UButton>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <div v-if="errorMsg" class="mb-3 text-sm text-red-700">{{ errorMsg }}</div>
+          <div v-if="successMsg" class="mb-3 text-sm text-green-700">{{ successMsg }}</div>
+
+          <UButton :disabled="!canSubmit || loading" color="primary" @click="submitBooking">
+            {{ loading ? $t('booking.saving') : $t('booking.confirm') }}
+          </UButton>
+        </div>
+      </div>
     </div>
 
+    <!-- Right column: slots -->
     <div class="lg:col-span-2 space-y-4">
       <div v-if="detailsComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="slotsEl">
         <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -347,7 +393,7 @@ async function submitBooking() {
 
         <!-- Day timeline (calendar-like) -->
         <div class="mt-4">
-          <div class="relative rounded-lg border border-gray-200 bg-white overflow-y-auto" style="height: 520px;">
+          <div class="scrollbar-nice relative rounded-lg border border-gray-200 bg-white overflow-y-auto" style="height: 520px;">
             <!-- Time rail -->
             <div class="absolute inset-0 grid" :style="{ gridTemplateRows: 'repeat(10, 1fr)' }">
               <div v-for="h in 10" :key="h" class="border-t border-gray-100"></div>
@@ -391,48 +437,7 @@ async function submitBooking() {
         </div>
       </div>
 
-      <div v-if="detailsComplete && timeComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="contactEl">
-        <h2 v-if="!hideContactTitle" class="font-semibold mb-3">{{ $t('booking.contact') }}</h2>
-
-        <label class="block text-sm font-medium mb-1">{{ $t('booking.firstName') }}</label>
-        <input v-model="clientFirstName" class="w-full rounded border px-3 py-2 bg-white" />
-
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.lastName') }}</label>
-        <input v-model="clientLastName" class="w-full rounded border px-3 py-2 bg-white" />
-
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }}</label>
-        <input v-model="clientEmail" type="email" class="w-full rounded border px-3 py-2 bg-white" />
-
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
-        <input v-model="clientPhone" class="w-full rounded border px-3 py-2 bg-white" />
-
-        <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
-
-        <div v-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0">
-              <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
-              <p class="text-gray-600">{{ $t('booking.existingUser.subtitle') }}</p>
-            </div>
-            <label class="flex items-center gap-2 text-xs font-medium select-none whitespace-nowrap">
-              <input v-model="earnPoints" type="checkbox" class="accent-current" />
-              {{ $t('booking.existingUser.switch') }}
-            </label>
-          </div>
-          <div v-if="earnPoints" class="mt-3">
-            <UButton to="/login" variant="outline" size="sm">{{ $t('booking.existingUser.cta') }}</UButton>
-          </div>
-        </div>
-
-        <div class="mt-5">
-          <div v-if="errorMsg" class="mb-3 text-sm text-red-700">{{ errorMsg }}</div>
-          <div v-if="successMsg" class="mb-3 text-sm text-green-700">{{ successMsg }}</div>
-
-          <UButton :disabled="!canSubmit || loading" color="primary" @click="submitBooking">
-            {{ loading ? $t('booking.saving') : $t('booking.confirm') }}
-          </UButton>
-        </div>
-      </div>
+      
     </div>
   </div>
 </template>

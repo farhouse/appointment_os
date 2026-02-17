@@ -1,3 +1,24 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 @import "./theme.css";
+
+/* Custom scrollbars (used in booking timeline) */
+.scrollbar-nice {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(107, 114, 128, 0.7) transparent; /* thumb / track */
+}
+.scrollbar-nice::-webkit-scrollbar {
+  width: 10px;
+}
+.scrollbar-nice::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-nice::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.5);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-nice::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.75);
+}
