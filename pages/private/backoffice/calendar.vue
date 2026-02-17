@@ -226,7 +226,7 @@ function handleEventClick(e: any) {
 <template>
   <div>
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
-    <div class="bg-white p-4 rounded-lg shadow h-[600px] mt-4 text-gray-900">
+    <div class="bg-white p-4 rounded-lg shadow mt-4 text-gray-900 h-[calc(100vh-220px)] min-h-[600px]">
       <div class="flex flex-wrap items-center gap-2 mb-4">
         <div class="flex gap-2">
           <button
