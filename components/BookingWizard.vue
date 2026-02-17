@@ -416,7 +416,7 @@ async function submitBooking() {
                 type="button"
                 class="absolute left-2 right-2 rounded border"
                 :title="`${s.label} (${slotDurationMin} min)`"
-                :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 border-gray-900' : 'border-gray-300 hover:border-gray-400 bg-white'"
+                :class="selectedStart === s.start.toISOString() ? '' : 'border-gray-300 hover:border-gray-400 bg-white'"
                 :style="(() => {
                   const dayStart = new Date(`${date}T09:00:00`)
                   const minutes = (s.start.getTime() - dayStart.getTime()) / 60000
@@ -424,7 +424,14 @@ async function submitBooking() {
                   const top = Math.max(0, minutes * pxPerMin)
                   const height = Math.max(18, slotDurationMin * pxPerMin)
                   const isSelected = selectedStart === s.start.toISOString()
-                  return { top: top + 'px', height: height + 'px', zIndex: isSelected ? 10 : 1 }
+                  return {
+                    top: top + 'px',
+                    height: height + 'px',
+                    zIndex: isSelected ? 10 : 1,
+                    backgroundColor: isSelected ? 'var(--ui-primary)' : undefined,
+                    borderColor: isSelected ? 'var(--ui-primary)' : undefined,
+                    boxShadow: isSelected ? '0 0 0 2px color-mix(in oklab, var(--ui-primary), #ffffff 35%)' : undefined,
+                  }
                 })()"
                 @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
               />
