@@ -118,6 +118,7 @@ const selectedEvent = ref<any | null>(null)
 const detailModalOpen = ref(false)
 const payModalOpen = ref(false)
 const isConfirming = ref(false)
+const isUpdatingStatus = ref(false)
 
 const cashBoxes = ref<{ id: string; name: string }[]>([])
 const isPaying = ref(false)
@@ -160,6 +161,24 @@ async function confirmAppointment() {
     payError.value = e?.data?.statusMessage || e?.data?.message || 'No se pudo confirmar'
   } finally {
     isConfirming.value = false
+  }
+}
+
+async function setAppointmentStatus(status: 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'FINISHED' | 'CANCELED' | 'NO_SHOW') {
+  if (!selectedEvent.value?.id) return
+  isUpdatingStatus.value = true
+  payError.value = ''
+  try {
+    await $fetch(`/api/appointments/${selectedEvent.value.id}/status`, {
+      method: 'PATCH',
+      body: { status }
+    })
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+    closeDetailModal()
+  } catch (e: any) {
+    payError.value = e?.data?.statusMessage || e?.data?.message || 'No se pudo actualizar el estado'
+  } finally {
+    isUpdatingStatus.value = false
   }
 }
 
@@ -302,6 +321,7 @@ function handleEventClick(e: any) {
         <div class="mt-4 flex justify-end gap-2 flex-wrap">
           <UButton variant="outline" @click="closeDetailModal">{{ $t('common.close') }}</UButton>
 
+          <!-- Status transitions (manager/admin) -->
           <UButton
             v-if="selectedEvent?.extendedProps?.status === 'PENDING'"
             color="primary"
@@ -309,6 +329,42 @@ function handleEventClick(e: any) {
             @click="confirmAppointment"
           >
             Confirmar
+          </UButton>
+
+          <UButton
+            v-if="selectedEvent?.extendedProps?.status === 'CONFIRMED'"
+            color="primary"
+            :loading="isUpdatingStatus"
+            @click="setAppointmentStatus('IN_PROGRESS')"
+          >
+            Iniciar
+          </UButton>
+
+          <UButton
+            v-if="selectedEvent?.extendedProps?.status === 'IN_PROGRESS'"
+            color="primary"
+            :loading="isUpdatingStatus"
+            @click="setAppointmentStatus('FINISHED')"
+          >
+            Finalizar
+          </UButton>
+
+          <UButton
+            v-if="['PENDING','CONFIRMED','IN_PROGRESS'].includes(selectedEvent?.extendedProps?.status)"
+            variant="outline"
+            :loading="isUpdatingStatus"
+            @click="setAppointmentStatus('NO_SHOW')"
+          >
+            No show
+          </UButton>
+
+          <UButton
+            v-if="['PENDING','CONFIRMED'].includes(selectedEvent?.extendedProps?.status)"
+            variant="outline"
+            :loading="isUpdatingStatus"
+            @click="setAppointmentStatus('CANCELED')"
+          >
+            Cancelar
           </UButton>
 
           <UButton
