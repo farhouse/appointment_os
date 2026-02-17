@@ -37,7 +37,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: sh -c "rm -rf .nuxt .output && npm ci --include=dev && npx prisma generate && npx prisma db push && npm run dev -- --host 0.0.0.0"
+    command: sh -c "rm -rf .nuxt .output && npm ci --include=dev && npx prisma generate && npx prisma db push && mkdir -p /Users/farhouse/Projects/barber-os && ln -sfn /app/node_modules /Users/farhouse/Projects/barber-os/node_modules && npm run dev -- --host 0.0.0.0"
 
   # PROD-like container (requires `npm run build` output inside image)
   app:
