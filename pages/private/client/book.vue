@@ -37,8 +37,7 @@ const initialClient = computed(() => {
     </p>
 
     <BookingWizard
-      v-else
-      :initial-branch-id="selectedBranchId"
+      :initial-branch-id="selectedBranchId || undefined"
       :initial-client="initialClient"
       :hide-details-title="true"
     />
