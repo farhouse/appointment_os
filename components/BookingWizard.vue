@@ -35,6 +35,36 @@ const serviceId = ref<string>('')
 const barberId = ref<string>('')
 
 const date = ref<string>(new Date().toISOString().slice(0, 10)) // YYYY-MM-DD
+
+function parseLocalDate(d: string) {
+  // d = YYYY-MM-DD
+  return new Date(`${d}T00:00:00`)
+}
+
+function formatYmd(dt: Date) {
+  const y = dt.getFullYear()
+  const m = String(dt.getMonth() + 1).padStart(2, '0')
+  const d = String(dt.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const dateLabel = computed(() => {
+  const dt = parseLocalDate(date.value)
+  if (!Number.isFinite(dt.getTime())) return date.value
+  return dt.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' })
+})
+
+function changeDay(deltaDays: number) {
+  const dt = parseLocalDate(date.value)
+  if (!Number.isFinite(dt.getTime())) return
+  dt.setDate(dt.getDate() + deltaDays)
+
+  // Don't allow navigating to past days
+  const today = parseLocalDate(new Date().toISOString().slice(0, 10))
+  if (dt.getTime() < today.getTime()) return
+
+  date.value = formatYmd(dt)
+}
 const busy = ref<BusySlot[]>([])
 
 const clientFirstName = ref(props.initialClient?.firstName || '')
@@ -280,7 +310,25 @@ async function submitBooking() {
         </select>
 
         <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.date') }}</label>
-        <input v-model="date" type="date" class="w-full rounded border px-3 py-2 bg-white" />
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="px-3 py-2 rounded border border-gray-300 text-sm"
+            @click="changeDay(-1)"
+          >
+            {{ $t('calendar.labels.previous') }}
+          </button>
+          <div class="flex-1 text-center text-sm font-semibold text-gray-900">
+            {{ dateLabel }}
+          </div>
+          <button
+            type="button"
+            class="px-3 py-2 rounded border border-gray-300 text-sm"
+            @click="changeDay(1)"
+          >
+            {{ $t('calendar.labels.next') }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -297,19 +345,49 @@ async function submitBooking() {
           {{ $t('booking.pickFirst') }}
         </div>
 
-        <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-          <button
-            v-for="s in availableSlots"
-            :key="s.start.toISOString()"
-            type="button"
-            class="rounded border px-3 py-2 text-sm"
-            :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300'"
-            @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
-          >
-            {{ s.label }}
-          </button>
-          <div v-if="availableSlots.length === 0" class="col-span-full text-sm text-gray-600">
-            {{ $t('booking.noSlots') }}
+        <!-- Day timeline (calendar-like) -->
+        <div class="mt-4">
+          <div class="relative rounded-lg border border-gray-200 bg-white overflow-hidden" style="height: 520px;">
+            <!-- Time rail -->
+            <div class="absolute inset-0 grid" :style="{ gridTemplateRows: 'repeat(10, 1fr)' }">
+              <div v-for="h in 10" :key="h" class="border-t border-gray-100"></div>
+            </div>
+
+            <!-- Labels -->
+            <div class="absolute left-0 top-0 bottom-0 w-14 border-r border-gray-100 bg-gray-50">
+              <div v-for="h in 11" :key="h" class="relative" :style="{ height: (520/10) + 'px' }">
+                <div class="absolute -top-2 left-2 text-[10px] text-gray-600">
+                  {{ String(8 + h).padStart(2, '0') }}:00
+                </div>
+              </div>
+            </div>
+
+            <!-- Slots layer -->
+            <div class="absolute left-14 right-0 top-0 bottom-0">
+              <button
+                v-for="s in availableSlots"
+                :key="s.start.toISOString()"
+                type="button"
+                class="absolute left-2 right-2 rounded border text-sm text-left px-3 py-2"
+                :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300 hover:border-gray-400'"
+                :style="(() => {
+                  const dayStart = new Date(`${date}T09:00:00`)
+                  const minutes = (s.start.getTime() - dayStart.getTime()) / 60000
+                  const pxPerMin = 520 / (10 * 60)
+                  const top = Math.max(0, minutes * pxPerMin)
+                  const height = Math.max(18, slotDurationMin * pxPerMin)
+                  return { top: top + 'px', height: height + 'px' }
+                })()"
+                @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
+              >
+                <div class="font-medium">{{ s.label }}</div>
+                <div class="text-xs opacity-70">{{ slotDurationMin }} min</div>
+              </button>
+
+              <div v-if="availableSlots.length === 0" class="p-3 text-sm text-gray-600">
+                {{ $t('booking.noSlots') }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
