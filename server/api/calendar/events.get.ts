@@ -22,9 +22,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Return events that overlap the requested interval.
+  // (VueCal day/week views often send `end` as the start of the next day, so using `endTime <= end`
+  // would incorrectly exclude same-day appointments.)
   const whereClause: any = {
-    startTime: { gte: start },
-    endTime: { lte: end },
+    startTime: { lt: end },
+    endTime: { gt: start },
   }
 
   if (branchId) whereClause.branchId = branchId
