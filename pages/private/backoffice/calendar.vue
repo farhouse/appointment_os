@@ -16,6 +16,7 @@ const calendarView = ref<VueCalView | null>(null)
 const calendarApiView = ref<VueCalView | null>(null)
 const calendarPayload = ref<any | null>(null)
 const calendarEvents = ref<VueCalEvent[]>([])
+const isEventsLoading = ref(false)
 const currentView = ref<'day' | 'week' | 'month'>('day')
 
 const barbers = ref<{ id: string; name: string }[]>([])
@@ -94,6 +95,7 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
     end: view.end.toISOString()
   })
   if (branchId) query.set('branchId', branchId)
+  isEventsLoading.value = true
   try {
     const events = await $fetch(`/api/calendar/events?${query.toString()}`)
     const parsed = ((events as any[]) || []).map((e) => ({
@@ -103,8 +105,10 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
       end: e?.end ? new Date(e.end) : e.end,
     }))
     calendarEvents.value = parsed as VueCalEvent[]
-  } catch (e) {
+  } catch {
     calendarEvents.value = []
+  } finally {
+    isEventsLoading.value = false
   }
 }
 
@@ -228,6 +232,10 @@ function handleEventClick(e: any) {
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
     <div class="bg-white p-4 rounded-lg shadow mt-4 text-gray-900 h-[calc(100vh-220px)] min-h-[600px] flex flex-col">
       <div class="flex flex-wrap items-center gap-2 mb-4">
+        <div v-if="isEventsLoading" class="flex items-center gap-2 text-xs text-stone-500">
+          <USpinner size="xs" />
+          <span>Cargando turnos…</span>
+        </div>
         <div class="flex gap-2">
           <button
             v-for="option in viewOptions"
