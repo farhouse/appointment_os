@@ -94,7 +94,13 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
   if (branchId) query.set('branchId', branchId)
   try {
     const events = await $fetch(`/api/calendar/events?${query.toString()}`)
-    calendarEvents.value = (events as VueCalEvent[]) || []
+    const parsed = ((events as any[]) || []).map((e) => ({
+      ...e,
+      // VueCal is picky: ensure start/end are actual Date instances.
+      start: e?.start ? new Date(e.start) : e.start,
+      end: e?.end ? new Date(e.end) : e.end,
+    }))
+    calendarEvents.value = parsed as VueCalEvent[]
   } catch (e) {
     calendarEvents.value = []
   }
