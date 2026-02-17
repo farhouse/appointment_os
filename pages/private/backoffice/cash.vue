@@ -45,6 +45,8 @@ const errorMessage = ref('')
 const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.cashBoxId === selectedCashBoxId.value && !s.closingTime) || null)
 
+const openSessions = computed(() => sessions.value.filter(s => !s.closingTime))
+
 const openSchema = z.object({
   cashBoxId: z.string().min(1),
   openingAmount: z.number().min(0)
@@ -216,11 +218,32 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
   }
 }
 
+function toNumber(value: string | number | null | undefined) {
+  if (value == null) return 0
+  const n = typeof value === 'string' ? Number(value) : value
+  return Number.isFinite(n) ? n : 0
+}
+
 function formatCurrency(value: string | number | null | undefined) {
   if (value == null) return '—'
   const n = typeof value === 'string' ? Number(value) : value
   if (!Number.isFinite(n)) return String(value)
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
+}
+
+function getSessionCurrentBalance(session: CashSession) {
+  // If session is closed and closingBalance exists, prefer that.
+  if (session.closingTime && session.closingBalance != null) return toNumber(session.closingBalance)
+
+  const opening = toNumber(session.openingBalance)
+  const deposits = (session.movements || [])
+    .filter(m => m.type === 'DEPOSIT')
+    .reduce((acc, m) => acc + toNumber(m.amount), 0)
+  const withdrawals = (session.movements || [])
+    .filter(m => m.type === 'WITHDRAWAL')
+    .reduce((acc, m) => acc + toNumber(m.amount), 0)
+
+  return opening + deposits - withdrawals
 }
 
 function formatDate(value: string | Date | null | undefined) {
@@ -268,8 +291,11 @@ onMounted(() => {
     </div>
 
     <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
-      <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
-        {{ $t('manager.cash.sessions') }}
+      <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800 flex items-center justify-between">
+        <span>{{ $t('manager.cash.sessions') }}</span>
+        <span v-if="openSessions.length" class="text-xs font-medium text-stone-500">
+          {{ openSessions.length }} caja(s) abierta(s)
+        </span>
       </div>
       <div v-if="isLoading" class="p-6">
         <USkeleton class="h-8 w-full" />
@@ -301,6 +327,10 @@ onMounted(() => {
             <div class="text-right">
               <div class="text-sm text-stone-500">{{ $t('manager.cash.openingAmount') }}</div>
               <div class="text-base font-semibold text-stone-900">{{ formatCurrency(session.openingBalance) }}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm text-stone-500">Monto actual</div>
+              <div class="text-base font-semibold text-stone-900">{{ formatCurrency(getSessionCurrentBalance(session)) }}</div>
             </div>
             <div class="text-right">
               <div class="text-sm text-stone-500">{{ $t('manager.cash.closingAmount') }}</div>
