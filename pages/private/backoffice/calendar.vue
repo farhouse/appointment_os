@@ -69,6 +69,7 @@ const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 const selectedEvent = ref<any | null>(null)
 const detailModalOpen = ref(false)
 const payModalOpen = ref(false)
+const isConfirming = ref(false)
 
 const cashBoxes = ref<{ id: string; name: string }[]>([])
 const isPaying = ref(false)
@@ -97,6 +98,21 @@ function openDetailModal(event: any) {
 function closeDetailModal() {
   detailModalOpen.value = false
   selectedEvent.value = null
+}
+
+async function confirmAppointment() {
+  if (!selectedEvent.value?.id) return
+  isConfirming.value = true
+  try {
+    await $fetch(`/api/appointments/${selectedEvent.value.id}/confirm`, { method: 'PATCH' })
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+    closeDetailModal()
+  } catch (e: any) {
+    // keep it simple for now; surface basic error
+    payError.value = e?.data?.statusMessage || e?.data?.message || 'No se pudo confirmar'
+  } finally {
+    isConfirming.value = false
+  }
 }
 
 function openPayModal() {
@@ -231,8 +247,18 @@ function handleEventClick(e: any) {
           </div>
         </div>
 
-        <div class="mt-4 flex justify-end gap-2">
+        <div class="mt-4 flex justify-end gap-2 flex-wrap">
           <UButton variant="outline" @click="closeDetailModal">{{ $t('common.close') }}</UButton>
+
+          <UButton
+            v-if="selectedEvent?.extendedProps?.status === 'PENDING'"
+            color="primary"
+            :loading="isConfirming"
+            @click="confirmAppointment"
+          >
+            Confirmar
+          </UButton>
+
           <UButton
             color="primary"
             :disabled="selectedEvent?.extendedProps?.status !== 'FINISHED'"
