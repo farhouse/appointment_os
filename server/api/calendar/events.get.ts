@@ -53,25 +53,27 @@ export default defineEventHandler(async (event) => {
   return appointments.map(apt => {
     const totalPrice = apt.services.reduce((sum, service) => sum + Number(service.price), 0)
     return {
-    id: apt.id,
-    title: `${apt.client.firstName} ${apt.client.lastName || ''} - ${apt.services.map(s => s.service.name).join(', ')}`,
-    start: apt.startTime,
-    end: apt.endTime,
-    extendedProps: {
-      status: apt.status,
-      notes: apt.notes,
-      totalPrice,
-      client: {
-        id: apt.client.id,
-        firstName: apt.client.firstName,
-        lastName: apt.client.lastName,
-        phone: apt.client.phone,
-        email: apt.client.email
+      id: apt.id,
+      title: `${apt.client.firstName} ${apt.client.lastName || ''} - ${apt.services.map(s => s.service.name).join(', ')}`,
+      start: apt.startTime,
+      end: apt.endTime,
+      // VueCal schedules (columns): use the professional id as schedule id.
+      ...(apt.professionalId ? { schedule: apt.professionalId } : {}),
+      extendedProps: {
+        status: apt.status,
+        notes: apt.notes,
+        totalPrice,
+        client: {
+          id: apt.client.id,
+          firstName: apt.client.firstName,
+          lastName: apt.client.lastName,
+          phone: apt.client.phone,
+          email: apt.client.email
+        },
+        professional: apt.professional ? { id: apt.professional.id, name: apt.professional.name } : null,
+        services: apt.services.map(s => ({ id: s.service.id, name: s.service.name, price: s.price }))
       },
-      professional: apt.professional ? { id: apt.professional.id, name: apt.professional.name } : null,
-      services: apt.services.map(s => ({ id: s.service.id, name: s.service.name, price: s.price }))
-    },
-    classNames: [`status-${apt.status.toLowerCase()}`]
+      classNames: [`status-${apt.status.toLowerCase()}`]
     }
   })
 })

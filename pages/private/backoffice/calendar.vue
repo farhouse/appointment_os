@@ -16,7 +16,9 @@ const calendarView = ref<VueCalView | null>(null)
 const calendarApiView = ref<VueCalView | null>(null)
 const calendarPayload = ref<any | null>(null)
 const calendarEvents = ref<VueCalEvent[]>([])
-const currentView = ref<'day' | 'week' | 'month'>('week')
+const currentView = ref<'day' | 'week' | 'month'>('day')
+
+const barbers = ref<{ id: string; name: string }[]>([])
 
 const calendarConfig = computed(() => ({
   view: currentView.value,
@@ -27,6 +29,10 @@ const calendarConfig = computed(() => ({
   timeTo: 20 * 60,
   editableEvents: true,
   events: calendarEvents.value,
+  // Schedules = columns (one per barber) for day/week views.
+  ...(barbers.value.length && (currentView.value === 'day' || currentView.value === 'week')
+    ? { schedules: barbers.value.map(b => ({ id: b.id, label: b.name })) }
+    : {}),
   locale: locale.value === 'es-AR' ? 'es' : 'en-us'
 }))
 
@@ -36,9 +42,23 @@ const viewOptions = [
   { id: 'month', label: 'calendar.month' }
 ]
 
+async function loadBarbers(branchId?: string | null) {
+  if (!branchId) {
+    barbers.value = []
+    return
+  }
+  try {
+    // Reuse public endpoint (active barbers assigned to the branch).
+    barbers.value = await $fetch(`/api/public/barbers?branchId=${encodeURIComponent(branchId)}`)
+  } catch {
+    barbers.value = []
+  }
+}
+
 watch([calendarView, selectedBranchId], ([view, branchId]) => {
   if (!view) return
   void loadEvents(view, branchId)
+  void loadBarbers(branchId)
 })
 
 watch([calendarPayload, selectedBranchId], ([payload, branchId]) => {
