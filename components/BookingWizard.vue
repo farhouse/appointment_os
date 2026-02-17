@@ -368,8 +368,9 @@ async function submitBooking() {
                 v-for="s in availableSlots"
                 :key="s.start.toISOString()"
                 type="button"
-                class="absolute left-2 right-2 rounded border text-sm text-left px-3 py-2"
-                :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300 hover:border-gray-400'"
+                class="absolute left-2 right-2 rounded border"
+                :title="`${s.label} (${slotDurationMin} min)`"
+                :class="selectedStart === s.start.toISOString() ? 'bg-gray-900 border-gray-900' : 'border-gray-300 hover:border-gray-400 bg-white'"
                 :style="(() => {
                   const dayStart = new Date(`${date}T09:00:00`)
                   const minutes = (s.start.getTime() - dayStart.getTime()) / 60000
@@ -379,10 +380,7 @@ async function submitBooking() {
                   return { top: top + 'px', height: height + 'px' }
                 })()"
                 @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
-              >
-                <div class="font-medium">{{ s.label }}</div>
-                <div class="text-xs opacity-70">{{ slotDurationMin }} min</div>
-              </button>
+              />
 
               <div v-if="availableSlots.length === 0" class="p-3 text-sm text-gray-600">
                 {{ $t('booking.noSlots') }}
