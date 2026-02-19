@@ -70,6 +70,17 @@ const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading, isSwitching } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
 
+// Workaround: native <select disabled> attribute is getting stuck even after options load
+// (likely hydration/patching issue). Force-enable it once we have options.
+const branchSelectEl = ref<HTMLSelectElement | null>(null)
+watchEffect(async () => {
+  if (!branchSelectEl.value) return
+  if (branchOptions.value.length === 0) return
+  await nextTick()
+  branchSelectEl.value.disabled = false
+  branchSelectEl.value.removeAttribute('disabled')
+})
+
 function localePrefix(code: string) {
   if (code === 'es-AR') return 'AR'
   if (code === 'en') return 'EN'
@@ -121,6 +132,7 @@ function localePrefix(code: string) {
               <select
                 :key="`branch-selector-${branchOptions.length}`"
                 id="branch-selector"
+                ref="branchSelectEl"
                 v-model="selectedBranchId"
                 class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
                 :disabled="branchOptions.length === 0"
