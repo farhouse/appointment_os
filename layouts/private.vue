@@ -119,6 +119,7 @@ function localePrefix(code: string) {
 
             <div class="flex items-center gap-2">
               <select
+                :key="`branch-selector-${branchOptions.length}`"
                 id="branch-selector"
                 v-model="selectedBranchId"
                 class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
