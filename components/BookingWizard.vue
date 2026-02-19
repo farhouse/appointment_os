@@ -81,6 +81,15 @@ const clientPhone = ref(props.initialClient?.phone || '')
 const existingClientUser = ref<{ id: string; name: string; email: string; phone?: string | null } | null>(null)
 const showLoginSuggestion = computed(() => !!existingClientUser.value)
 
+const hasContactInfoForLookup = computed(() => {
+  return !!(clientEmail.value.trim() || clientPhone.value.trim())
+})
+
+// Only offer account creation once we have some contact info and lookup says: no user.
+const showCreateAccountOffer = computed(() => {
+  return hasContactInfoForLookup.value && !lookingUpUser.value && !showLoginSuggestion.value
+})
+
 // If user doesn't exist, allow opt-in account creation.
 const createAccount = ref(false)
 const accountPassword = ref('')
@@ -98,6 +107,10 @@ watch(createAccount, (v) => {
     accountPassword.value = ''
     accountPassword2.value = ''
   }
+})
+
+watch(showCreateAccountOffer, (v) => {
+  if (!v) createAccount.value = false
 })
 
 const selectedStart = ref<string | null>(null) // ISO
@@ -437,7 +450,7 @@ async function submitBooking() {
           <span v-if="lookingUpUser" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
         </div>
 
-        <div v-if="!showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+        <div v-if="showCreateAccountOffer" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
               <p class="font-medium">{{ $t('booking.newUser.title') }}</p>
