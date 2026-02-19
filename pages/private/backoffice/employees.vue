@@ -66,7 +66,8 @@ const employeeBaseSchema = z.object({
   role: z.enum(['OWNER', 'ADMIN', 'MANAGER', 'BARBER', 'CLIENT']),
   active: z.boolean(),
   branchIds: z.array(z.string()).optional(),
-  password: z.string().min(6).optional()
+  // Allow empty string in form state (edit mode hides password field but state may contain '').
+  password: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(6).optional())
 })
 
 const employeeSchema = computed(() => employeeBaseSchema.superRefine((data, ctx) => {
