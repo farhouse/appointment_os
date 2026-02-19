@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         active: true, // This should exist now
         branches: {
