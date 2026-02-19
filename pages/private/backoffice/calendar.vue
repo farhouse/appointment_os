@@ -252,7 +252,7 @@ function handleEventClick(e: any) {
     <div class="bg-white p-4 rounded-lg shadow mt-4 text-gray-900 h-[calc(100vh-220px)] min-h-[600px] flex flex-col">
       <div class="flex flex-wrap items-center gap-2 mb-4">
         <div v-if="isEventsLoading" class="flex items-center gap-2 text-xs text-stone-500">
-          <USpinner size="xs" />
+          <span class="inline-block size-3 rounded-full border-2 border-stone-400 border-t-transparent animate-spin" aria-hidden="true" />
           <span>Cargando turnos…</span>
         </div>
         <div class="flex gap-2">

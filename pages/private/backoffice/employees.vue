@@ -56,8 +56,8 @@ const isSaving = ref(false)
 const isDeleting = ref(false)
 const isResetting = ref(false)
 const selected = ref<Employee | null>(null)
-const formRef = useTemplateRef('employeeForm')
-const passwordFormRef = useTemplateRef('passwordForm')
+const employeeFormRef = ref<any>(null)
+const passwordFormRef = ref<any>(null)
 const isEditing = computed(() => !!selected.value?.id)
 
 const employeeBaseSchema = z.object({
@@ -423,7 +423,21 @@ onMounted(() => {
 
   <UModal v-model:open="modalOpen" :title="isEditing ? $t('admin.employees.editTitle') : $t('admin.employees.newTitle')" :ui="{ footer: 'justify-end' }">
     <template #body>
-      <UForm id="employeeForm" ref="employeeForm" :schema="employeeSchema" :state="formState" class="space-y-4" @submit="saveEmployee">
+      <UForm
+        id="employeeForm"
+        ref="employeeFormRef"
+        :schema="employeeSchema"
+        :state="formState"
+        class="space-y-4"
+        @submit="saveEmployee"
+        @error="(e) => {
+          toast.add({
+            title: t('admin.common.saveError'),
+            description: (e as any)?.errors?.map((er: any) => `${er.name}: ${er.message}`).join(' · ') || t('booking.errors.missing'),
+            color: 'error'
+          })
+        }"
+      >
         <UFormField :label="$t('admin.employees.form.name')" name="name">
           <UInput v-model="formState.name" />
         </UFormField>
@@ -451,7 +465,7 @@ onMounted(() => {
       <UButton color="neutral" variant="outline" @click="modalOpen = false">
         {{ $t('common.cancel') }}
       </UButton>
-      <UButton color="primary" :loading="isSaving" @click="formRef?.value?.submit?.()">
+      <UButton color="primary" :loading="isSaving" @click="employeeFormRef?.submit?.()">
         {{ isEditing ? $t('admin.common.save') : $t('admin.common.create') }}
       </UButton>
     </template>
@@ -459,7 +473,7 @@ onMounted(() => {
 
   <UModal v-model:open="passwordOpen" :title="$t('admin.employees.resetTitle')" :ui="{ footer: 'justify-end' }">
     <template #body>
-      <UForm ref="passwordForm" :schema="passwordSchema" :state="passwordState" class="space-y-4" @submit="confirmReset">
+      <UForm ref="passwordFormRef" :schema="passwordSchema" :state="passwordState" class="space-y-4" @submit="confirmReset">
         <UFormField :label="$t('admin.employees.form.password')" name="password">
           <UInput v-model="passwordState.password" type="password" />
         </UFormField>
