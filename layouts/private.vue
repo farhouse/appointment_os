@@ -122,10 +122,10 @@ function localePrefix(code: string) {
                 id="branch-selector"
                 v-model="selectedBranchId"
                 class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
-                :disabled="isLoading && branchOptions.length === 0"
+                :disabled="branchOptions.length === 0"
                 :aria-busy="(isLoading || isSwitching) ? 'true' : 'false'"
-                @pointerdown="(e) => console.log('[branch-selector] pointerdown', { disabled: (e.target as HTMLSelectElement)?.disabled, isLoading, isSwitching, options: branchOptions?.length, value: selectedBranchId })"
-                @click="(e) => console.log('[branch-selector] click', { disabled: (e.target as HTMLSelectElement)?.disabled, isLoading, isSwitching, options: branchOptions?.length, value: selectedBranchId })"
+                @pointerdown="(e) => console.log('[branch-selector] pointerdown', { disabled: (e.target as HTMLSelectElement)?.disabled, attrDisabled: (e.target as HTMLSelectElement)?.hasAttribute('disabled'), expectedDisabled: (branchOptions.length === 0), isLoading, isSwitching, options: branchOptions?.length, value: selectedBranchId })"
+                @click="(e) => console.log('[branch-selector] click', { disabled: (e.target as HTMLSelectElement)?.disabled, attrDisabled: (e.target as HTMLSelectElement)?.hasAttribute('disabled'), expectedDisabled: (branchOptions.length === 0), isLoading, isSwitching, options: branchOptions?.length, value: selectedBranchId })"
                 @focus="() => console.log('[branch-selector] focus')"
               >
                 <option value="">{{ $t('branch.all') }}</option>
