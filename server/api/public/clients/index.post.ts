@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   const phone = (data.phone || '').trim() || null
 
   if (!phone) badRequest('phone required')
+  if (!email) badRequest('email required')
 
   // Try to reuse an existing client (avoid unique constraint errors).
   let existing = null as any

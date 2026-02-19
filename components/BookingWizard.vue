@@ -214,6 +214,7 @@ const canSubmit = computed(() => {
     detailsComplete.value &&
     timeComplete.value &&
     clientFirstName.value.trim() &&
+    clientEmail.value.trim() &&
     clientPhone.value.trim()
   )
 })
@@ -254,7 +255,7 @@ async function submitBooking() {
       body: {
         firstName: clientFirstName.value.trim(),
         lastName: clientLastName.value.trim() || undefined,
-        email: clientEmail.value.trim() || undefined,
+        email: clientEmail.value.trim(),
         phone: clientPhone.value.trim() || undefined
       }
     })
@@ -268,7 +269,7 @@ async function submitBooking() {
         startTime: selectedStart.value,
         endTime: selectedEnd.value,
         serviceIds: [serviceId.value],
-        notifyEmail: !!clientEmail.value.trim(),
+        notifyEmail: true,
         notifySms: !!clientPhone.value.trim()
       }
     })
@@ -292,7 +293,9 @@ async function submitBooking() {
         <label class="block text-sm font-medium mb-1">{{ $t('booking.branch') }}</label>
         <select v-model="branchId" class="w-full rounded border px-3 py-2 bg-white">
           <option value="">{{ $t('booking.selectBranch') }}</option>
-          <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+          <option v-for="b in branches" :key="b.id" :value="b.id">
+            {{ b.address ? `${b.name} — ${b.address}` : b.name }}
+          </option>
         </select>
 
         <div class="flex items-baseline justify-between gap-3 mt-3">
@@ -342,7 +345,7 @@ async function submitBooking() {
         <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.lastName') }}</label>
         <input v-model="clientLastName" class="w-full rounded border px-3 py-2 bg-white" />
 
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }}</label>
+        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }} *</label>
         <input v-model="clientEmail" type="email" class="w-full rounded border px-3 py-2 bg-white" />
 
         <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
