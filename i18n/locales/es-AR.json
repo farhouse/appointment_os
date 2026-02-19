@@ -213,6 +213,13 @@
     "confirm": "Confirmar turno",
     "saving": "Guardando…",
     "success": "¡Listo! Tu turno quedó registrado.",
+    "confirm": {
+      "title": "Confirmación",
+      "working": "Confirmando turno…",
+      "success": "Turno confirmado.",
+      "error": "No se pudo confirmar el turno. El link puede haber expirado.",
+      "back": "Volver a /book"
+    },
     "done": {
       "title": "Turno registrado",
       "subtitle": "Te mandamos un email para confirmar el turno.",

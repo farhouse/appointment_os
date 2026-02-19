@@ -141,6 +141,8 @@ model Appointment {
   confirmedAt    DateTime?
   confirmedById  String?
   confirmedBy    User?    @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+  confirmToken   String?  @unique
+  confirmTokenExpiresAt DateTime?
 
   // Payment details
   paidAt        DateTime?

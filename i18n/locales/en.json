@@ -213,6 +213,13 @@
     "confirm": "Confirm appointment",
     "saving": "Saving…",
     "success": "Done! Your appointment was created.",
+    "confirm": {
+      "title": "Confirmation",
+      "working": "Confirming appointment…",
+      "success": "Appointment confirmed.",
+      "error": "Could not confirm appointment. The link may have expired.",
+      "back": "Back to /book"
+    },
     "done": {
       "title": "Appointment created",
       "subtitle": "We sent you an email to confirm your appointment.",
