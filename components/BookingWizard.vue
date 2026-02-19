@@ -474,7 +474,7 @@ async function submitBooking() {
           </div>
         </div>
 
-        <div v-else class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+        <div v-else-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
               <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
