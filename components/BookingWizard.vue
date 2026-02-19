@@ -296,6 +296,20 @@ watch(timeComplete, async (v) => {
   scrollTo(contactEl.value)
 })
 
+async function fetchWithRetry<T>(url: string, opts: any, retries = 1): Promise<T> {
+  try {
+    return await $fetch<T>(url, opts)
+  } catch (e: any) {
+    const msg = String(e?.message || '')
+    const isNetwork = msg.includes('Failed to fetch') || msg.includes('fetch failed')
+    if (retries > 0 && isNetwork) {
+      await new Promise((r) => setTimeout(r, 700))
+      return await fetchWithRetry<T>(url, opts, retries - 1)
+    }
+    throw e
+  }
+}
+
 async function submitBooking() {
   errorMsg.value = null
   successMsg.value = null
@@ -320,7 +334,7 @@ async function submitBooking() {
   loading.value = true
   try {
     // Create/reuse Client (business entity)
-    const client = await $fetch('/api/public/clients', {
+    const client = await fetchWithRetry<any>('/api/public/clients', {
       method: 'POST',
       body: {
         firstName: clientFirstName.value.trim(),
@@ -332,7 +346,7 @@ async function submitBooking() {
 
     // Optional: create auth account (User role CLIENT)
     if (createAccount.value && !showLoginSuggestion.value) {
-      await $fetch('/api/public/users/register', {
+      await fetchWithRetry('/api/public/users/register', {
         method: 'POST',
         body: {
           email: clientEmail.value.trim(),
@@ -344,7 +358,7 @@ async function submitBooking() {
       })
     }
 
-    const apt = await $fetch('/api/public/appointments', {
+    const apt = await fetchWithRetry<any>('/api/public/appointments', {
       method: 'POST',
       body: {
         branchId: branchId.value,
@@ -361,7 +375,8 @@ async function submitBooking() {
     successMsg.value = t('booking.success')
     await navigateTo({ path: '/book/done', query: { appointmentId: (apt as any).id } })
   } catch (e: any) {
-    errorMsg.value = e?.data?.message || e?.message || t('booking.errors.generic')
+    const msg = String(e?.data?.message || e?.message || '')
+    errorMsg.value = msg || t('booking.errors.generic')
   } finally {
     loading.value = false
   }
