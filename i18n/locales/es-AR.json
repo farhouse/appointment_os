@@ -196,7 +196,7 @@
     "email": "Email",
     "phone": "Teléfono",
     "price": "Precio",
-    "contactHint": "El teléfono es obligatorio. El email es opcional.",
+    "contactHint": "El teléfono y el email son obligatorios.",
     "existingUser": {
       "title": "¿Ya tenés cuenta?",
       "subtitle": "Detectamos un usuario registrado. Si iniciás sesión, el turno suma puntos y queda en tu historial.",
@@ -212,7 +212,15 @@
     "selected": "Seleccionado",
     "confirm": "Confirmar turno",
     "saving": "Guardando…",
-    "success": "¡Listo! Tu turno quedó registrado (pendiente de confirmación).",
+    "success": "¡Listo! Tu turno quedó registrado.",
+    "done": {
+      "title": "Turno registrado",
+      "subtitle": "Te mandamos un email para confirmar el turno.",
+      "statusHint": "Estado: pendiente de confirmación.",
+      "addToCalendar": "Agregar al calendario",
+      "backToBook": "Volver a /book",
+      "loadError": "No se pudo cargar el resumen del turno."
+    },
     "errors": {
       "missing": "Completá los datos y elegí un horario.",
       "generic": "No se pudo guardar el turno. Intentá de nuevo."

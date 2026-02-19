@@ -260,7 +260,7 @@ async function submitBooking() {
       }
     })
 
-    await $fetch('/api/public/appointments', {
+    const apt = await $fetch('/api/public/appointments', {
       method: 'POST',
       body: {
         branchId: branchId.value,
@@ -275,6 +275,7 @@ async function submitBooking() {
     })
 
     successMsg.value = t('booking.success')
+    await navigateTo({ path: '/book/done', query: { appointmentId: (apt as any).id } })
   } catch (e: any) {
     errorMsg.value = e?.data?.message || e?.message || t('booking.errors.generic')
   } finally {

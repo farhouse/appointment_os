@@ -196,7 +196,7 @@
     "email": "Email",
     "phone": "Phone",
     "price": "Price",
-    "contactHint": "Phone is required. Email is optional.",
+    "contactHint": "Phone and email are required.",
     "existingUser": {
       "title": "Already have an account?",
       "subtitle": "We detected a registered user. If you sign in, this booking earns points and shows in your history.",
@@ -212,7 +212,15 @@
     "selected": "Selected",
     "confirm": "Confirm appointment",
     "saving": "Saving…",
-    "success": "Done! Your appointment was created (pending confirmation).",
+    "success": "Done! Your appointment was created.",
+    "done": {
+      "title": "Appointment created",
+      "subtitle": "We sent you an email to confirm your appointment.",
+      "statusHint": "Status: pending confirmation.",
+      "addToCalendar": "Add to calendar",
+      "backToBook": "Back to /book",
+      "loadError": "Could not load appointment summary."
+    },
     "errors": {
       "missing": "Fill the form and select a time.",
       "generic": "Could not save the appointment. Please try again."
