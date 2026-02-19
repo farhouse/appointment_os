@@ -122,7 +122,7 @@ function localePrefix(code: string) {
                 id="branch-selector"
                 v-model="selectedBranchId"
                 class="border border-stone-300 rounded px-2 py-1 bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
-                :disabled="isLoading"
+                :disabled="isLoading && branchOptions.length === 0"
                 :aria-busy="(isLoading || isSwitching) ? 'true' : 'false'"
               >
                 <option value="">{{ $t('branch.all') }}</option>
