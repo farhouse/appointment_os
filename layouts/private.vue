@@ -114,7 +114,7 @@ function localePrefix(code: string) {
 
       <main class="flex-1 p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div class="flex items-center gap-2 text-sm">
+          <div v-if="!isClient" class="flex items-center gap-2 text-sm">
             <label class="text-stone-600 dark:text-stone-300" for="branch-selector">{{ $t('branch.label') }}</label>
 
             <div class="flex items-center gap-2">

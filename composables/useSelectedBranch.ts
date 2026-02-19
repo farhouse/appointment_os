@@ -7,6 +7,7 @@ const STORAGE_KEY = 'selectedBranchId'
 
 export function useSelectedBranch(defaultBranchId?: Ref<string | undefined>) {
   const selectedBranchId = useState<string>('selected-branch-id', () => '')
+  const didInit = useState<boolean>('selected-branch-did-init', () => false)
   const branchOptions = useState<BranchOption[]>('branch-options', () => [])
   const isLoading = useState<boolean>('branch-options-loading', () => false)
   const isSwitching = useState<boolean>('selected-branch-switching', () => false)
@@ -30,20 +31,29 @@ export function useSelectedBranch(defaultBranchId?: Ref<string | undefined>) {
   })
 
   watchEffect(() => {
-    // Only initialize when empty.
-    if (selectedBranchId.value) return
+    if (didInit.value) return
 
+    // Init once: prefer cookie, otherwise defaultBranchId.
     const fallbackBranchId = defaultBranchId?.value
 
-    if (cookie.value) {
-      selectedBranchId.value = cookie.value
-      return
+    if (!selectedBranchId.value) {
+      if (cookie.value) {
+        selectedBranchId.value = cookie.value
+      } else if (fallbackBranchId) {
+        selectedBranchId.value = fallbackBranchId
+      }
     }
 
-    if (fallbackBranchId) {
-      selectedBranchId.value = fallbackBranchId
-    }
+    didInit.value = true
   })
+
+  // If defaultBranchId arrives later (after me loads), apply it once only if still empty and cookie isn't set.
+  watch(defaultBranchId || ref(undefined), (id) => {
+    if (cookie.value) return
+    if (selectedBranchId.value) return
+    if (!id) return
+    selectedBranchId.value = id
+  }, { immediate: true })
 
   watch(selectedBranchId, (value) => {
     cookie.value = value || ''
