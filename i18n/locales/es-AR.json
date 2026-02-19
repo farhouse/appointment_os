@@ -145,6 +145,7 @@
       "profileSubtitle": "Tus datos de cuenta.",
       "profile": {
         "email": "Email",
+        "phone": "Teléfono",
         "name": "Nombre",
         "role": "Rol"
       },

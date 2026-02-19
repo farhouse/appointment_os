@@ -19,6 +19,9 @@ const me = useMeState()
       <div class="text-sm text-gray-500">{{ $t('pages.private.profile.email') }}</div>
       <div class="font-medium">{{ me?.email }}</div>
 
+      <div class="mt-4 text-sm text-gray-500">{{ $t('pages.private.profile.phone') }}</div>
+      <div class="font-medium">{{ me?.phone || '—' }}</div>
+
       <div class="mt-4 text-sm text-gray-500">{{ $t('pages.private.profile.name') }}</div>
       <div class="font-medium">{{ me?.name }}</div>
 
