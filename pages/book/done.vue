@@ -1,6 +1,15 @@
 <script setup lang="ts">
+import { loadMe } from '~/composables/useMe'
+
 const route = useRoute()
 const { t } = useI18n()
+
+const backToBookUrl = ref('/book')
+
+onMounted(async () => {
+  const me = await loadMe()
+  if (me?.role === 'CLIENT') backToBookUrl.value = '/private/client/book'
+})
 
 const appointmentId = computed(() => String(route.query.appointmentId || ''))
 
@@ -68,7 +77,7 @@ const icsUrl = computed(() => {
           <UButton v-if="icsUrl" :to="icsUrl" target="_blank" rel="noopener" icon="i-lucide-calendar-plus" variant="outline">
             {{ t('booking.done.addToCalendar') }}
           </UButton>
-          <UButton to="/book" icon="i-lucide-arrow-left" variant="ghost">
+          <UButton :to="backToBookUrl" icon="i-lucide-arrow-left" variant="ghost">
             {{ t('booking.done.backToBook') }}
           </UButton>
         </div>
