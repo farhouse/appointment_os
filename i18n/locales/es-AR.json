@@ -213,7 +213,7 @@
     "confirm": "Confirmar turno",
     "saving": "Guardando…",
     "success": "¡Listo! Tu turno quedó registrado.",
-    "confirm": {
+    "confirmPage": {
       "title": "Confirmación",
       "working": "Confirmando turno…",
       "success": "Turno confirmado.",

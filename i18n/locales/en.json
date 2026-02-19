@@ -213,7 +213,7 @@
     "confirm": "Confirm appointment",
     "saving": "Saving…",
     "success": "Done! Your appointment was created.",
-    "confirm": {
+    "confirmPage": {
       "title": "Confirmation",
       "working": "Confirming appointment…",
       "success": "Appointment confirmed.",

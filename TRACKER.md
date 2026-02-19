@@ -66,6 +66,12 @@ Leyenda estado: `todo | doing | blocked | done`
   - Expected: “Próximos” = startTime >= now (y no cancelados/no_show si aplica); “Pasados” = startTime < now.
   - NEXT: revisar wiring de `UTabs` (items.value) + filtro en UI y/o query del endpoint `GET /api/client/appointments`.
 
+- [ ] (todo) **Booking / i18n + redirect**:
+  - `booking.confirm` no traduce (clave pisada por objeto de confirm page).
+  - en inglés parece que no carga traducciones.
+  - al confirmar booking no redirige a `/book/done`.
+  - NEXT: arreglar claves i18n (renombrar confirm page) + revisar `navigateTo('/book/done')` y errores en submit.
+
 - [ ] (todo) **Client landing**: convertir `/private/client` en un dashboard útil.
   - Incluye: noticias/ofertas + resumen de últimos turnos + puntos + “hace cuánto no se corta el pelo”.
   - Acceptance: carga rápida + estados loading + responsive.
