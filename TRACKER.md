@@ -6,6 +6,11 @@
 Leyenda estado: `todo | doing | blocked | done`
 
 ## P0 — Bugs / bloqueantes
+- [ ] (todo) **Loyalty points mismatch**: cliente ve balance (ej 45) que no coincide con regla esperada (ej corte=25).
+  - Cause: hoy se calcula como `floor(paidAmount/1000)` al pasar a PAID.
+  - Expected: usar `Service.pointsReward` (sum por appointment) o una regla fija por servicio.
+  - NEXT: definir regla final + migrar/ajustar ledger existente si hace falta.
+
 - [ ] (todo) **Backoffice / Employees**: no se puede guardar cambios al editar un empleado (botón Guardar no funciona / submit no ocurre).
   - Acceptance: al editar y apretar Guardar, dispara PATCH y persiste; muestra toast.
   - Files: `pages/private/backoffice/employees.vue`, `server/api/employees/[id].patch.ts`.

@@ -83,7 +83,21 @@ export default defineEventHandler(async (event) => {
         where: { appointmentId: updatedAppointment.id } as any
       })
       if (!existingLedger) {
-        const points = Math.floor(Number(finalAmount) / 1000)
+        // Prefer service-configured points reward. Fallback: amount-based heuristic.
+        const aptWithServices = await tx.appointment.findUnique({
+          where: { id: updatedAppointment.id },
+          select: {
+            services: {
+              select: {
+                service: { select: { pointsReward: true } }
+              }
+            }
+          }
+        })
+
+        const servicePoints = (aptWithServices?.services || []).reduce((acc, s) => acc + (s.service?.pointsReward || 0), 0)
+        const points = servicePoints > 0 ? servicePoints : Math.floor(Number(finalAmount) / 1000)
+
         if (points > 0) {
           await tx.loyaltyLedger.create({
             data: {
