@@ -423,7 +423,7 @@ onMounted(() => {
 
   <UModal v-model:open="modalOpen" :title="isEditing ? $t('admin.employees.editTitle') : $t('admin.employees.newTitle')" :ui="{ footer: 'justify-end' }">
     <template #body>
-      <UForm ref="employeeForm" :schema="employeeSchema" :state="formState" class="space-y-4" @submit="saveEmployee">
+      <UForm id="employeeForm" ref="employeeForm" :schema="employeeSchema" :state="formState" class="space-y-4" @submit="saveEmployee">
         <UFormField :label="$t('admin.employees.form.name')" name="name">
           <UInput v-model="formState.name" />
         </UFormField>
@@ -451,7 +451,7 @@ onMounted(() => {
       <UButton color="neutral" variant="outline" @click="modalOpen = false">
         {{ $t('common.cancel') }}
       </UButton>
-      <UButton color="primary" :loading="isSaving" @click="formRef?.submit()">
+      <UButton color="primary" :loading="isSaving" form="employeeForm" type="submit">
         {{ isEditing ? $t('admin.common.save') : $t('admin.common.create') }}
       </UButton>
     </template>
