@@ -69,7 +69,12 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
 
     // BARBER role is enforced server-side; this returns only my appointments.
     const events = await $fetch(`/api/calendar/events?${query.toString()}`)
-    calendarEvents.value = (events as VueCalEvent[]) || []
+    // VueCal expects Date objects, but JSON responses contain ISO strings.
+    calendarEvents.value = ((events as any[]) || []).map((e) => ({
+      ...e,
+      start: e.start ? new Date(e.start) : e.start,
+      end: e.end ? new Date(e.end) : e.end
+    })) as VueCalEvent[]
   } catch {
     calendarEvents.value = []
   }

@@ -451,7 +451,7 @@ onMounted(() => {
       <UButton color="neutral" variant="outline" @click="modalOpen = false">
         {{ $t('common.cancel') }}
       </UButton>
-      <UButton color="primary" :loading="isSaving" form="employeeForm" type="submit">
+      <UButton color="primary" :loading="isSaving" @click="formRef?.value?.submit?.()">
         {{ isEditing ? $t('admin.common.save') : $t('admin.common.create') }}
       </UButton>
     </template>

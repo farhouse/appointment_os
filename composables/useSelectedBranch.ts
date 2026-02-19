@@ -16,10 +16,8 @@ export function useSelectedBranch(defaultBranchId?: Ref<string | undefined>) {
 
   // IMPORTANT:
   // This composable is used in multiple places (layout + pages).
-  // If we keep `didInit` as a local ref, each call would re-run the initialization logic
-  // and can overwrite a user selection, making the branch selector feel "stuck".
-  // So we keep it in a shared state.
-  const didInit = useState<boolean>('selected-branch-did-init', () => false)
+  // Avoid continuously overwriting a user-picked branch from cookie/default.
+  // We only initialize from cookie/default when there's no current selection.
 
   watchEffect(() => {
     isLoading.value = pending.value
@@ -32,17 +30,19 @@ export function useSelectedBranch(defaultBranchId?: Ref<string | undefined>) {
   })
 
   watchEffect(() => {
-    if (didInit.value) return
+    // Only initialize when empty.
+    if (selectedBranchId.value) return
 
     const fallbackBranchId = defaultBranchId?.value
 
     if (cookie.value) {
       selectedBranchId.value = cookie.value
-    } else if (fallbackBranchId) {
-      selectedBranchId.value = fallbackBranchId
+      return
     }
 
-    didInit.value = true
+    if (fallbackBranchId) {
+      selectedBranchId.value = fallbackBranchId
+    }
   })
 
   watch(selectedBranchId, (value) => {
