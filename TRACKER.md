@@ -56,6 +56,11 @@ Leyenda estado: `todo | doing | blocked | done`
   - NEXT: definir copy y estados.
 
 ## P2 — Cliente (private)
+- [ ] (todo) **Client / Upcoming shows past**: en `/private/client/appointments`, en “Próximos” aparecen turnos pasados.
+  - Also: el slider/tabs Próximos↔Pasados no cambia la lista (posible mismatch de `UTabs` v-model vs `items`).
+  - Expected: “Próximos” = startTime >= now (y no cancelados/no_show si aplica); “Pasados” = startTime < now.
+  - NEXT: revisar wiring de `UTabs` (items.value) + filtro en UI y/o query del endpoint `GET /api/client/appointments`.
+
 - [ ] (todo) **Client landing**: convertir `/private/client` en un dashboard útil.
   - Incluye: noticias/ofertas + resumen de últimos turnos + puntos + “hace cuánto no se corta el pelo”.
   - Acceptance: carga rápida + estados loading + responsive.
@@ -164,6 +169,14 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/barber/appointments.vue`.
 
 ## P2 — Backoffice
+- [ ] (todo) **Staff vs Clients split**: separar CRUD de staff (employees) vs CRUD de clientes.
+  - Decision: CRUD de clientes se basa en entidad `Client` (booking/loyalty). `User(role=CLIENT)` es opcional/vinculado.
+  - Acceptance:
+    - `/private/backoffice/employees` = staff only (OWNER/ADMIN/MANAGER/BARBER).
+    - nueva página `/private/backoffice/clients` = CRUD de `Client`.
+  - Files: `pages/private/backoffice/employees.vue`, `pages/private/backoffice/clients.vue` (nuevo), `server/api/clients/*` (si falta), permisos.
+  - NEXT: definir columnas/acciones mínimas para clients (ver historial turnos, puntos, contacto).
+
 - [ ] (todo) **Employees table**: permitir ordenar/filtrar por Rol (y que se vea bien).
   - Acceptance: filtro por rol (dropdown) + sort por rol.
   - Files: `pages/private/backoffice/employees.vue`.

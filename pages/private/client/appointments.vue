@@ -23,11 +23,11 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 const tabs = computed(() => [
-  { key: 'upcoming', label: t('appointments.sections.upcoming') },
-  { key: 'past', label: t('appointments.sections.past') }
+  { value: 'upcoming', label: t('appointments.sections.upcoming') },
+  { value: 'past', label: t('appointments.sections.past') }
 ])
 
-const activeTab = ref('upcoming')
+const activeTab = ref<'upcoming' | 'past'>('upcoming')
 
 const now = computed(() => new Date())
 
