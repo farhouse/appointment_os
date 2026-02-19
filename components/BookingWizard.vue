@@ -384,7 +384,16 @@ async function submitBooking() {
     })
 
     successMsg.value = t('booking.success')
-    await navigateTo({ path: '/book/done', query: { appointmentId: (apt as any).id } })
+
+    const appointmentId = (apt as any)?.id
+    const target = { path: '/book/done', query: { appointmentId } }
+    try {
+      await navigateTo(target)
+    } catch {
+      // Fallback: hard navigation (dev HMR / edge cases)
+      const q = appointmentId ? `?appointmentId=${encodeURIComponent(String(appointmentId))}` : ''
+      window.location.assign(`/book/done${q}`)
+    }
   } catch (e: any) {
     const msg = String(e?.data?.message || e?.message || '')
     errorMsg.value = msg || t('booking.errors.generic')
