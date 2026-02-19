@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useMeState } from '~/composables/useMe'
+
 const { t } = useI18n()
 
 type Branch = { id: string; name: string; address?: string | null; phone?: string | null }
@@ -85,9 +87,12 @@ const hasContactInfoForLookup = computed(() => {
   return !!(clientEmail.value.trim() || clientPhone.value.trim())
 })
 
+const me = useMeState()
+const isLoggedInClient = computed(() => !!me.value && me.value.role === 'CLIENT')
+
 // Only offer account creation once we have some contact info and lookup says: no user.
 const showCreateAccountOffer = computed(() => {
-  return hasContactInfoForLookup.value && !lookingUpUser.value && !showLoginSuggestion.value
+  return !isLoggedInClient.value && hasContactInfoForLookup.value && !lookingUpUser.value && !showLoginSuggestion.value
 })
 
 // If user doesn't exist, allow opt-in account creation.
@@ -111,6 +116,13 @@ watch(createAccount, (v) => {
 
 watch(showCreateAccountOffer, (v) => {
   if (!v) createAccount.value = false
+})
+
+watch(isLoggedInClient, (v) => {
+  if (v) {
+    createAccount.value = false
+    earnPoints.value = false
+  }
 })
 
 const selectedStart = ref<string | null>(null) // ISO
@@ -521,7 +533,7 @@ async function submitBooking() {
           </div>
         </div>
 
-        <div v-else-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+        <div v-else-if="showLoginSuggestion && !isLoggedInClient" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
               <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
