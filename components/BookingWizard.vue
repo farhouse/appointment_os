@@ -30,6 +30,12 @@ const branches = ref<Branch[]>([])
 const services = ref<Service[]>([])
 const barbers = ref<Barber[]>([])
 
+const loadingBranches = ref(false)
+const loadingServices = ref(false)
+const loadingBarbers = ref(false)
+const loadingSlots = ref(false)
+const lookingUpUser = ref(false)
+
 const branchId = ref<string>(props.initialBranchId || '')
 const serviceId = ref<string>('')
 const barberId = ref<string>('')
@@ -102,8 +108,19 @@ const errorMsg = ref<string | null>(null)
 const successMsg = ref<string | null>(null)
 
 onMounted(async () => {
-  branches.value = await $fetch('/api/public/branches')
-  services.value = await $fetch('/api/public/services')
+  loadingBranches.value = true
+  loadingServices.value = true
+  try {
+    const [b, s] = await Promise.all([
+      $fetch('/api/public/branches'),
+      $fetch('/api/public/services')
+    ])
+    branches.value = b as any
+    services.value = s as any
+  } finally {
+    loadingBranches.value = false
+    loadingServices.value = false
+  }
 })
 
 // If the host context passes a default branch later, follow it.
@@ -129,6 +146,7 @@ watch([clientEmail, clientPhone], ([email, phone]) => {
   if (!e && !p) return
 
   lookupTimer = setTimeout(async () => {
+    lookingUpUser.value = true
     try {
       const query = new URLSearchParams()
       if (e) query.set('email', e)
@@ -137,6 +155,8 @@ watch([clientEmail, clientPhone], ([email, phone]) => {
       existingClientUser.value = (res as any)?.user || null
     } catch {
       existingClientUser.value = null
+    } finally {
+      lookingUpUser.value = false
     }
   }, 350)
 })
@@ -145,10 +165,14 @@ watch(branchId, async (id) => {
   barberId.value = ''
   barbers.value = []
   if (!id) return
+
+  loadingBarbers.value = true
   try {
     barbers.value = await $fetch(`/api/public/barbers?branchId=${encodeURIComponent(id)}`)
   } catch {
     barbers.value = []
+  } finally {
+    loadingBarbers.value = false
   }
 }, { immediate: true })
 
@@ -157,7 +181,13 @@ watch([branchId, barberId, date], async ([bId, brId, d]) => {
   selectedStart.value = null
   selectedEnd.value = null
   if (!bId || !brId || !d) return
-  busy.value = (await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId)}&date=${encodeURIComponent(d)}`)).busy || []
+
+  loadingSlots.value = true
+  try {
+    busy.value = (await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId)}&date=${encodeURIComponent(d)}`)).busy || []
+  } finally {
+    loadingSlots.value = false
+  }
 })
 
 watch(serviceId, () => {
@@ -332,8 +362,11 @@ async function submitBooking() {
       <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
         <h2 v-if="!hideDetailsTitle" class="font-semibold mb-3">{{ $t('booking.details') }}</h2>
 
-        <label class="block text-sm font-medium mb-1">{{ $t('booking.branch') }}</label>
-        <select v-model="branchId" class="w-full rounded border px-3 py-2 bg-white">
+        <div class="flex items-center justify-between gap-3 mb-1">
+          <label class="block text-sm font-medium">{{ $t('booking.branch') }}</label>
+          <span v-if="loadingBranches" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+        </div>
+        <select v-model="branchId" class="w-full rounded border px-3 py-2 bg-white" :disabled="loadingBranches">
           <option value="">{{ $t('booking.selectBranch') }}</option>
           <option v-for="b in branches" :key="b.id" :value="b.id">
             {{ b.address ? `${b.name} — ${b.address}` : b.name }}
@@ -342,15 +375,21 @@ async function submitBooking() {
 
         <div class="flex items-baseline justify-between gap-3 mt-3">
           <label class="block text-sm font-medium">{{ $t('booking.service') }}</label>
-          <span v-if="servicePriceLabel" class="text-xs text-gray-600">{{ $t('booking.price') }}: {{ servicePriceLabel }}</span>
+          <div class="flex items-center gap-3">
+            <span v-if="loadingServices" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+            <span v-if="servicePriceLabel" class="text-xs text-gray-600">{{ $t('booking.price') }}: {{ servicePriceLabel }}</span>
+          </div>
         </div>
-        <select v-model="serviceId" class="w-full rounded border px-3 py-2 bg-white">
+        <select v-model="serviceId" class="w-full rounded border px-3 py-2 bg-white" :disabled="loadingServices">
           <option value="">{{ $t('booking.selectService') }}</option>
           <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
         </select>
 
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.barber') }}</label>
-        <select v-model="barberId" class="w-full rounded border px-3 py-2 bg-white" :disabled="!branchId">
+        <div class="flex items-center justify-between gap-3 mb-1 mt-3">
+          <label class="block text-sm font-medium">{{ $t('booking.barber') }}</label>
+          <span v-if="loadingBarbers" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+        </div>
+        <select v-model="barberId" class="w-full rounded border px-3 py-2 bg-white" :disabled="!branchId || loadingBarbers">
           <option value="">{{ $t('booking.selectBarber') }}</option>
           <option v-for="b in barbers" :key="b.id" :value="b.id">{{ b.name }}</option>
         </select>
@@ -393,7 +432,10 @@ async function submitBooking() {
         <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
         <input v-model="clientPhone" class="w-full rounded border px-3 py-2 bg-white" />
 
-        <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
+        <div class="mt-3 flex items-center justify-between gap-3">
+          <p class="text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
+          <span v-if="lookingUpUser" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+        </div>
 
         <div v-if="!showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
           <div class="flex items-start justify-between gap-4">
@@ -460,7 +502,15 @@ async function submitBooking() {
           {{ $t('booking.pickFirst') }}
         </div>
 
-        <div v-if="availableSlots.length === 0" class="mt-4">
+        <div v-if="loadingSlots" class="mt-4">
+          <CrudState
+            :title="$t('common.loading')"
+            :description="$t('common.loading')"
+            icon="i-lucide-loader-2"
+          />
+        </div>
+
+        <div v-else-if="availableSlots.length === 0" class="mt-4">
           <CrudState
             :title="$t('booking.noSlots')"
             :description="$t('booking.noSlots')"
