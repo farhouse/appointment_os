@@ -6,7 +6,7 @@ type BranchOption = {
 const STORAGE_KEY = 'selectedBranchId'
 
 export function useSelectedBranch(defaultBranchId?: Ref<string | undefined>) {
-  const selectedBranchId = useState<string>('selected-branch-id', () => defaultBranchId?.value || '')
+  const selectedBranchId = useState<string>('selected-branch-id', () => '')
   const branchOptions = useState<BranchOption[]>('branch-options', () => [])
   const isLoading = useState<boolean>('branch-options-loading', () => false)
   const isSwitching = useState<boolean>('selected-branch-switching', () => false)
