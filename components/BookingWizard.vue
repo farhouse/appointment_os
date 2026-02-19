@@ -74,10 +74,24 @@ const clientPhone = ref(props.initialClient?.phone || '')
 
 const existingClientUser = ref<{ id: string; name: string; email: string; phone?: string | null } | null>(null)
 const showLoginSuggestion = computed(() => !!existingClientUser.value)
+
+// If user doesn't exist, allow opt-in account creation.
+const createAccount = ref(false)
+const accountPassword = ref('')
+const accountPassword2 = ref('')
+
+// If user exists, we can suggest login.
 const earnPoints = ref(false)
 
 watch(showLoginSuggestion, (v) => {
   if (!v) earnPoints.value = false
+})
+
+watch(createAccount, (v) => {
+  if (!v) {
+    accountPassword.value = ''
+    accountPassword2.value = ''
+  }
 })
 
 const selectedStart = ref<string | null>(null) // ISO
@@ -248,8 +262,21 @@ async function submitBooking() {
     return
   }
 
+  // If opting into account creation, validate passwords client-side.
+  if (createAccount.value) {
+    if (accountPassword.value.length < 6) {
+      errorMsg.value = t('booking.errors.passwordShort')
+      return
+    }
+    if (accountPassword.value !== accountPassword2.value) {
+      errorMsg.value = t('booking.errors.passwordMismatch')
+      return
+    }
+  }
+
   loading.value = true
   try {
+    // Create/reuse Client (business entity)
     const client = await $fetch('/api/public/clients', {
       method: 'POST',
       body: {
@@ -259,6 +286,20 @@ async function submitBooking() {
         phone: clientPhone.value.trim() || undefined
       }
     })
+
+    // Optional: create auth account (User role CLIENT)
+    if (createAccount.value && !showLoginSuggestion.value) {
+      await $fetch('/api/public/users/register', {
+        method: 'POST',
+        body: {
+          email: clientEmail.value.trim(),
+          phone: clientPhone.value.trim() || undefined,
+          firstName: clientFirstName.value.trim(),
+          lastName: clientLastName.value.trim() || undefined,
+          password: accountPassword.value
+        }
+      })
+    }
 
     const apt = await $fetch('/api/public/appointments', {
       method: 'POST',
@@ -354,7 +395,31 @@ async function submitBooking() {
 
         <p class="mt-3 text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
 
-        <div v-if="showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+        <div v-if="!showLoginSuggestion" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <p class="font-medium">{{ $t('booking.newUser.title') }}</p>
+              <p class="text-gray-600">{{ $t('booking.newUser.subtitle') }}</p>
+            </div>
+            <label class="flex items-center gap-2 text-xs font-medium select-none whitespace-nowrap">
+              <input v-model="createAccount" type="checkbox" class="accent-current" />
+              {{ $t('booking.newUser.switch') }}
+            </label>
+          </div>
+
+          <div v-if="createAccount" class="mt-3 grid gap-3 sm:grid-cols-2">
+            <div>
+              <div class="text-xs text-gray-600 mb-1">{{ $t('booking.newUser.password') }}</div>
+              <input v-model="accountPassword" type="password" class="w-full rounded border px-3 py-2 bg-white" />
+            </div>
+            <div>
+              <div class="text-xs text-gray-600 mb-1">{{ $t('booking.newUser.password2') }}</div>
+              <input v-model="accountPassword2" type="password" class="w-full rounded border px-3 py-2 bg-white" />
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
           <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
               <p class="font-medium">{{ $t('booking.existingUser.title') }}</p>
@@ -395,8 +460,16 @@ async function submitBooking() {
           {{ $t('booking.pickFirst') }}
         </div>
 
+        <div v-if="availableSlots.length === 0" class="mt-4">
+          <CrudState
+            :title="$t('booking.noSlots')"
+            :description="$t('booking.noSlots')"
+            icon="i-lucide-calendar-x"
+          />
+        </div>
+
         <!-- Day timeline (calendar-like) -->
-        <div class="mt-4">
+        <div v-else class="mt-4">
           <div class="scrollbar-nice relative rounded-lg border border-gray-200 bg-white overflow-y-auto" style="height: 520px;">
             <!-- Time rail -->
             <div class="absolute inset-0 grid" :style="{ gridTemplateRows: 'repeat(10, 1fr)' }">

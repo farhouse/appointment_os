@@ -228,8 +228,17 @@
       "backToBook": "Volver a /book",
       "loadError": "No se pudo cargar el resumen del turno."
     },
+    "newUser": {
+      "title": "¿Querés crear una cuenta?",
+      "subtitle": "Si creás una cuenta, vas a poder ver tu historial y sumar puntos.",
+      "switch": "Crear cuenta",
+      "password": "Contraseña",
+      "password2": "Repetir contraseña"
+    },
     "errors": {
       "missing": "Completá los datos y elegí un horario.",
+      "passwordShort": "La contraseña debe tener al menos 6 caracteres.",
+      "passwordMismatch": "Las contraseñas no coinciden.",
       "generic": "No se pudo guardar el turno. Intentá de nuevo."
     }
   },

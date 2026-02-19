@@ -228,8 +228,17 @@
       "backToBook": "Back to /book",
       "loadError": "Could not load appointment summary."
     },
+    "newUser": {
+      "title": "Create an account?",
+      "subtitle": "If you create an account, you can see your history and earn points.",
+      "switch": "Create account",
+      "password": "Password",
+      "password2": "Repeat password"
+    },
     "errors": {
       "missing": "Fill the form and select a time.",
+      "passwordShort": "Password must be at least 6 characters.",
+      "passwordMismatch": "Passwords do not match.",
       "generic": "Could not save the appointment. Please try again."
     }
   },

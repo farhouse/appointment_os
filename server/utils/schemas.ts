@@ -40,6 +40,14 @@ export const clientSchema = z.object({
   notes: z.string().optional(),
 })
 
+export const publicClientRegisterSchema = z.object({
+  email: z.string().email(),
+  phone: z.string().optional(),
+  firstName: z.string().min(1),
+  lastName: z.string().optional(),
+  password: z.string().min(6)
+})
+
 export const appointmentSchema = z.object({
   branchId: z.string().uuid(),
   clientId: z.string().uuid(),
