@@ -36,7 +36,8 @@ const calendarConfig = computed(() => ({
   timeTo: 20 * 60,
   editableEvents: false,
   events: calendarEvents.value,
-  locale: locale.value === 'es-AR' ? 'es' : 'en-us'
+  locale: locale.value === 'es-AR' ? 'es' : 'en-us',
+  date: new Date()
 }))
 
 const viewOptions = [
