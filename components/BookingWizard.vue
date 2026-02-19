@@ -177,7 +177,11 @@ watch([clientEmail, clientPhone], ([email, phone]) => {
 watch(branchId, async (id) => {
   barberId.value = ''
   barbers.value = []
-  if (!id) return
+
+  if (!id) {
+    loadingBarbers.value = false
+    return
+  }
 
   loadingBarbers.value = true
   try {
@@ -185,6 +189,8 @@ watch(branchId, async (id) => {
   } catch {
     barbers.value = []
   } finally {
+    // keep it visible at least a tick so it doesn't feel broken
+    await nextTick()
     loadingBarbers.value = false
   }
 }, { immediate: true })
@@ -193,12 +199,17 @@ watch([branchId, barberId, date], async ([bId, brId, d]) => {
   busy.value = []
   selectedStart.value = null
   selectedEnd.value = null
-  if (!bId || !brId || !d) return
+
+  if (!bId || !brId || !d) {
+    loadingSlots.value = false
+    return
+  }
 
   loadingSlots.value = true
   try {
     busy.value = (await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId)}&date=${encodeURIComponent(d)}`)).busy || []
   } finally {
+    await nextTick()
     loadingSlots.value = false
   }
 })
@@ -392,7 +403,10 @@ async function submitBooking() {
 
         <div class="flex items-center justify-between gap-3 mb-1">
           <label class="block text-sm font-medium">{{ $t('booking.branch') }}</label>
-          <span v-if="loadingBranches" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+          <span v-if="loadingBranches" class="text-xs text-gray-500 inline-flex items-center gap-2">
+            <span class="i-lucide-loader-2 animate-spin" />
+            {{ $t('common.loading') }}
+          </span>
         </div>
         <select v-model="branchId" class="w-full rounded border px-3 py-2 bg-white" :disabled="loadingBranches">
           <option value="">{{ $t('booking.selectBranch') }}</option>
@@ -404,7 +418,10 @@ async function submitBooking() {
         <div class="flex items-baseline justify-between gap-3 mt-3">
           <label class="block text-sm font-medium">{{ $t('booking.service') }}</label>
           <div class="flex items-center gap-3">
-            <span v-if="loadingServices" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+            <span v-if="loadingServices" class="text-xs text-gray-500 inline-flex items-center gap-2">
+              <span class="i-lucide-loader-2 animate-spin" />
+              {{ $t('common.loading') }}
+            </span>
             <span v-if="servicePriceLabel" class="text-xs text-gray-600">{{ $t('booking.price') }}: {{ servicePriceLabel }}</span>
           </div>
         </div>
@@ -415,7 +432,10 @@ async function submitBooking() {
 
         <div class="flex items-center justify-between gap-3 mb-1 mt-3">
           <label class="block text-sm font-medium">{{ $t('booking.barber') }}</label>
-          <span v-if="loadingBarbers" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+          <span v-if="loadingBarbers" class="text-xs text-gray-500 inline-flex items-center gap-2">
+            <span class="i-lucide-loader-2 animate-spin" />
+            {{ $t('common.loading') }}
+          </span>
         </div>
         <select v-model="barberId" class="w-full rounded border px-3 py-2 bg-white" :disabled="!branchId || loadingBarbers">
           <option value="">{{ $t('booking.selectBarber') }}</option>
@@ -462,7 +482,10 @@ async function submitBooking() {
 
         <div class="mt-3 flex items-center justify-between gap-3">
           <p class="text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
-          <span v-if="lookingUpUser" class="text-xs text-gray-500">{{ $t('common.loading') }}</span>
+          <span v-if="lookingUpUser" class="text-xs text-gray-500 inline-flex items-center gap-2">
+            <span class="i-lucide-loader-2 animate-spin" />
+            {{ $t('common.loading') }}
+          </span>
         </div>
 
         <div v-if="showCreateAccountOffer" class="mt-3 rounded-lg border border-black/10 bg-gray-50 p-3 text-sm">
