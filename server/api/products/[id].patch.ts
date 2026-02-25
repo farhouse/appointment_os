@@ -15,7 +15,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN'])
 
   const id = requireParam(event, 'id')
 

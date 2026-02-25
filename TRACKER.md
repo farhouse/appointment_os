@@ -133,7 +133,7 @@ Leyenda estado: `todo | doing | blocked | done`
   - Acceptance: movimientos muestran claramente depósitos/retiros/auto; si caja cerrada, qué pasa con cobros posteriores (regla explícita).
   - NEXT: reproducir caso y decidir regla (rechazar cobro / auto-reabrir / asignar a nueva sesión).
 
-- [ ] (todo) **Permisos**: Manager no debe poder crear/editar Productos ni Servicios (solo ver).
+- [x] (done) **Permisos**: Manager no debe poder crear/editar Productos ni Servicios (solo ver).
   - Acceptance: UI oculta botones; API valida roles.
   - Files: `pages/private/manager/products.vue` / `services.vue` (si existen) + `server/api/*`.
   - NEXT: aplicar `requireRole` (OWNER/ADMIN) en endpoints de create/update/delete.

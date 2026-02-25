@@ -14,7 +14,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN'])
 
   const id = requireParam(event, 'id')
   const data = await readBodyValidated(event, schema)

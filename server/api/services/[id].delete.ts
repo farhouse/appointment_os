@@ -6,7 +6,7 @@ import { notFound } from '~/server/utils/errors'
 import { requireRole } from '~/server/utils/permissions'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  requireRole(event, ['OWNER', 'ADMIN'])
   const id = requireParam(event, 'id')
 
   try {

@@ -6,6 +6,7 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { PaginationState } from '@tanstack/table-core'
+import { useMeState } from '~/composables/useMe'
 
 definePageMeta({
   layout: 'private',
@@ -30,6 +31,9 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const toast = useToast()
 const { t } = useI18n()
+
+const me = useMeState()
+const canMutate = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 
 const tableUi = useBackofficeTableUi()
 
@@ -101,7 +105,7 @@ watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value
 })
 
-const columns: TableColumn<Service>[] = [
+const baseColumns: TableColumn<Service>[] = [
   {
     accessorKey: 'name',
     header: () => h('button', {
@@ -150,20 +154,28 @@ const columns: TableColumn<Service>[] = [
     }, t('admin.services.columns.updatedAt')),
     cell: ({ row }) => formatDate(row.original.updatedAt)
   },
-  {
-    id: 'actions',
-    meta: { class: { td: 'text-right' } },
-    cell: ({ row }) => h(UDropdownMenu, {
-      items: getRowItems(row),
-      content: { align: 'end' }
-    }, () => h(UButton, {
-      icon: 'i-lucide-ellipsis-vertical',
-      color: 'neutral',
-      variant: 'ghost',
-      'aria-label': t('admin.common.actions')
-    }))
-  }
 ]
+
+const columns = computed<TableColumn<Service>[]>(() => {
+  if (!canMutate.value) return baseColumns
+
+  return [
+    ...baseColumns,
+    {
+      id: 'actions',
+      meta: { class: { td: 'text-right' } },
+      cell: ({ row }) => h(UDropdownMenu, {
+        items: getRowItems(row),
+        content: { align: 'end' }
+      }, () => h(UButton, {
+        icon: 'i-lucide-ellipsis-vertical',
+        color: 'neutral',
+        variant: 'ghost',
+        'aria-label': t('admin.common.actions')
+      }))
+    }
+  ]
+})
 
 const tableMeta = {
   class: {
@@ -307,7 +319,7 @@ onMounted(() => {
     :search-value="globalFilter"
     :is-loading="isLoading"
     :error-message="errorMessage"
-    :can-create="true"
+    :can-create="canMutate"
     :create-label="$t('admin.services.new')"
     @search="globalFilter = $event"
     @create="openCreate"
@@ -324,13 +336,13 @@ onMounted(() => {
     </div>
 
     <div v-else-if="isEmpty" class="p-6">
-      <CrudState
-        :title="$t('admin.services.emptyTitle')"
-        :description="$t('admin.services.emptyDescription')"
-        icon="i-lucide-wand-sparkles"
-        :action-label="$t('admin.services.new')"
-        @action="openCreate"
-      />
+        <CrudState
+          :title="$t('admin.services.emptyTitle')"
+          :description="$t('admin.services.emptyDescription')"
+          icon="i-lucide-wand-sparkles"
+          :action-label="canMutate ? $t('admin.services.new') : undefined"
+          @action="openCreate"
+        />
     </div>
 
     <div v-else-if="errorMessage" class="p-6">
@@ -354,7 +366,7 @@ onMounted(() => {
         :loading="isLoading"
         :ui="tableUi"
         :meta="tableMeta"
-        @select="(_e, row) => openEdit(row.original)"
+        @select="(_e, row) => canMutate && openEdit(row.original)"
       />
       <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
         <div class="text-xs text-stone-500">

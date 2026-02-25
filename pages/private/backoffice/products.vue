@@ -6,6 +6,7 @@ import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { PaginationState } from '@tanstack/table-core'
+import { useMeState } from '~/composables/useMe'
 
 definePageMeta({
   layout: 'private',
@@ -30,6 +31,9 @@ const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const toast = useToast()
 const { t } = useI18n()
+
+const me = useMeState()
+const canMutate = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 
 const tableUi = useBackofficeTableUi()
 
@@ -124,7 +128,7 @@ watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value
 })
 
-const columns: TableColumn<Product>[] = [
+const baseColumns: TableColumn<Product>[] = [
   {
     accessorKey: 'name',
     header: () => h('button', {
@@ -167,20 +171,28 @@ const columns: TableColumn<Product>[] = [
     }, t('admin.products.columns.updatedAt')),
     cell: ({ row }) => formatDate(row.original.updatedAt)
   },
-  {
-    id: 'actions',
-    meta: { class: { td: 'text-right' } },
-    cell: ({ row }) => h(UDropdownMenu, {
-      items: getRowItems(row),
-      content: { align: 'end' }
-    }, () => h(UButton, {
-      icon: 'i-lucide-ellipsis-vertical',
-      color: 'neutral',
-      variant: 'ghost',
-      'aria-label': t('admin.common.actions')
-    }))
-  }
 ]
+
+const columns = computed<TableColumn<Product>[]>(() => {
+  if (!canMutate.value) return baseColumns
+
+  return [
+    ...baseColumns,
+    {
+      id: 'actions',
+      meta: { class: { td: 'text-right' } },
+      cell: ({ row }) => h(UDropdownMenu, {
+        items: getRowItems(row),
+        content: { align: 'end' }
+      }, () => h(UButton, {
+        icon: 'i-lucide-ellipsis-vertical',
+        color: 'neutral',
+        variant: 'ghost',
+        'aria-label': t('admin.common.actions')
+      }))
+    }
+  ]
+})
 
 const tableMeta = {
   class: {
@@ -322,7 +334,7 @@ onMounted(() => {
         :search-value="globalFilter"
         :is-loading="isLoading"
         :error-message="errorMessage"
-        :can-create="true"
+        :can-create="canMutate"
         :create-label="$t('admin.products.new')"
         @search="globalFilter = $event"
         @create="openCreate"
@@ -343,7 +355,7 @@ onMounted(() => {
             :title="$t('admin.products.emptyTitle')"
             :description="$t('admin.products.emptyDescription')"
             icon="i-lucide-box"
-            :action-label="$t('admin.products.new')"
+            :action-label="canMutate ? $t('admin.products.new') : undefined"
             @action="openCreate"
           />
         </div>
@@ -369,7 +381,7 @@ onMounted(() => {
             :loading="isLoading"
             :ui="tableUi"
             :meta="tableMeta"
-            @select="(_e, row) => openEdit(row.original)"
+            @select="(_e, row) => canMutate && openEdit(row.original)"
           />
           <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
             <div class="text-xs text-stone-500">
