@@ -16,12 +16,10 @@ Objetivo: ejecutar el próximo batch de mejoras de `TRACKER.md` de forma increme
   - Barber today
 
 ## Orden sugerido (prioridad)
-1) Client appointments: tabs/filtro próximos vs pasados.
-2) Backoffice split: staff (`employees`) vs `clients`.
-3) Manager permissions: bloquear create/update/delete productos/servicios.
-4) Calendar manager/admin: mover turno (modal + drag&drop) con persistencia.
-5) Calendar resources separators: zebra + divider.
-6) Tech hygiene: remover `version:` obsoleto de `docker-compose.yml`.
+### Modo actual: **una sola tarea por corrida**
+1) **Tech hygiene: remover `version:` obsoleto de `docker-compose.yml`** (quick win, bajo riesgo).
+
+> Nota: `Client appointments tabs/filtro` ya quedó resuelto en commit `c3c2247`.
 
 ## Detalles por ítem (acceptance criteria)
 

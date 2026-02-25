@@ -62,10 +62,10 @@ Leyenda estado: `todo | doing | blocked | done`
   - NEXT: definir copy y estados.
 
 ## P2 — Cliente (private)
-- [ ] (todo) **Client / Upcoming shows past**: en `/private/client/appointments`, en “Próximos” aparecen turnos pasados.
-  - Also: el slider/tabs Próximos↔Pasados no cambia la lista (posible mismatch de `UTabs` v-model vs `items`).
-  - Expected: “Próximos” = startTime >= now (y no cancelados/no_show si aplica); “Pasados” = startTime < now.
-  - NEXT: revisar wiring de `UTabs` (items.value) + filtro en UI y/o query del endpoint `GET /api/client/appointments`.
+- [x] (done) **Client / Upcoming shows past**: tabs y filtros de `/private/client/appointments` corregidos.
+  - Resultado: `UTabs` usa `v-model` correctamente y la lista cambia entre “Próximos”/“Pasados”.
+  - Regla aplicada: “Próximos” = `startTime >= now`; “Pasados” = `startTime < now`.
+  - Ref commit: `c3c2247`.
 
 - [x] (done) **Booking / i18n + redirect**:
   - Fix: evitar colisión de `booking.confirm` (string) vs confirm page (objeto) usando `booking.confirmPage.*`.
