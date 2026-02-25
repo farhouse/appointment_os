@@ -6,20 +6,20 @@
 Leyenda estado: `todo | doing | blocked | done`
 
 ## P0 — Bugs / bloqueantes
-- [ ] (todo) **Loyalty points mismatch**: cliente ve balance (ej 45) que no coincide con regla esperada (ej corte=25).
-  - Cause: hoy se calcula como `floor(paidAmount/1000)` al pasar a PAID.
-  - Expected: usar `Service.pointsReward` (sum por appointment) o una regla fija por servicio.
-  - NEXT: definir regla final + migrar/ajustar ledger existente si hace falta.
+- [x] (done) **Loyalty points mismatch**: cálculo migrado a `Service.pointsReward` por turno.
+  - Resultado: se reemplazó regla basada en monto (`floor(paidAmount/1000)`) por suma de `pointsReward` de servicios.
+  - Ref commit: `7d813e0`.
+  - Nota: si hay datos históricos inconsistentes, evaluar script de ajuste del ledger como tarea separada.
 
-- [ ] (todo) **Backoffice / Employees**: no se puede guardar cambios al editar un empleado (botón Guardar no funciona / submit no ocurre).
-  - Acceptance: al editar y apretar Guardar, dispara PATCH y persiste; muestra toast.
+- [x] (done) **Backoffice / Employees**: editar empleado ahora guarda correctamente.
+  - Resultado: al editar y apretar Guardar, dispara PATCH, persiste y muestra toast.
   - Files: `pages/private/backoffice/employees.vue`, `server/api/employees/[id].patch.ts`.
-  - NEXT: reproducir y revisar wiring del submit del UForm + validación schema.
+  - Ref commits: `1310f0b`, `563f92c`, `7aa54fc`, `eb72ca0`, `e9d06ca`.
 
-- [ ] (todo) **Branch selector regression**: el selector de sucursal del layout volvió a no dejar seleccionar.
-  - Acceptance: cambia sucursal consistentemente en todas las páginas (sin “pisarse”).
+- [x] (done) **Branch selector regression**: selector del layout vuelve a permitir cambiar sucursal sin pisarse.
+  - Resultado: selección estable por cookie/state, init seguro entre múltiples instancias y feedback visual al aplicar.
   - Files: `layouts/private.vue`, `composables/useSelectedBranch.ts`.
-  - NEXT: reproducir y revisar init/cookie + múltiples instancias.
+  - Ref commits: `3680ce4`, `1d3bdc9`, `4d5e7cf`, `7b17c9c`, `563f92c`.
 
 - [ ] (todo) **Booking / Availability**: completar la data `busy` (hoy es MVP stub por día) para que “solo disponibles” sea consistente.
   - NEXT: definir endpoint/consulta que devuelva turnos ocupados por rango (por sucursal + opcional barbero) y usarlo en wizard.
@@ -45,9 +45,10 @@ Leyenda estado: `todo | doing | blocked | done`
   - NEXT: hacer email required y ajustar endpoints.
 
 - [ ] (todo) **Booking / Confirmation system**: implementar confirmación por email (link/token) antes de confirmar el turno.
+  - Status: POSTPONED (Iván: “dejemos para más adelante”).
   - Acceptance: al crear appointment queda PENDING_UNCONFIRMED (o similar) hasta click; link expira; reenvío.
-  - Files: `server/api/public/appointments/index.post.ts`, `server/api/appointments/[id]/confirm.patch.ts`, mailer.
-  - NEXT: definir modelo de datos (token/expiry) y provider de email.
+  - Files: `server/api/public/appointments/index.post.ts`, `server/api/public/appointments/[id]/confirm.*`, mailer.
+  - NEXT: elegir provider real de email + UX de reenvío.
 
 - [ ] (todo) **Booking / Done screen**: después de bookear, navegar a una página de “finalizado” (journey cerrado).
   - Decision: incluir botón **“Agregar al calendario”** vía **ICS** (primero).
@@ -66,11 +67,9 @@ Leyenda estado: `todo | doing | blocked | done`
   - Expected: “Próximos” = startTime >= now (y no cancelados/no_show si aplica); “Pasados” = startTime < now.
   - NEXT: revisar wiring de `UTabs` (items.value) + filtro en UI y/o query del endpoint `GET /api/client/appointments`.
 
-- [ ] (todo) **Booking / i18n + redirect**:
-  - `booking.confirm` no traduce (clave pisada por objeto de confirm page).
-  - en inglés parece que no carga traducciones.
-  - al confirmar booking no redirige a `/book/done`.
-  - NEXT: arreglar claves i18n (renombrar confirm page) + revisar `navigateTo('/book/done')` y errores en submit.
+- [x] (done) **Booking / i18n + redirect**:
+  - Fix: evitar colisión de `booking.confirm` (string) vs confirm page (objeto) usando `booking.confirmPage.*`.
+  - Fix: ruta `/book/done` (conflicto `pages/book.vue` vs `pages/book/*`) moviendo a `pages/book/index.vue`.
 
 - [ ] (todo) **Client landing**: convertir `/private/client` en un dashboard útil.
   - Incluye: noticias/ofertas + resumen de últimos turnos + puntos + “hace cuánto no se corta el pelo”.
@@ -154,10 +153,10 @@ Leyenda estado: `todo | doing | blocked | done`
   - NEXT: aclarar scope para no duplicar caja/appointments.
 
 ## P2 — Barber
-- [ ] (todo) **Barber Today calendar**: en `/private/barber/today` no se muestran los turnos del barbero (pero sí en manager calendar y en `/barber/appointments`).
-  - Acceptance: calendar muestra appointments del barbero logueado; consistent con listado.
-  - Files: `pages/private/barber/today.vue`, `server/api/barber/appointments.get.ts` (o endpoint usado por today).
-  - NEXT: revisar query/filters (professionalId) y rango de fechas.
+- [x] (done) **Barber Today calendar**: `/private/barber/today` muestra turnos del barbero logueado.
+  - Resultado: carga eventos por rango desde `/api/calendar/events` con restricción server-side por BARBER.
+  - Files: `pages/private/barber/today.vue`, `server/api/calendar/events.get.ts`.
+  - Ref commits: `ac31e20`, `563f92c`.
 
 - [ ] (todo) **Barber finances**: mejorar el panel/lista con más info + totales.
   - Decision: comisión = % **fijo por barbero** (Employee/Barber tiene `commissionRate` o similar).

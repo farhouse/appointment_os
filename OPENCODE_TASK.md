@@ -1,114 +1,101 @@
-# OpenCode task — Barber OS
+# OpenCode task — Barber OS (next batch)
 
-Objetivo: ejecutar mejoras/correcciones listadas en `TRACKER.md` de manera segura, incremental y verificable.
+Objetivo: ejecutar el próximo batch de mejoras de `TRACKER.md` de forma incremental, con criterios de aceptación claros y sin refactors innecesarios.
 
 ## Reglas (importante)
 - No hacer refactors grandes sin necesidad.
-- Cada cambio debe tener criterio de aceptación (ver abajo) y dejar la app funcionando.
-- Preferir PR/commits pequeños por feature/bug.
-- Si hay ambigüedad, **preguntar** antes de implementar.
-- Roles/permissions siempre validados en **UI + API**.
+- Commits pequeños por ítem (1 problema = 1 commit lógico).
+- Si hay ambigüedad funcional, pausar y preguntar.
+- Roles/permisos siempre en UI + API.
+- Mantener compatibilidad con Nuxt 4 + Prisma actual.
+
+## Estado actual (contexto)
+- P0 del batch anterior está **cerrado en `fix/batch-a`**:
+  - Employees save
+  - Branch selector
+  - Barber today
 
 ## Orden sugerido (prioridad)
-### P0 — Bloqueantes
-1) Backoffice/Employees: editar empleado → botón Guardar no persiste.
-2) Branch selector (layout): volvió a no dejar seleccionar sucursal.
-3) Barber Today: `/private/barber/today` no muestra turnos del barbero.
-
-### P1/P2 — Booking
-4) Booking: branch select mostrar dirección.
-5) Booking: email requerido (UI + server).
-6) Booking: done screen + ICS download.
-
-### P2 — Manager
-7) Calendar: modal con más info + mover turno (endpoint move) + drag&drop persiste.
-8) Calendar: resources separators (zebra + divider).
+1) Client appointments: tabs/filtro próximos vs pasados.
+2) Backoffice split: staff (`employees`) vs `clients`.
+3) Manager permissions: bloquear create/update/delete productos/servicios.
+4) Calendar manager/admin: mover turno (modal + drag&drop) con persistencia.
+5) Calendar resources separators: zebra + divider.
+6) Tech hygiene: remover `version:` obsoleto de `docker-compose.yml`.
 
 ## Detalles por ítem (acceptance criteria)
 
-### 1) Backoffice/Employees — Guardar no funciona
-- Repro: editar empleado existente, click Guardar.
-- Expected:
-  - dispara submit del form
-  - hace PATCH `/api/employees/:id`
-  - cierra modal + toast success
-  - al recargar lista, se ven cambios.
+### 1) Client / Upcoming shows past
+Expected:
+- En `/private/client/appointments`, tabs funcionan correctamente.
+- “Próximos” muestra `startTime >= now`.
+- “Pasados” muestra `startTime < now`.
+- Evitar mezcla por estados cancelados/no_show según regla actual de negocio.
+
+Archivos probables:
+- `pages/private/client/appointments.vue`
+- `server/api/client/appointments.get.ts` (si aplica)
+
+### 2) Staff vs Clients split (Backoffice)
+Expected:
+- `/private/backoffice/employees` muestra solo staff interno (OWNER/ADMIN/MANAGER/BARBER).
+- Nueva página `/private/backoffice/clients` para CRUD de `Client`.
+- Navegación y permisos consistentes.
 
 Archivos probables:
 - `pages/private/backoffice/employees.vue`
-- `server/api/employees/[id].patch.ts`
+- `pages/private/backoffice/clients.vue` (nuevo)
+- `server/api/clients/*`
+- navegación/layout de backoffice
 
-### 2) Branch selector — no deja seleccionar
+### 3) Manager permissions on Products/Services
 Expected:
-- al cambiar sucursal en selector del layout, se actualiza cookie/state y las páginas reaccionan.
-- no se “pisa” la selección por re-init.
+- Manager puede ver, pero no crear/editar/eliminar productos/servicios.
+- UI sin botones de mutación para manager.
+- API valida rol (OWNER/ADMIN para mutaciones).
 
-Archivos:
-- `layouts/private.vue`
-- `composables/useSelectedBranch.ts`
+Archivos probables:
+- páginas manager/backoffice de products/services
+- endpoints `server/api/products/*`, `server/api/services/*`
 
-### 3) Barber Today — calendar vacío
+### 4) Calendar move + drag&drop persist
 Expected:
-- `today` muestra appointments del barber logueado y coincide con `/private/barber/appointments`.
+- Modal de appointment con acción “Mover turno” (fecha/hora).
+- Drag&drop persistente con confirmación.
+- Aplica en Manager + Admin/Owner.
+- Feedback visual y manejo de error.
 
-Archivos:
-- `pages/private/barber/today.vue`
-- endpoints usados por barber.
+Archivos probables:
+- `pages/private/backoffice/calendar.vue`
+- endpoint `server/api/appointments/[id]/move.patch.ts`
 
-### 4) Booking branch select con dirección
+### 5) Calendar resources separators
 Expected:
-- opciones: `Nombre — Dirección` (si existe)
-- mobile OK.
+- Mejor legibilidad por recurso (barbero):
+  - fondo alternado (zebra suave)
+  - separación vertical (divider)
+- Sin romper responsive.
+
+Archivos probables:
+- estilos y vista de calendario backoffice/manager
+
+### 6) Tech hygiene — docker-compose
+Expected:
+- Quitar `version:` de `docker-compose.yml` para eliminar warning deprecado.
+- `docker compose --profile dev up -d` sigue funcionando.
 
 Archivo:
-- `components/BookingWizard.vue`
+- `docker-compose.yml`
 
-### 5) Booking email requerido
-Expected:
-- UI bloquea submit sin email (mensaje claro)
-- server rechaza si falta.
+## Validación mínima al cerrar batch
+- `npm run build` (o equivalente sin errores funcionales).
+- Smoke manual rápido:
+  - login por rol manager/client
+  - tabs client appointments
+  - permisos manager en products/services
+  - mover turno en calendario
 
-Archivos:
-- `components/BookingWizard.vue`
-- `server/api/public/clients/index.post.ts` / `server/api/public/appointments/index.post.ts`
-
-### 6) Booking done screen + ICS
-Expected:
-- al crear appointment → redirect a `/book/done?...`
-- done screen muestra resumen
-- botón descarga `.ics` válido
-- TZ: America/Argentina/Buenos_Aires
-- Title: `Turno — <Servicio> (<Barbero>)`
-- Location: `<Sucursal> — <Dirección>`
-
-Archivos:
-- `components/BookingWizard.vue`
-- `pages/book/done.vue` (nuevo)
-- `server/api/public/appointments/[id]/calendar.ics.get.ts` (nuevo)
-
-### 7) Calendar move + drag
-Expected:
-- modal tiene acción mover turno (fecha/hora) y persiste
-- drag&drop mueve y persiste (con confirmación)
-- aplica a Manager + Admin/Owner
-
-Archivos:
-- `pages/private/backoffice/calendar.vue`
-- (calendar manager)
-- `server/api/appointments/[id]/move.patch.ts`
-
-### 8) Calendar resources separators
-Decision:
-- zebra suave por resource + divider entre columnas
-
-Expected:
-- mejora legibilidad, no rompe responsive
-
-## Entorno / Comandos útiles
+## Entorno / comandos útiles
 - Dev: `docker compose --profile dev up -d`
-- App logs: `docker compose --profile dev logs -f app-dev`
-- Restart: `docker compose --profile dev restart app-dev`
-
-## Definiciones rápidas
-- Venta/movimientos/caja: no tocar en este batch salvo que sea necesario para P0.
-
+- Logs: `docker compose --profile dev logs -f app-dev`
+- Restart app: `docker compose --profile dev restart app-dev`
