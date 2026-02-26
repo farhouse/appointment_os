@@ -24,13 +24,21 @@ type AdminCashBox = {
 
 type CashSession = {
   id: string
-  cashBoxId: string
+  branchId: string
+  cashBoxId?: string | null
   openingBalance: string
   closingBalance?: string | null
+  closingCash?: string | null
+  closingCard?: string | null
+  closingTransfer?: string | null
+  closingOther?: string | null
   openingTime: string
   closingTime?: string | null
   openedByName?: string | null
-  cashBox: CashBox
+  totalAmount?: number | null
+  totalsByMethod?: Record<string, number>
+  lastMovement?: CashMovement | null
+  cashBox?: CashBox | null
   movements: CashMovement[]
 }
 
@@ -38,6 +46,7 @@ type CashMovement = {
   id: string
   amount: string
   type: 'DEPOSIT' | 'WITHDRAWAL'
+  paymentMethod?: 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER'
   reason?: string | null
   createdAt: string
 }
@@ -57,7 +66,8 @@ const adminIsLoading = ref(false)
 const adminErrorMessage = ref('')
 
 const selectedCashBoxId = ref('')
-const selectedSession = computed(() => sessions.value.find(s => s.cashBoxId === selectedCashBoxId.value && !s.closingTime) || null)
+const selectedSession = computed(() => sessions.value.find(s => s.branchId === selectedBranchId.value && !s.closingTime) || null)
+const sessionStatus = computed(() => (selectedSession.value ? 'OPEN' : 'CLOSED'))
 
 const openSessions = computed(() => sessions.value.filter(s => !s.closingTime))
 const openSessionsSorted = computed(() => {
@@ -71,16 +81,20 @@ const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 
 
 
 const openSchema = z.object({
-  cashBoxId: z.string().min(1),
+  cashBoxId: z.string().optional().nullable(),
   openingAmount: z.number().min(0)
 })
 
 const closeSchema = z.object({
-  countedCash: z.number().min(0)
+  countedCash: z.number().min(0),
+  countedCard: z.number().min(0).optional(),
+  countedTransfer: z.number().min(0).optional(),
+  countedOther: z.number().min(0).optional()
 })
 
 const movementSchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAWAL']),
+  paymentMethod: z.enum(['CASH', 'CARD', 'TRANSFER', 'OTHER']),
   amount: z.number().positive(),
   reason: z.string().optional().nullable()
 })
@@ -95,11 +109,15 @@ const openForm = reactive<Partial<OpenForm>>({
 })
 
 const closeForm = reactive<Partial<CloseForm>>({
-  countedCash: 0
+  countedCash: 0,
+  countedCard: 0,
+  countedTransfer: 0,
+  countedOther: 0
 })
 
 const movementForm = reactive<Partial<MovementForm>>({
   type: 'DEPOSIT',
+  paymentMethod: 'CASH',
   amount: 0,
   reason: ''
 })
@@ -117,6 +135,28 @@ const movementItems = computed(() => [
   { label: t('manager.cash.deposit'), value: 'DEPOSIT' },
   { label: t('manager.cash.withdrawal'), value: 'WITHDRAWAL' }
 ])
+
+const paymentMethodItems = computed(() => [
+  { label: t('manager.cash.methodCash'), value: 'CASH' },
+  { label: t('manager.cash.methodCard'), value: 'CARD' },
+  { label: t('manager.cash.methodTransfer'), value: 'TRANSFER' },
+  { label: t('manager.cash.methodOther'), value: 'OTHER' }
+])
+
+const sectorOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+
+function getMethodLabel(method: string) {
+  switch (method) {
+    case 'CARD':
+      return t('manager.cash.methodCard')
+    case 'TRANSFER':
+      return t('manager.cash.methodTransfer')
+    case 'OTHER':
+      return t('manager.cash.methodOther')
+    default:
+      return t('manager.cash.methodCash')
+  }
+}
 
 const cashBoxBranchId = ref('')
 
@@ -187,6 +227,7 @@ async function loadSessions() {
   try {
     const query = new URLSearchParams()
     if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
+    query.set('includeTotals', 'true')
     sessions.value = await $fetch(`/api/cash/sessions?${query.toString()}`)
   } catch (e: any) {
     sessions.value = []
@@ -212,7 +253,7 @@ async function loadAdminCashBoxes() {
 
 function openOpenModal() {
   openForm.openingAmount = 0
-  openForm.cashBoxId = selectedCashBoxId.value
+  openForm.cashBoxId = selectedCashBoxId.value || ''
   openingModal.value = true
 }
 
@@ -233,6 +274,7 @@ function openCloseModalFor(cashBoxId: string) {
 
 function openMovementModal() {
   movementForm.type = 'DEPOSIT'
+  movementForm.paymentMethod = 'CASH'
   movementForm.amount = 0
   movementForm.reason = ''
   movementModal.value = true
@@ -246,7 +288,7 @@ async function submitOpen(event: FormSubmitEvent<OpenForm>) {
       method: 'POST',
       body: {
         branchId: selectedBranchId.value,
-        cashBoxId: event.data.cashBoxId,
+        cashBoxId: event.data.cashBoxId || undefined,
         openingAmount: event.data.openingAmount
       }
     })
@@ -288,6 +330,7 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
         sessionId: selectedSession.value.id,
         amount: event.data.amount,
         type: event.data.type,
+        paymentMethod: event.data.paymentMethod,
         reason: event.data.reason
       }
     })
@@ -364,20 +407,21 @@ function getLastMovement(session: CashSession | null) {
   }, session.movements[0])
 }
 
+function getTotalsByMethod(session: CashSession | null) {
+  return session?.totalsByMethod || {}
+}
+
 function getSessionCurrentBalance(session: CashSession | null) {
   if (!session) return null
   // If session is closed and closingBalance exists, prefer that.
   if (session.closingTime && session.closingBalance != null) return toNumber(session.closingBalance)
 
   const opening = toNumber(session.openingBalance)
-  const deposits = (session.movements || [])
-    .filter(m => m.type === 'DEPOSIT')
-    .reduce((acc, m) => acc + toNumber(m.amount), 0)
-  const withdrawals = (session.movements || [])
-    .filter(m => m.type === 'WITHDRAWAL')
-    .reduce((acc, m) => acc + toNumber(m.amount), 0)
+  const total = session.totalAmount != null
+    ? Number(session.totalAmount)
+    : (session.movements || []).reduce((acc, m) => acc + toNumber(m.amount), 0)
 
-  return opening + deposits - withdrawals
+  return opening + total
 }
 
 function getCashBoxOpenSession(cashBoxId: string) {
@@ -417,8 +461,57 @@ onMounted(() => {
 
     <section class="space-y-4">
       <div>
-        <h2 class="text-lg font-semibold text-stone-900">Uso de Cajas</h2>
-        <p class="text-sm text-stone-600">Operaciones diarias: estado, aperturas, cierres y movimientos.</p>
+        <h2 class="text-lg font-semibold text-stone-900">Uso de Caja del día</h2>
+        <p class="text-sm text-stone-600">Sesión diaria por sucursal con sectores por método de pago.</p>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="text-sm font-semibold text-stone-900">Estado de sesión</div>
+              <UBadge :color="sessionStatus === 'OPEN' ? 'success' : 'neutral'" variant="subtle" class="text-[10px]">
+                {{ sessionStatus }}
+              </UBadge>
+            </div>
+            <div class="mt-1 text-xs text-stone-500">
+              <span class="font-medium text-stone-600">Abrió:</span>
+              {{ selectedSession?.openedByName || '—' }}
+            </div>
+            <div class="text-xs text-stone-500">
+              <span class="font-medium text-stone-600">Apertura:</span>
+              {{ formatDate(selectedSession?.openingTime) }}
+            </div>
+          </div>
+
+          <div class="text-right">
+            <div class="text-sm text-stone-500">Balance actual</div>
+            <div class="text-base font-semibold text-stone-900">
+              {{ formatCurrency(getSessionCurrentBalance(selectedSession)) }}
+            </div>
+            <div class="text-xs text-stone-500">
+              <template v-if="selectedSession">Sesión abierta</template>
+              <template v-else>Sin sesión abierta</template>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <div class="text-sm text-stone-500">Último movimiento</div>
+            <div class="text-sm font-medium text-stone-900">
+              <template v-if="selectedSession?.lastMovement">
+                {{ formatDate(selectedSession?.lastMovement?.createdAt) }}
+              </template>
+              <template v-else>—</template>
+            </div>
+            <div class="text-xs text-stone-500">
+              <template v-if="selectedSession?.lastMovement">
+                {{ getMethodLabel(selectedSession?.lastMovement?.paymentMethod || 'CASH') }}
+                · {{ formatCurrency(selectedSession?.lastMovement?.amount) }}
+              </template>
+              <template v-else>Sin movimientos</template>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="openSessionsSorted.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -445,7 +538,7 @@ onMounted(() => {
                 Abrió: {{ session.openedByName || '—' }}
               </div>
             </div>
-            <UButton size="xs" variant="outline" @click="() => openCloseModalFor(session.cashBoxId)">
+            <UButton size="xs" variant="outline" @click="() => openCloseModalFor(session.cashBoxId || '')">
               Cerrar caja
             </UButton>
           </div>
@@ -454,7 +547,7 @@ onMounted(() => {
 
       <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
-          Estado por caja
+          Sectores por método de pago
         </div>
         <div v-if="isLoading" class="p-6">
           <USkeleton class="h-8 w-full" />
@@ -469,83 +562,33 @@ onMounted(() => {
             @action="loadSessions"
           />
         </div>
-        <div v-else-if="!cashBoxes.length" class="p-6">
+        <div v-else-if="!selectedSession" class="p-6">
           <CrudState
-            :title="$t('manager.cash.emptySessions')"
-            :description="$t('manager.cash.subtitle')"
+            :title="'Sin sesión abierta'"
+            :description="'Abrí la caja del día para habilitar sectores y movimientos.'"
             icon="i-lucide-briefcase"
           />
         </div>
-        <div v-else class="divide-y divide-stone-200">
-          <div v-for="box in cashBoxes" :key="box.id" class="p-4">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div class="flex items-center gap-2">
-                  <div class="text-sm font-semibold text-stone-900">{{ box.name }}</div>
-                  <UBadge
-                    :color="getCashBoxOpenSession(box.id) ? 'success' : 'neutral'"
-                    variant="subtle"
-                    class="text-[10px]"
-                  >
-                    {{ getCashBoxOpenSession(box.id) ? 'OPEN' : 'CLOSED' }}
-                  </UBadge>
-                </div>
-                <div class="mt-1 text-xs text-stone-500">
-                  <span class="font-medium text-stone-600">Apertura:</span>
-                  {{ formatDate(getCashBoxOpenSession(box.id)?.openingTime) }}
-                </div>
-                <div class="text-xs text-stone-500">
-                  <span class="font-medium text-stone-600">Abrió:</span>
-                  {{ getCashBoxOpenSession(box.id)?.openedByName || '—' }}
-                </div>
-              </div>
-
-              <div class="text-right">
-                <div class="text-sm text-stone-500">Monto actual</div>
-                <div class="text-base font-semibold text-stone-900">
-                  {{ formatCurrency(getCashBoxCurrentBalance(box.id)) }}
-                </div>
-                <div class="text-xs text-stone-500">
-                  <template v-if="getCashBoxOpenSession(box.id)">Sesión abierta</template>
-                  <template v-else>Sin sesión abierta</template>
-                </div>
-              </div>
-
-              <div class="text-right">
-                <div class="text-sm text-stone-500">Último movimiento</div>
-                <div class="text-sm font-medium text-stone-900">
-                  <template v-if="getCashBoxLastMovement(box.id)">
-                    {{ formatDate(getCashBoxLastMovement(box.id)?.createdAt) }}
-                  </template>
-                  <template v-else>—</template>
-                </div>
-                <div class="text-xs text-stone-500">
-                  <template v-if="getCashBoxLastMovement(box.id)">
-                    {{ getCashBoxLastMovement(box.id)?.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
-                    · {{ formatCurrency(getCashBoxLastMovement(box.id)?.amount) }}
-                  </template>
-                  <template v-else>Sin movimientos</template>
-                </div>
-              </div>
-
-              <div class="text-right">
-                <UButton
-                  v-if="getCashBoxOpenSession(box.id)"
-                  size="xs"
-                  variant="outline"
-                  @click="() => openCloseModalFor(box.id)"
-                >
-                  {{ $t('manager.cash.closeSession') }}
-                </UButton>
-                <UButton
-                  v-else
-                  size="xs"
-                  variant="outline"
-                  @click="() => openOpenModalFor(box.id)"
-                >
-                  {{ $t('manager.cash.openSession') }}
-                </UButton>
-              </div>
+        <div v-else class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-4">
+          <div
+            v-for="method in sectorOrder"
+            :key="method"
+            class="rounded-lg border border-stone-200 bg-white p-4"
+          >
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold text-stone-900">{{ getMethodLabel(method) }}</div>
+              <UBadge variant="subtle" color="neutral" class="text-[10px]">{{ method }}</UBadge>
+            </div>
+            <div class="mt-2 text-xs text-stone-500">Subtotal</div>
+            <div class="text-lg font-semibold text-stone-900">
+              {{ formatCurrency(getTotalsByMethod(selectedSession)[method] || 0) }}
+            </div>
+            <div class="mt-2 text-xs text-stone-500">
+              <span class="font-medium text-stone-600">Último movimiento:</span>
+              <template v-if="selectedSession?.movements?.length">
+                {{ formatDate(selectedSession?.movements?.find(m => m.paymentMethod === method)?.createdAt) || '—' }}
+              </template>
+              <template v-else>—</template>
             </div>
           </div>
         </div>
@@ -561,7 +604,7 @@ onMounted(() => {
             label-key="name"
             :placeholder="$t('manager.cash.selectCashbox')"
           />
-          <UButton color="primary" :disabled="!selectedCashBoxId" @click="openOpenModal">
+          <UButton color="primary" :disabled="!selectedBranchId || !!selectedSession" @click="openOpenModal">
             {{ $t('manager.cash.openSession') }}
           </UButton>
           <UButton variant="outline" :disabled="!selectedSession" @click="openCloseModal">
@@ -576,8 +619,8 @@ onMounted(() => {
       <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800 flex items-center justify-between">
           <span>{{ $t('manager.cash.sessions') }}</span>
-          <span v-if="openSessions.length" class="text-xs font-medium text-stone-500">
-            {{ openSessions.length }} caja(s) abierta(s)
+          <span v-if="selectedSession" class="text-xs font-medium text-stone-500">
+            Sesión activa
           </span>
         </div>
         <div v-if="isLoading" class="p-6">
@@ -604,7 +647,7 @@ onMounted(() => {
           <div v-for="session in sessions" :key="session.id" class="p-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <div class="text-sm font-semibold text-stone-900">{{ session.cashBox?.name }}</div>
+                <div class="text-sm font-semibold text-stone-900">{{ session.cashBox?.name || 'Caja del día' }}</div>
                 <div class="text-xs text-stone-500">{{ formatDate(session.openingTime) }}</div>
               </div>
               <div class="text-right">
@@ -628,7 +671,7 @@ onMounted(() => {
                 v-if="!session.closingTime"
                 size="xs"
                 variant="outline"
-                @click="() => openCloseModalFor(session.cashBoxId)"
+                @click="() => openCloseModalFor(session.cashBoxId || '')"
               >
                 {{ $t('manager.cash.closeSession') }}
               </UButton>
@@ -655,7 +698,9 @@ onMounted(() => {
                 <div class="text-sm font-medium text-stone-900">
                   {{ movement.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
                 </div>
-                <div class="text-xs text-stone-500">{{ formatDate(movement.createdAt) }}</div>
+                <div class="text-xs text-stone-500">
+                  {{ formatDate(movement.createdAt) }} · {{ getMethodLabel(movement.paymentMethod || 'CASH') }}
+                </div>
               </div>
               <div class="text-right text-sm font-semibold text-stone-900">
                 {{ formatCurrency(movement.amount) }}
@@ -764,6 +809,15 @@ onMounted(() => {
         <UFormField :label="$t('manager.cash.closingAmount')" name="countedCash">
           <UInputNumber v-model="closeForm.countedCash" :min="0" />
         </UFormField>
+        <UFormField :label="$t('manager.cash.closingCard')" name="countedCard">
+          <UInputNumber v-model="closeForm.countedCard" :min="0" />
+        </UFormField>
+        <UFormField :label="$t('manager.cash.closingTransfer')" name="countedTransfer">
+          <UInputNumber v-model="closeForm.countedTransfer" :min="0" />
+        </UFormField>
+        <UFormField :label="$t('manager.cash.closingOther')" name="countedOther">
+          <UInputNumber v-model="closeForm.countedOther" :min="0" />
+        </UFormField>
         <div class="hidden">
           <UButton type="submit" />
         </div>
@@ -782,6 +836,9 @@ onMounted(() => {
       <UForm ref="movementFormRef" :schema="movementSchema" :state="movementForm" class="space-y-4" @submit="submitMovement">
         <UFormField :label="$t('manager.cash.movementType')" name="type">
           <USelect v-model="movementForm.type" :items="movementItems" value-key="value" />
+        </UFormField>
+        <UFormField :label="$t('manager.cash.movementMethod')" name="paymentMethod">
+          <USelect v-model="movementForm.paymentMethod" :items="paymentMethodItems" value-key="value" />
         </UFormField>
         <UFormField :label="$t('manager.cash.movementAmount')" name="amount">
           <UInputNumber v-model="movementForm.amount" :min="0" />

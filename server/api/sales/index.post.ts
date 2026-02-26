@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
+import { badRequest } from '~/server/utils/errors'
 
 const schema = z.object({
   branchId: z.string().uuid(),
@@ -22,23 +23,52 @@ export default defineEventHandler(async (event) => {
 
   const parsed = await readBodyValidated(event, schema)
 
-  // MVP: create Sale + SaleItems. No split payments by design.
-  const sale = await prisma.sale.create({
-    data: {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const openSession = await prisma.cashSession.findFirst({
+    where: {
       branchId: parsed.branchId,
-      clientId: parsed.clientId ?? null,
-      userId: parsed.userId ?? null,
-      total: parsed.total as any,
-      paymentMethod: parsed.paymentMethod as any,
-      items: {
-        create: parsed.items.map(i => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          price: i.price as any
-        }))
-      }
-    },
-    include: { items: true }
+      closingTime: null
+    }
+  })
+
+  if (!openSession) {
+    badRequest('Open cash session required')
+  }
+
+  // MVP: create Sale + SaleItems. No split payments by design.
+  const sale = await prisma.$transaction(async (tx) => {
+    const created = await tx.sale.create({
+      data: {
+        branchId: parsed.branchId,
+        clientId: parsed.clientId ?? null,
+        userId: parsed.userId ?? null,
+        total: parsed.total as any,
+        paymentMethod: parsed.paymentMethod as any,
+        items: {
+          create: parsed.items.map(i => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            price: i.price as any
+          }))
+        }
+      },
+      include: { items: true }
+    })
+
+    await tx.cashMovement.create({
+      data: {
+        sessionId: openSession!.id,
+        saleId: created.id,
+        amount: parsed.total as any,
+        type: 'DEPOSIT',
+        paymentMethod: parsed.paymentMethod as any,
+        reason: 'SALE'
+      } as any
+    })
+
+    return created
   })
 
   return sale

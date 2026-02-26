@@ -3,10 +3,11 @@ import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole, getAuthUser } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
+import { badRequest } from '~/server/utils/errors'
 
 const schema = z.object({
   branchId: z.string().uuid(),
-  cashBoxId: z.string().uuid(),
+  cashBoxId: z.string().uuid().optional().nullable(),
   openingAmount: z.number().nonnegative()
 })
 
@@ -19,13 +20,24 @@ export default defineEventHandler(async (event) => {
   const today = new Date()
   today.setHours(0,0,0,0)
 
-  return prisma.cashSession.create({
-    data: {
+  const existingOpen = await prisma.cashSession.findFirst({
+    where: {
       branchId: parsed.branchId,
-      cashBoxId: parsed.cashBoxId,
-      openedBy: u.userId,
-      openingBalance: parsed.openingAmount as any,
-      date: today
+      closingTime: null
     }
   })
+
+  if (existingOpen) {
+    badRequest('Branch already has an open session')
+  }
+
+  const data: any = {
+    branchId: parsed.branchId,
+    openedBy: u.userId,
+    openingBalance: parsed.openingAmount as any,
+    date: today
+  }
+  if (parsed.cashBoxId) data.cashBoxId = parsed.cashBoxId
+
+  return prisma.cashSession.create({ data })
 })

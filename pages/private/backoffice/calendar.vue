@@ -126,6 +126,7 @@ const payError = ref('')
 
 const payForm = reactive({
   cashBoxId: '',
+  paymentMethod: 'CASH',
   amount: 0
 })
 
@@ -196,6 +197,7 @@ function closePayModal() {
   payError.value = ''
   payForm.amount = 0
   payForm.cashBoxId = ''
+  payForm.paymentMethod = 'CASH'
 }
 
 async function confirmPayment() {
@@ -208,6 +210,7 @@ async function confirmPayment() {
       body: {
         status: 'PAID',
         cashBoxId: payForm.cashBoxId,
+        paymentMethod: payForm.paymentMethod,
         amount: payForm.amount
       }
     })
@@ -397,6 +400,15 @@ function handleEventClick(e: any) {
               <option v-for="cb in cashBoxes" :key="cb.id" :value="cb.id">
                 {{ cb.name }}
               </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">{{ $t('manager.cash.movementMethod') }}</label>
+            <select v-model="payForm.paymentMethod" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
+              <option value="CASH">{{ $t('manager.cash.methodCash') }}</option>
+              <option value="CARD">{{ $t('manager.cash.methodCard') }}</option>
+              <option value="TRANSFER">{{ $t('manager.cash.methodTransfer') }}</option>
+              <option value="OTHER">{{ $t('manager.cash.methodOther') }}</option>
             </select>
           </div>
           <div>

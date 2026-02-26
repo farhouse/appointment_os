@@ -8,6 +8,7 @@ import { badRequest, forbidden, notFound } from '~/server/utils/errors'
 const statusSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW']),
   cashBoxId: z.string().uuid().optional(),
+  paymentMethod: z.enum(['CASH', 'CARD', 'TRANSFER', 'OTHER']).optional(),
   amount: z.number().min(0).optional()
 })
 
@@ -54,18 +55,19 @@ export default defineEventHandler(async (event) => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  const paymentMethod = validation.paymentMethod ?? 'CASH'
+
   const result = await prisma.$transaction(async (tx) => {
-    const session = await tx.cashSession.upsert({
-      where: { cashBoxId_date: { cashBoxId: validation.cashBoxId!, date: today } },
-      update: {},
-      create: {
+    const session = await tx.cashSession.findFirst({
+      where: {
         branchId: appointment.branchId,
-        cashBoxId: validation.cashBoxId!,
-        openedBy: u.userId,
-        openingBalance: 0 as any,
-        date: today
+        closingTime: null
       }
     })
+
+    if (!session) {
+      badRequest('Open cash session required')
+    }
 
     const updatedAppointment = await tx.appointment.update({
       where: { id },
@@ -74,8 +76,9 @@ export default defineEventHandler(async (event) => {
         paidAt: new Date(),
         paidById: u.userId,
         paidCashBoxId: validation.cashBoxId,
+        paidPaymentMethod: paymentMethod as any,
         paidAmount: finalAmount as any
-      }
+      } as any
     })
 
     if (updatedAppointment.clientId && finalAmount > 0) {
@@ -86,16 +89,10 @@ export default defineEventHandler(async (event) => {
         // Prefer service-configured points reward. Fallback: amount-based heuristic.
         const aptWithServices = await tx.appointment.findUnique({
           where: { id: updatedAppointment.id },
-          select: {
-            services: {
-              select: {
-                service: { select: { pointsReward: true } }
-              }
-            }
-          }
+          include: { services: { include: { service: true } } }
         })
 
-        const servicePoints = (aptWithServices?.services || []).reduce((acc, s) => acc + (s.service?.pointsReward || 0), 0)
+        const servicePoints = (aptWithServices?.services || []).reduce((acc: number, s: any) => acc + (s.service?.pointsReward || 0), 0)
         const points = servicePoints > 0 ? servicePoints : Math.floor(Number(finalAmount) / 1000)
 
         if (points > 0) {
@@ -116,8 +113,9 @@ export default defineEventHandler(async (event) => {
         sessionId: session.id,
         appointmentId: id,
         amount: finalAmount as any,
-        type: 'DEPOSIT'
-      }
+        type: 'DEPOSIT',
+        paymentMethod: paymentMethod as any
+      } as any
     })
 
     return updatedAppointment

@@ -149,6 +149,7 @@ model Appointment {
   paidById      String?
   paidBy        User?    @relation("PaidBy", fields: [paidById], references: [id])
   paidCashBoxId String?
+  paidPaymentMethod PaymentMethod?
   paidAmount   Decimal?
   paidCashBox  CashBox? @relation("PaidCashBox", fields: [paidCashBoxId], references: [id])
 
@@ -247,6 +248,7 @@ model Sale {
   client Client? @relation(fields: [clientId], references: [id])
   user   User?   @relation(fields: [userId], references: [id])
   items  SaleItem[]
+  cashMovements CashMovement[]
 }
 
 model SaleItem {
@@ -306,25 +308,26 @@ model CashBox {
 model CashSession {
   id           String    @id @default(uuid())
   branchId     String
-  cashBoxId    String
+  cashBoxId    String?
   openedBy     String    // User ID
   closedBy     String?   // User ID
   openingTime  DateTime  @default(now())
   closingTime  DateTime?
   openingBalance Decimal
   closingBalance Decimal?
+  closingCash  Decimal?
+  closingCard  Decimal?
+  closingTransfer Decimal?
+  closingOther Decimal?
   
   branch Branch @relation(fields: [branchId], references: [id])
-  cashBox CashBox @relation(fields: [cashBoxId], references: [id])
+  cashBox CashBox? @relation(fields: [cashBoxId], references: [id])
   movements CashMovement[]
   
-  // Note: Uniqueness by (branchId, date) is tricky because "date" isn't a field, 
-  // but we can enforce one open session per branch.
-  // For the prompt requirement "unique(branchId, date)", we might add a 'date' field manually managed
-  // or just rely on business logic. I will add a date field for the unique constraint.
+  // Note: Uniqueness by (branchId, date) is enforced in app logic to keep legacy data safe.
   date         DateTime // Store date at 00:00:00Z
   
-  @@unique([cashBoxId, date])
+  @@index([branchId, date])
   @@index([cashBoxId])
 }
 
@@ -332,6 +335,8 @@ model CashMovement {
   id            String           @id @default(uuid())
   sessionId     String
   appointmentId String?
+  saleId        String?
+  paymentMethod PaymentMethod    @default(CASH)
   amount        Decimal
   type          CashMovementType
   reason        String?
@@ -339,8 +344,10 @@ model CashMovement {
   
   session CashSession @relation(fields: [sessionId], references: [id])
   appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  sale Sale? @relation(fields: [saleId], references: [id])
 
   @@index([appointmentId])
+  @@index([saleId])
 }
 
 model AuditLog {

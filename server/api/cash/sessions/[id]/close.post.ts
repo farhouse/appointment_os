@@ -7,6 +7,9 @@ import { requireParam } from '~/server/utils/http'
 
 const schema = z.object({
   countedCash: z.number().nonnegative(),
+  countedCard: z.number().nonnegative().optional(),
+  countedTransfer: z.number().nonnegative().optional(),
+  countedOther: z.number().nonnegative().optional(),
   notes: z.string().optional().nullable()
 })
 
@@ -23,7 +26,11 @@ export default defineEventHandler(async (event) => {
     data: {
       closingTime: new Date(),
       closedBy: u.userId,
-      closingBalance: parsed.countedCash as any
-    }
+      closingBalance: parsed.countedCash as any,
+      ...(parsed.countedCash != null ? { closingCash: parsed.countedCash as any } : {}),
+      ...(parsed.countedCard != null ? { closingCard: parsed.countedCard as any } : {}),
+      ...(parsed.countedTransfer != null ? { closingTransfer: parsed.countedTransfer as any } : {}),
+      ...(parsed.countedOther != null ? { closingOther: parsed.countedOther as any } : {})
+    } as any
   })
 })

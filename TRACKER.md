@@ -120,6 +120,10 @@ Leyenda estado: `todo | doing | blocked | done`
 - [x] (done) **Caja / Sesiones pendientes**: banner superior con sesiones abiertas y CTA directo al cierre por sesión.
   - Resultado: alerta con caja, apertura y usuario; acceso rápido a cierre; acciones por caja OPEN/CLOSED en “Estado por caja”.
   - Files: `pages/private/backoffice/cash.vue`.
+- [x] (done) **Caja / Refactor sesión diaria + sectores por método**: sesión única por sucursal con movimientos sectorizados por método de pago.
+  - Resultado: cash session por sucursal/día, totales por método y cierre con conteos por método.
+  - Files: `prisma/schema.prisma`, `prisma/migrations/20260226120000_cash_session_payment_sectors/migration.sql`, `server/api/cash/*`, `server/api/appointments/[id]/status.patch.ts`, `server/api/sales/index.post.ts`, `pages/private/backoffice/cash.vue`, `pages/private/backoffice/calendar.vue`.
+  - Nota: requiere datos de pago por método al cobrar appointments.
 - [ ] (todo) **Calendar UX**: el modal de appointment debería mostrar más info + permitir mover el turno (y/o editar horario).
   - Acceptance: modal incluye datos (cliente, contacto, servicio, estado, pago, notas) + acción “Mover turno” con selector de fecha/hora.
   - NEXT: definir UI de move (drag&drop vs form) y conectar a endpoint `PATCH /api/appointments/:id/move`.
