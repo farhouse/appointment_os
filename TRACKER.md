@@ -114,6 +114,9 @@ Leyenda estado: `todo | doing | blocked | done`
 - [x] (done) **Caja / Split UI**: separar “Uso de Cajas” vs “Administración de Cajas” con permisos por rol.
   - Resultado: operaciones diarias visibles a MANAGER/ADMIN/OWNER; administración solo ADMIN/OWNER.
   - Files: `pages/private/backoffice/cash.vue`.
+- [x] (done) **Caja / Cierre por caja**: acción de cerrar sesión directamente desde cada tarjeta OPEN.
+  - Resultado: botón “Cerrar caja” dispara el flujo existente y actualiza estado/sesiones al cerrar.
+  - Files: `pages/private/backoffice/cash.vue`.
 - [ ] (todo) **Calendar UX**: el modal de appointment debería mostrar más info + permitir mover el turno (y/o editar horario).
   - Acceptance: modal incluye datos (cliente, contacto, servicio, estado, pago, notas) + acción “Mover turno” con selector de fecha/hora.
   - NEXT: definir UI de move (drag&drop vs form) y conectar a endpoint `PATCH /api/appointments/:id/move`.

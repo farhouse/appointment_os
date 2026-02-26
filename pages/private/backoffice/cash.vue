@@ -479,6 +479,16 @@ onMounted(() => {
                   <template v-else>Sin movimientos</template>
                 </div>
               </div>
+
+              <div v-if="getCashBoxOpenSession(box.id)" class="text-right">
+                <UButton
+                  size="xs"
+                  variant="outline"
+                  @click="() => { selectedCashBoxId = box.id; openCloseModal() }"
+                >
+                  {{ $t('manager.cash.closeSession') }}
+                </UButton>
+              </div>
             </div>
           </div>
         </div>
