@@ -27,6 +27,16 @@ export default defineEventHandler(async (event) => {
     badRequest('Open cash session required')
   }
 
+  const client = prisma as any
+  if (client.paymentMethodConfig) {
+    const methodConfig = await client.paymentMethodConfig.findUnique({
+      where: { method: parsed.paymentMethod }
+    })
+    if (methodConfig && !methodConfig.active) {
+      badRequest('Payment method disabled')
+    }
+  }
+
   return prisma.cashMovement.create({
     data: {
       sessionId: parsed.sessionId,

@@ -57,6 +57,16 @@ export default defineEventHandler(async (event) => {
 
   const paymentMethod = validation.paymentMethod ?? 'CASH'
 
+  const client = prisma as any
+  if (client.paymentMethodConfig) {
+    const methodConfig = await client.paymentMethodConfig.findUnique({
+      where: { method: paymentMethod }
+    })
+    if (methodConfig && !methodConfig.active) {
+      badRequest('Payment method disabled')
+    }
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     const session = await tx.cashSession.findFirst({
       where: {

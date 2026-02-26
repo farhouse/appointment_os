@@ -1,15 +1,25 @@
 import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { forbidden } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const authUser = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const query = getQuery(event)
   const branchId = query.branchId as string | undefined
   const cashBoxId = query.cashBoxId as string | undefined
   const status = query.status as string | undefined
   const includeTotals = query.includeTotals === 'true'
+  const includeBranch = query.includeBranch === 'true'
+
+  if (authUser.role === 'MANAGER' && !branchId) {
+    forbidden('Forbidden')
+  }
+
+  if (authUser.role === 'MANAGER' && includeBranch) {
+    forbidden('Forbidden')
+  }
 
   const sessions = await prisma.cashSession.findMany({
     where: {
@@ -22,7 +32,8 @@ export default defineEventHandler(async (event) => {
       movements: includeTotals
         ? { orderBy: { createdAt: 'desc' } }
         : { take: 10, orderBy: { createdAt: 'desc' } },
-      cashBox: true
+      cashBox: true,
+      ...(includeBranch ? { branch: { select: { id: true, name: true } } } : {})
     },
     orderBy: { date: 'desc' }
   })

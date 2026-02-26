@@ -23,6 +23,16 @@ export default defineEventHandler(async (event) => {
 
   const parsed = await readBodyValidated(event, schema)
 
+  const client = prisma as any
+  if (client.paymentMethodConfig) {
+    const methodConfig = await client.paymentMethodConfig.findUnique({
+      where: { method: parsed.paymentMethod }
+    })
+    if (methodConfig && !methodConfig.active) {
+      badRequest('Payment method disabled')
+    }
+  }
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 

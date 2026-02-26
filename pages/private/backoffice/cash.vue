@@ -15,13 +15,6 @@ type CashBox = {
   name: string
 }
 
-type AdminCashBox = {
-  id: string
-  name: string
-  active: boolean
-  branch: { id: string; name: string }
-}
-
 type CashSession = {
   id: string
   branchId: string
@@ -40,6 +33,7 @@ type CashSession = {
   lastMovement?: CashMovement | null
   cashBox?: CashBox | null
   movements: CashMovement[]
+  branch?: { id: string; name: string } | null
 }
 
 type CashMovement = {
@@ -52,7 +46,7 @@ type CashMovement = {
 }
 
 const { t } = useI18n()
-const { selectedBranchId, branchOptions } = useSelectedBranch()
+const { selectedBranchId } = useSelectedBranch()
 const toast = useToast()
 const me = useMeState()
 
@@ -60,10 +54,7 @@ const cashBoxes = ref<CashBox[]>([])
 const sessions = ref<CashSession[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
-
-const adminCashBoxes = ref<AdminCashBox[]>([])
-const adminIsLoading = ref(false)
-const adminErrorMessage = ref('')
+const paymentMethods = ref<{ method: string; label: string; active: boolean }[]>([])
 
 const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.branchId === selectedBranchId.value && !s.closingTime) || null)
@@ -77,6 +68,11 @@ const openSessionsSorted = computed(() => {
     return aTime - bTime
   })
 })
+const selectedBranchOpenSessions = computed(() => openSessionsSorted.value.filter(s => s.branchId === selectedBranchId.value))
+const globalOpenSessionsSorted = computed(() => {
+  return openSessionsSorted.value.filter(s => s.branchId !== selectedBranchId.value)
+})
+
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 
 
@@ -130,20 +126,40 @@ const closeFormRef = useTemplateRef('closeFormRef')
 const movementFormRef = useTemplateRef('movementFormRef')
 
 const isSaving = ref(false)
+const route = useRoute()
 
 const movementItems = computed(() => [
   { label: t('manager.cash.deposit'), value: 'DEPOSIT' },
   { label: t('manager.cash.withdrawal'), value: 'WITHDRAWAL' }
 ])
 
-const paymentMethodItems = computed(() => [
-  { label: t('manager.cash.methodCash'), value: 'CASH' },
-  { label: t('manager.cash.methodCard'), value: 'CARD' },
-  { label: t('manager.cash.methodTransfer'), value: 'TRANSFER' },
-  { label: t('manager.cash.methodOther'), value: 'OTHER' }
-])
+const paymentMethodItems = computed(() => {
+  if (paymentMethods.value.length) {
+    return paymentMethods.value
+      .filter(method => method.active)
+      .map(method => ({ label: method.label, value: method.method }))
+  }
+  return [
+    { label: t('manager.cash.methodCash'), value: 'CASH' },
+    { label: t('manager.cash.methodCard'), value: 'CARD' },
+    { label: t('manager.cash.methodTransfer'), value: 'TRANSFER' },
+    { label: t('manager.cash.methodOther'), value: 'OTHER' }
+  ]
+})
 
-const sectorOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+const sectorOrder = computed(() => {
+  if (paymentMethods.value.length) {
+    return paymentMethods.value
+      .filter(method => method.active)
+      .map(method => method.method)
+  }
+  return ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+})
+
+const hasActivePaymentMethods = computed(() => {
+  if (!paymentMethods.value.length) return true
+  return paymentMethods.value.some(method => method.active)
+})
 
 function getMethodLabel(method: string) {
   switch (method) {
@@ -158,53 +174,45 @@ function getMethodLabel(method: string) {
   }
 }
 
-const cashBoxBranchId = ref('')
-
-const formState = reactive({
-  name: '',
-  active: true
-})
-
-const groupedCashBoxes = computed(() => {
-  const map = new Map<string, { branchId: string; branchName: string; items: AdminCashBox[] }>()
-  for (const cb of adminCashBoxes.value) {
-    const branchId = cb.branch?.id || ''
-    const branchName = cb.branch?.name || ''
-    const key = branchId || branchName || 'unknown'
-
-    if (!map.has(key)) {
-      map.set(key, { branchId, branchName, items: [] })
-    }
-    map.get(key)!.items.push(cb)
-  }
-
-  const groups = Array.from(map.values())
-  groups.sort((a, b) => a.branchName.localeCompare(b.branchName))
-  for (const g of groups) g.items.sort((a, b) => a.name.localeCompare(b.name))
-  return groups
-})
 
 watch(selectedBranchId, () => {
   if (!selectedBranchId.value) return
-  selectedCashBoxId.value = ''
+  const queryCashBoxId = typeof route.query.cashBoxId === 'string' ? route.query.cashBoxId : ''
+  if (!queryCashBoxId) selectedCashBoxId.value = ''
   void loadCashboxes()
   void loadSessions()
+})
+
+watch(isAdmin, (value) => {
+  if (!value) return
+  if (selectedBranchId.value) void loadSessions()
+})
+
+watch(selectedBranchId, (value, prev) => {
+  if (!value || value === prev) return
+  const querySessionId = typeof route.query.sessionId === 'string' ? route.query.sessionId : ''
+  const queryCashBoxId = typeof route.query.cashBoxId === 'string' ? route.query.cashBoxId : ''
+  if (querySessionId || queryCashBoxId) {
+    if (!closingModal.value) openCloseModal()
+  }
+})
+
+watchEffect(() => {
+  const branchId = typeof route.query.branchId === 'string' ? route.query.branchId : ''
+  if (branchId && branchId !== selectedBranchId.value) {
+    selectedBranchId.value = branchId
+  }
+
+  const cashBoxId = typeof route.query.cashBoxId === 'string' ? route.query.cashBoxId : ''
+  if (cashBoxId && cashBoxId !== selectedCashBoxId.value) {
+    selectedCashBoxId.value = cashBoxId
+  }
 })
 
 watch(selectedCashBoxId, (value) => {
   openForm.cashBoxId = value
 })
 
-watch(isAdmin, (value) => {
-  if (!value) return
-  void loadAdminCashBoxes()
-}, { immediate: true })
-
-watchEffect(() => {
-  if (!cashBoxBranchId.value && selectedBranchId.value) {
-    cashBoxBranchId.value = selectedBranchId.value
-  }
-})
 
 async function loadCashboxes() {
   if (!selectedBranchId.value) return
@@ -221,6 +229,29 @@ async function loadCashboxes() {
   }
 }
 
+async function loadPaymentMethods() {
+  try {
+    const response = await $fetch('/api/settings/payment-methods')
+    const methods = response?.methods || []
+    const labelMap: Record<string, string> = {
+      CASH: t('manager.cash.methodCash'),
+      CARD: t('manager.cash.methodCard'),
+      TRANSFER: t('manager.cash.methodTransfer'),
+      OTHER: t('manager.cash.methodOther')
+    }
+    const defaultOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+    paymentMethods.value = methods
+      .map((method: any) => ({
+        method: method.method,
+        active: method.active,
+        label: labelMap[method.method] || method.method
+      }))
+      .sort((a: any, b: any) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+  } catch {
+    paymentMethods.value = []
+  }
+}
+
 async function loadSessions() {
   isLoading.value = true
   errorMessage.value = ''
@@ -228,26 +259,26 @@ async function loadSessions() {
     const query = new URLSearchParams()
     if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
     query.set('includeTotals', 'true')
-    sessions.value = await $fetch(`/api/cash/sessions?${query.toString()}`)
+    if (isAdmin.value) query.set('includeBranch', 'true')
+    const scopedSessions = await $fetch<CashSession[]>(`/api/cash/sessions?${query.toString()}`)
+
+    if (!isAdmin.value) {
+      sessions.value = scopedSessions
+      return
+    }
+
+    const globalQuery = new URLSearchParams({ status: 'OPEN', includeTotals: 'true', includeBranch: 'true' })
+    const globalSessions = await $fetch<CashSession[]>(`/api/cash/sessions?${globalQuery.toString()}`)
+
+    const map = new Map<string, CashSession>()
+    for (const session of globalSessions || []) map.set(session.id, session)
+    for (const session of scopedSessions || []) map.set(session.id, session)
+    sessions.value = Array.from(map.values())
   } catch (e: any) {
     sessions.value = []
     errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
   } finally {
     isLoading.value = false
-  }
-}
-
-async function loadAdminCashBoxes() {
-  if (!isAdmin.value) return
-  adminIsLoading.value = true
-  adminErrorMessage.value = ''
-  try {
-    adminCashBoxes.value = await $fetch('/api/cashboxes')
-  } catch (e: any) {
-    adminCashBoxes.value = []
-    adminErrorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
-  } finally {
-    adminIsLoading.value = false
   }
 }
 
@@ -274,7 +305,8 @@ function openCloseModalFor(cashBoxId: string) {
 
 function openMovementModal() {
   movementForm.type = 'DEPOSIT'
-  movementForm.paymentMethod = 'CASH'
+  const activeMethod = paymentMethods.value.find(method => method.active)?.method || 'CASH'
+  movementForm.paymentMethod = activeMethod
   movementForm.amount = 0
   movementForm.reason = ''
   movementModal.value = true
@@ -322,6 +354,10 @@ async function submitClose(event: FormSubmitEvent<CloseForm>) {
 
 async function submitMovement(event: FormSubmitEvent<MovementForm>) {
   if (!selectedSession.value) return
+  if (!hasActivePaymentMethods.value) {
+    toast.add({ title: 'No hay métodos de pago activos', color: 'error' })
+    return
+  }
   isSaving.value = true
   try {
     await $fetch('/api/cash/movements', {
@@ -344,45 +380,6 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
   }
 }
 
-async function handleCreateCashBox() {
-  if (!isAdmin.value || !cashBoxBranchId.value || !formState.name.trim()) return
-  adminIsLoading.value = true
-  adminErrorMessage.value = ''
-  try {
-    await $fetch('/api/cashboxes', {
-      method: 'POST',
-      body: {
-        branchId: cashBoxBranchId.value,
-        name: formState.name.trim(),
-        active: formState.active
-      }
-    })
-    formState.name = ''
-    formState.active = true
-    await loadAdminCashBoxes()
-  } catch (e: any) {
-    adminErrorMessage.value = e?.data?.statusMessage || t('admin.common.saveError')
-  } finally {
-    adminIsLoading.value = false
-  }
-}
-
-async function toggleCashBox(cb: AdminCashBox) {
-  if (!isAdmin.value) return
-  adminIsLoading.value = true
-  adminErrorMessage.value = ''
-  try {
-    await $fetch(`/api/cashboxes/${cb.id}`, {
-      method: 'PATCH',
-      body: { active: !cb.active }
-    })
-    await loadAdminCashBoxes()
-  } catch (e: any) {
-    adminErrorMessage.value = e?.data?.statusMessage || t('admin.common.saveError')
-  } finally {
-    adminIsLoading.value = false
-  }
-}
 
 function toNumber(value: string | number | null | undefined) {
   if (value == null) return 0
@@ -424,6 +421,14 @@ function getSessionCurrentBalance(session: CashSession | null) {
   return opening + total
 }
 
+function buildCloseUrl(session: CashSession) {
+  const params = new URLSearchParams()
+  if (session.branchId) params.set('branchId', session.branchId)
+  if (session.cashBoxId) params.set('cashBoxId', session.cashBoxId)
+  if (session.id) params.set('sessionId', session.id)
+  return `/private/backoffice/cash?${params.toString()}#close-session`
+}
+
 function getCashBoxOpenSession(cashBoxId: string) {
   return sessions.value.find(session => session.cashBoxId === cashBoxId && !session.closingTime) || null
 }
@@ -449,6 +454,20 @@ onMounted(() => {
     void loadCashboxes()
     void loadSessions()
   }
+  void loadPaymentMethods()
+})
+
+watch(openSessionsSorted, (value) => {
+  if (!value.length) return
+  const queryCashBoxId = typeof route.query.cashBoxId === 'string' ? route.query.cashBoxId : ''
+  const querySessionId = typeof route.query.sessionId === 'string' ? route.query.sessionId : ''
+  if (!queryCashBoxId && !querySessionId) return
+  const target = value.find(session => (
+    (queryCashBoxId && session.cashBoxId === queryCashBoxId)
+    || (querySessionId && session.id === querySessionId)
+  )) || null
+  if (!target) return
+  if (!closingModal.value) openCloseModalFor(target.cashBoxId || '')
 })
 </script>
 
@@ -514,18 +533,18 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-if="openSessionsSorted.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
+      <div v-if="selectedBranchOpenSessions.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div class="text-sm font-semibold text-amber-900">Sesiones abiertas pendientes</div>
             <div class="text-xs text-amber-800">
-              {{ openSessionsSorted.length }} caja(s) abierta(s) — revisá y cerrá las pendientes.
+              {{ selectedBranchOpenSessions.length }} caja(s) abierta(s) — revisá y cerrá las pendientes.
             </div>
           </div>
         </div>
         <div class="mt-3 space-y-2">
           <div
-            v-for="session in openSessionsSorted"
+            v-for="session in selectedBranchOpenSessions"
             :key="session.id"
             class="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-white px-3 py-2"
           >
@@ -541,6 +560,47 @@ onMounted(() => {
             <UButton size="xs" variant="outline" @click="() => openCloseModalFor(session.cashBoxId || '')">
               Cerrar caja
             </UButton>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="isAdmin" class="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
+          Sesiones abiertas (todas las sucursales)
+        </div>
+        <div v-if="isLoading" class="p-6">
+          <USkeleton class="h-8 w-full" />
+          <USkeleton class="mt-3 h-8 w-full" />
+        </div>
+        <div v-else-if="globalOpenSessionsSorted.length === 0" class="p-6">
+          <CrudState
+            :title="'Sin sesiones abiertas'"
+            :description="'No hay sesiones abiertas en otras sucursales.'"
+            icon="i-lucide-briefcase"
+          />
+        </div>
+        <div v-else class="divide-y divide-stone-200">
+          <div v-for="session in globalOpenSessionsSorted" :key="session.id" class="p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-semibold text-stone-900">{{ session.branch?.name || 'Sucursal' }}</div>
+                <div class="text-xs text-stone-500">Abrió: {{ session.openedByName || '—' }}</div>
+                <div class="text-xs text-stone-500">Apertura: {{ formatDate(session.openingTime) }}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-stone-500">Balance actual</div>
+                <div class="text-base font-semibold text-stone-900">{{ formatCurrency(getSessionCurrentBalance(session)) }}</div>
+              </div>
+              <div>
+                <UButton
+                  size="xs"
+                  variant="outline"
+                  :to="buildCloseUrl(session)"
+                >
+                  Ir a cerrar
+                </UButton>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -567,6 +627,13 @@ onMounted(() => {
             :title="'Sin sesión abierta'"
             :description="'Abrí la caja del día para habilitar sectores y movimientos.'"
             icon="i-lucide-briefcase"
+          />
+        </div>
+        <div v-else-if="!hasActivePaymentMethods" class="p-6">
+          <CrudState
+            :title="'Sin métodos activos'"
+            :description="'Activá al menos un método de pago en Configuración para ver los sectores.'"
+            icon="i-lucide-alert-triangle"
           />
         </div>
         <div v-else class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-4">
@@ -712,73 +779,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <section v-if="isAdmin" class="space-y-4">
-      <div>
-        <h2 class="text-lg font-semibold text-stone-900">Administración de Cajas</h2>
-        <p class="text-sm text-stone-600">Crear y mantener cajas por sucursal.</p>
-      </div>
-
-      <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div class="text-sm font-semibold text-stone-900">{{ $t('pages.private.manager.cashboxes.newTitle') }}</div>
-            <div class="text-xs text-stone-500">{{ $t('pages.private.manager.cashboxes.subtitle') }}</div>
-          </div>
-        </div>
-
-        <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_auto]">
-          <input
-            v-model="formState.name"
-            type="text"
-            class="w-full rounded border border-stone-300 px-3 py-2 text-sm"
-            :placeholder="$t('pages.private.manager.cashboxes.namePlaceholder')"
-          />
-          <select v-model="cashBoxBranchId" class="w-full rounded border border-stone-300 px-3 py-2 text-sm">
-            <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
-            <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
-              {{ branch.name }}
-            </option>
-          </select>
-          <UButton color="primary" :loading="adminIsLoading" :disabled="!formState.name.trim() || !cashBoxBranchId" @click="handleCreateCashBox">
-            {{ $t('pages.private.manager.cashboxes.create') }}
-          </UButton>
-        </div>
-
-        <div v-if="adminIsLoading" class="mt-2 text-xs text-stone-500">{{ $t('common.loading') }}</div>
-        <div v-if="adminErrorMessage" class="mt-2 text-xs text-red-600">{{ adminErrorMessage }}</div>
-
-        <div class="mt-6 flex items-start justify-between gap-3">
-          <div>
-            <div class="text-sm font-semibold text-stone-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
-            <div class="text-xs text-stone-500">{{ $t('pages.private.manager.cashboxes.branch') }}: {{ $t('common.all') || 'Todas' }}</div>
-          </div>
-        </div>
-
-        <div v-if="!adminCashBoxes.length" class="mt-3 text-sm text-stone-600">{{ $t('pages.private.manager.cashboxes.empty') }}</div>
-        <div v-else class="mt-3 space-y-4">
-          <div v-for="group in groupedCashBoxes" :key="group.branchId || group.branchName" class="rounded border border-stone-200">
-            <div class="flex items-center justify-between border-b border-stone-200 px-3 py-2">
-              <div class="text-sm font-semibold text-stone-900">{{ group.branchName || 'Sucursal' }}</div>
-              <div class="text-xs text-stone-500">{{ group.items.length }}</div>
-            </div>
-
-            <div class="divide-y divide-stone-200">
-              <div v-for="cb in group.items" :key="cb.id" class="flex items-center justify-between px-3 py-2">
-                <div>
-                  <div class="text-sm font-medium text-stone-900">{{ cb.name }}</div>
-                  <div class="text-xs text-stone-500">
-                    {{ cb.active ? $t('pages.private.manager.cashboxes.activeState') : $t('pages.private.manager.cashboxes.inactiveState') }}
-                  </div>
-                </div>
-                <UButton variant="outline" size="sm" :loading="adminIsLoading" @click="toggleCashBox(cb)">
-                  {{ cb.active ? $t('pages.private.manager.cashboxes.deactivate') : $t('pages.private.manager.cashboxes.activate') }}
-                </UButton>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
   </div>
 
   <UModal v-model:open="openingModal" :title="$t('manager.cash.openSession')" :ui="{ footer: 'justify-end' }">

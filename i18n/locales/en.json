@@ -99,6 +99,15 @@
           "activate": "Activate",
           "deactivate": "Deactivate"
         },
+        "paymentMethods": {
+          "title": "Payment methods",
+          "subtitle": "Global cash configuration.",
+          "empty": "No payment methods configured.",
+          "active": "Active",
+          "inactive": "Inactive",
+          "activate": "Activate",
+          "deactivate": "Deactivate"
+        },
         "card": {
           "open": "Open module"
         },

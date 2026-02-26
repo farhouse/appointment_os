@@ -350,6 +350,16 @@ model CashMovement {
   @@index([saleId])
 }
 
+model PaymentMethodConfig {
+  id        String        @id @default(uuid())
+  method    PaymentMethod
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([method])
+}
+
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String?

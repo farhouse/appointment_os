@@ -124,6 +124,9 @@ Leyenda estado: `todo | doing | blocked | done`
   - Resultado: cash session por sucursal/día, totales por método y cierre con conteos por método.
   - Files: `prisma/schema.prisma`, `prisma/migrations/20260226120000_cash_session_payment_sectors/migration.sql`, `server/api/cash/*`, `server/api/appointments/[id]/status.patch.ts`, `server/api/sales/index.post.ts`, `pages/private/backoffice/cash.vue`, `pages/private/backoffice/calendar.vue`.
   - Nota: requiere datos de pago por método al cobrar appointments.
+- [x] (done) **Caja / Settings vs Cash split + sesiones globales**: configuración de cajas/métodos en Settings y panel global de sesiones abiertas para admin.
+  - Resultado: administración de cajas/métodos en Settings; caja operativa sin setup; admin ve sesiones abiertas multi-sucursal.
+  - Files: `pages/private/backoffice/settings.vue`, `pages/private/backoffice/cash.vue`, `server/api/cash/sessions/index.get.ts`, `server/api/settings/payment-methods.*`.
 - [ ] (todo) **Calendar UX**: el modal de appointment debería mostrar más info + permitir mover el turno (y/o editar horario).
   - Acceptance: modal incluye datos (cliente, contacto, servicio, estado, pago, notas) + acción “Mover turno” con selector de fecha/hora.
   - NEXT: definir UI de move (drag&drop vs form) y conectar a endpoint `PATCH /api/appointments/:id/move`.
