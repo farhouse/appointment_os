@@ -2,6 +2,7 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { useSelectedBranch } from '~/composables/useSelectedBranch'
+import { loadMe, useMeState } from '~/composables/useMe'
 
 definePageMeta({
   layout: 'private',
@@ -12,6 +13,13 @@ definePageMeta({
 type CashBox = {
   id: string
   name: string
+}
+
+type AdminCashBox = {
+  id: string
+  name: string
+  active: boolean
+  branch: { id: string; name: string }
 }
 
 type CashSession = {
@@ -35,18 +43,24 @@ type CashMovement = {
 }
 
 const { t } = useI18n()
-const { selectedBranchId } = useSelectedBranch()
+const { selectedBranchId, branchOptions } = useSelectedBranch()
 const toast = useToast()
+const me = useMeState()
 
 const cashBoxes = ref<CashBox[]>([])
 const sessions = ref<CashSession[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 
+const adminCashBoxes = ref<AdminCashBox[]>([])
+const adminIsLoading = ref(false)
+const adminErrorMessage = ref('')
+
 const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.cashBoxId === selectedCashBoxId.value && !s.closingTime) || null)
 
 const openSessions = computed(() => sessions.value.filter(s => !s.closingTime))
+const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 
 
 const openSchema = z.object({
@@ -97,6 +111,32 @@ const movementItems = computed(() => [
   { label: t('manager.cash.withdrawal'), value: 'WITHDRAWAL' }
 ])
 
+const cashBoxBranchId = ref('')
+
+const formState = reactive({
+  name: '',
+  active: true
+})
+
+const groupedCashBoxes = computed(() => {
+  const map = new Map<string, { branchId: string; branchName: string; items: AdminCashBox[] }>()
+  for (const cb of adminCashBoxes.value) {
+    const branchId = cb.branch?.id || ''
+    const branchName = cb.branch?.name || ''
+    const key = branchId || branchName || 'unknown'
+
+    if (!map.has(key)) {
+      map.set(key, { branchId, branchName, items: [] })
+    }
+    map.get(key)!.items.push(cb)
+  }
+
+  const groups = Array.from(map.values())
+  groups.sort((a, b) => a.branchName.localeCompare(b.branchName))
+  for (const g of groups) g.items.sort((a, b) => a.name.localeCompare(b.name))
+  return groups
+})
+
 watch(selectedBranchId, () => {
   if (!selectedBranchId.value) return
   selectedCashBoxId.value = ''
@@ -106,6 +146,17 @@ watch(selectedBranchId, () => {
 
 watch(selectedCashBoxId, (value) => {
   openForm.cashBoxId = value
+})
+
+watch(isAdmin, (value) => {
+  if (!value) return
+  void loadAdminCashBoxes()
+}, { immediate: true })
+
+watchEffect(() => {
+  if (!cashBoxBranchId.value && selectedBranchId.value) {
+    cashBoxBranchId.value = selectedBranchId.value
+  }
 })
 
 async function loadCashboxes() {
@@ -135,6 +186,20 @@ async function loadSessions() {
     errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
   } finally {
     isLoading.value = false
+  }
+}
+
+async function loadAdminCashBoxes() {
+  if (!isAdmin.value) return
+  adminIsLoading.value = true
+  adminErrorMessage.value = ''
+  try {
+    adminCashBoxes.value = await $fetch('/api/cashboxes')
+  } catch (e: any) {
+    adminCashBoxes.value = []
+    adminErrorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
+  } finally {
+    adminIsLoading.value = false
   }
 }
 
@@ -219,6 +284,46 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
   }
 }
 
+async function handleCreateCashBox() {
+  if (!isAdmin.value || !cashBoxBranchId.value || !formState.name.trim()) return
+  adminIsLoading.value = true
+  adminErrorMessage.value = ''
+  try {
+    await $fetch('/api/cashboxes', {
+      method: 'POST',
+      body: {
+        branchId: cashBoxBranchId.value,
+        name: formState.name.trim(),
+        active: formState.active
+      }
+    })
+    formState.name = ''
+    formState.active = true
+    await loadAdminCashBoxes()
+  } catch (e: any) {
+    adminErrorMessage.value = e?.data?.statusMessage || t('admin.common.saveError')
+  } finally {
+    adminIsLoading.value = false
+  }
+}
+
+async function toggleCashBox(cb: AdminCashBox) {
+  if (!isAdmin.value) return
+  adminIsLoading.value = true
+  adminErrorMessage.value = ''
+  try {
+    await $fetch(`/api/cashboxes/${cb.id}`, {
+      method: 'PATCH',
+      body: { active: !cb.active }
+    })
+    await loadAdminCashBoxes()
+  } catch (e: any) {
+    adminErrorMessage.value = e?.data?.statusMessage || t('admin.common.saveError')
+  } finally {
+    adminIsLoading.value = false
+  }
+}
+
 function toNumber(value: string | number | null | undefined) {
   if (value == null) return 0
   const n = typeof value === 'string' ? Number(value) : value
@@ -278,6 +383,7 @@ function formatDate(value: string | Date | null | undefined) {
 }
 
 onMounted(() => {
+  void loadMe()
   if (selectedBranchId.value) {
     void loadCashboxes()
     void loadSessions()
@@ -292,200 +398,275 @@ onMounted(() => {
       <p class="text-sm text-gray-600">{{ $t('manager.cash.subtitle') }}</p>
     </div>
 
-    <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
-      <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
-        Estado por caja
+    <section class="space-y-4">
+      <div>
+        <h2 class="text-lg font-semibold text-stone-900">Uso de Cajas</h2>
+        <p class="text-sm text-stone-600">Operaciones diarias: estado, aperturas, cierres y movimientos.</p>
       </div>
-      <div v-if="isLoading" class="p-6">
-        <USkeleton class="h-8 w-full" />
-        <USkeleton class="mt-3 h-8 w-full" />
-      </div>
-      <div v-else-if="errorMessage" class="p-6">
-        <CrudState
-          :title="$t('admin.common.errorTitle')"
-          :description="errorMessage"
-          icon="i-lucide-alert-triangle"
-          :action-label="$t('admin.common.retry')"
-          @action="loadSessions"
-        />
-      </div>
-      <div v-else-if="!cashBoxes.length" class="p-6">
-        <CrudState
-          :title="$t('manager.cash.emptySessions')"
-          :description="$t('manager.cash.subtitle')"
-          icon="i-lucide-briefcase"
-        />
-      </div>
-      <div v-else class="divide-y divide-stone-200">
-        <div v-for="box in cashBoxes" :key="box.id" class="p-4">
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2">
-                <div class="text-sm font-semibold text-stone-900">{{ box.name }}</div>
-                <UBadge
-                  :color="getCashBoxOpenSession(box.id) ? 'success' : 'neutral'"
-                  variant="subtle"
-                  class="text-[10px]"
-                >
-                  {{ getCashBoxOpenSession(box.id) ? 'OPEN' : 'CLOSED' }}
-                </UBadge>
-              </div>
-              <div class="mt-1 text-xs text-stone-500">
-                <span class="font-medium text-stone-600">Apertura:</span>
-                {{ formatDate(getCashBoxOpenSession(box.id)?.openingTime) }}
-              </div>
-              <div class="text-xs text-stone-500">
-                <span class="font-medium text-stone-600">Abrió:</span>
-                {{ getCashBoxOpenSession(box.id)?.openedByName || '—' }}
-              </div>
-            </div>
 
-            <div class="text-right">
-              <div class="text-sm text-stone-500">Monto actual</div>
-              <div class="text-base font-semibold text-stone-900">
-                {{ formatCurrency(getCashBoxCurrentBalance(box.id)) }}
+      <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
+          Estado por caja
+        </div>
+        <div v-if="isLoading" class="p-6">
+          <USkeleton class="h-8 w-full" />
+          <USkeleton class="mt-3 h-8 w-full" />
+        </div>
+        <div v-else-if="errorMessage" class="p-6">
+          <CrudState
+            :title="$t('admin.common.errorTitle')"
+            :description="errorMessage"
+            icon="i-lucide-alert-triangle"
+            :action-label="$t('admin.common.retry')"
+            @action="loadSessions"
+          />
+        </div>
+        <div v-else-if="!cashBoxes.length" class="p-6">
+          <CrudState
+            :title="$t('manager.cash.emptySessions')"
+            :description="$t('manager.cash.subtitle')"
+            icon="i-lucide-briefcase"
+          />
+        </div>
+        <div v-else class="divide-y divide-stone-200">
+          <div v-for="box in cashBoxes" :key="box.id" class="p-4">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <div class="text-sm font-semibold text-stone-900">{{ box.name }}</div>
+                  <UBadge
+                    :color="getCashBoxOpenSession(box.id) ? 'success' : 'neutral'"
+                    variant="subtle"
+                    class="text-[10px]"
+                  >
+                    {{ getCashBoxOpenSession(box.id) ? 'OPEN' : 'CLOSED' }}
+                  </UBadge>
+                </div>
+                <div class="mt-1 text-xs text-stone-500">
+                  <span class="font-medium text-stone-600">Apertura:</span>
+                  {{ formatDate(getCashBoxOpenSession(box.id)?.openingTime) }}
+                </div>
+                <div class="text-xs text-stone-500">
+                  <span class="font-medium text-stone-600">Abrió:</span>
+                  {{ getCashBoxOpenSession(box.id)?.openedByName || '—' }}
+                </div>
               </div>
-              <div class="text-xs text-stone-500">
-                <template v-if="getCashBoxOpenSession(box.id)">Sesión abierta</template>
-                <template v-else>Sin sesión abierta</template>
-              </div>
-            </div>
 
-            <div class="text-right">
-              <div class="text-sm text-stone-500">Último movimiento</div>
-              <div class="text-sm font-medium text-stone-900">
-                <template v-if="getCashBoxLastMovement(box.id)">
-                  {{ formatDate(getCashBoxLastMovement(box.id)?.createdAt) }}
-                </template>
-                <template v-else>—</template>
+              <div class="text-right">
+                <div class="text-sm text-stone-500">Monto actual</div>
+                <div class="text-base font-semibold text-stone-900">
+                  {{ formatCurrency(getCashBoxCurrentBalance(box.id)) }}
+                </div>
+                <div class="text-xs text-stone-500">
+                  <template v-if="getCashBoxOpenSession(box.id)">Sesión abierta</template>
+                  <template v-else>Sin sesión abierta</template>
+                </div>
               </div>
-              <div class="text-xs text-stone-500">
-                <template v-if="getCashBoxLastMovement(box.id)">
-                  {{ getCashBoxLastMovement(box.id)?.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
-                  · {{ formatCurrency(getCashBoxLastMovement(box.id)?.amount) }}
-                </template>
-                <template v-else>Sin movimientos</template>
+
+              <div class="text-right">
+                <div class="text-sm text-stone-500">Último movimiento</div>
+                <div class="text-sm font-medium text-stone-900">
+                  <template v-if="getCashBoxLastMovement(box.id)">
+                    {{ formatDate(getCashBoxLastMovement(box.id)?.createdAt) }}
+                  </template>
+                  <template v-else>—</template>
+                </div>
+                <div class="text-xs text-stone-500">
+                  <template v-if="getCashBoxLastMovement(box.id)">
+                    {{ getCashBoxLastMovement(box.id)?.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
+                    · {{ formatCurrency(getCashBoxLastMovement(box.id)?.amount) }}
+                  </template>
+                  <template v-else>Sin movimientos</template>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="text-sm font-medium text-stone-600">{{ $t('manager.cash.cashboxes') }}</div>
-        <USelect
-          v-model="selectedCashBoxId"
-          :items="cashBoxes"
-          value-key="id"
-          label-key="name"
-          :placeholder="$t('manager.cash.selectCashbox')"
-        />
-        <UButton color="primary" :disabled="!selectedCashBoxId" @click="openOpenModal">
-          {{ $t('manager.cash.openSession') }}
-        </UButton>
-        <UButton variant="outline" :disabled="!selectedSession" @click="openCloseModal">
-          {{ $t('manager.cash.closeSession') }}
-        </UButton>
-        <UButton variant="outline" :disabled="!selectedSession" @click="openMovementModal">
+      <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="text-sm font-medium text-stone-600">{{ $t('manager.cash.cashboxes') }}</div>
+          <USelect
+            v-model="selectedCashBoxId"
+            :items="cashBoxes"
+            value-key="id"
+            label-key="name"
+            :placeholder="$t('manager.cash.selectCashbox')"
+          />
+          <UButton color="primary" :disabled="!selectedCashBoxId" @click="openOpenModal">
+            {{ $t('manager.cash.openSession') }}
+          </UButton>
+          <UButton variant="outline" :disabled="!selectedSession" @click="openCloseModal">
+            {{ $t('manager.cash.closeSession') }}
+          </UButton>
+          <UButton variant="outline" :disabled="!selectedSession" @click="openMovementModal">
+            {{ $t('manager.cash.movements') }}
+          </UButton>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800 flex items-center justify-between">
+          <span>{{ $t('manager.cash.sessions') }}</span>
+          <span v-if="openSessions.length" class="text-xs font-medium text-stone-500">
+            {{ openSessions.length }} caja(s) abierta(s)
+          </span>
+        </div>
+        <div v-if="isLoading" class="p-6">
+          <USkeleton class="h-8 w-full" />
+          <USkeleton class="mt-3 h-8 w-full" />
+        </div>
+        <div v-else-if="errorMessage" class="p-6">
+          <CrudState
+            :title="$t('admin.common.errorTitle')"
+            :description="errorMessage"
+            icon="i-lucide-alert-triangle"
+            :action-label="$t('admin.common.retry')"
+            @action="loadSessions"
+          />
+        </div>
+        <div v-else-if="!sessions.length" class="p-6">
+          <CrudState
+            :title="$t('manager.cash.emptySessions')"
+            :description="$t('manager.cash.subtitle')"
+            icon="i-lucide-briefcase"
+          />
+        </div>
+        <div v-else class="divide-y divide-stone-200">
+          <div v-for="session in sessions" :key="session.id" class="p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-semibold text-stone-900">{{ session.cashBox?.name }}</div>
+                <div class="text-xs text-stone-500">{{ formatDate(session.openingTime) }}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-stone-500">{{ $t('manager.cash.openingAmount') }}</div>
+                <div class="text-base font-semibold text-stone-900">{{ formatCurrency(session.openingBalance) }}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-stone-500">Monto actual</div>
+                <div class="text-base font-semibold text-stone-900">{{ formatCurrency(getSessionCurrentBalance(session)) }}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-stone-500">{{ $t('manager.cash.closingAmount') }}</div>
+                <div class="text-base font-semibold text-stone-900">{{ formatCurrency(session.closingBalance) }}</div>
+              </div>
+            </div>
+            <div class="mt-3 text-xs text-stone-500">
+              {{ session.closingTime ? formatDate(session.closingTime) : t('manager.cash.openSession') }}
+            </div>
+            <div class="mt-3">
+              <UButton
+                v-if="!session.closingTime"
+                size="xs"
+                variant="outline"
+                @click="() => { selectedCashBoxId = session.cashBoxId; openCloseModal() }"
+              >
+                {{ $t('manager.cash.closeSession') }}
+              </UButton>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="selectedSession" class="rounded-lg border border-stone-200 bg-white shadow-sm">
+        <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
           {{ $t('manager.cash.movements') }}
-        </UButton>
-      </div>
-    </div>
-
-    <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
-      <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800 flex items-center justify-between">
-        <span>{{ $t('manager.cash.sessions') }}</span>
-        <span v-if="openSessions.length" class="text-xs font-medium text-stone-500">
-          {{ openSessions.length }} caja(s) abierta(s)
-        </span>
-      </div>
-      <div v-if="isLoading" class="p-6">
-        <USkeleton class="h-8 w-full" />
-        <USkeleton class="mt-3 h-8 w-full" />
-      </div>
-      <div v-else-if="errorMessage" class="p-6">
-        <CrudState
-          :title="$t('admin.common.errorTitle')"
-          :description="errorMessage"
-          icon="i-lucide-alert-triangle"
-          :action-label="$t('admin.common.retry')"
-          @action="loadSessions"
-        />
-      </div>
-      <div v-else-if="!sessions.length" class="p-6">
-        <CrudState
-          :title="$t('manager.cash.emptySessions')"
-          :description="$t('manager.cash.subtitle')"
-          icon="i-lucide-briefcase"
-        />
-      </div>
-      <div v-else class="divide-y divide-stone-200">
-        <div v-for="session in sessions" :key="session.id" class="p-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div class="text-sm font-semibold text-stone-900">{{ session.cashBox?.name }}</div>
-              <div class="text-xs text-stone-500">{{ formatDate(session.openingTime) }}</div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm text-stone-500">{{ $t('manager.cash.openingAmount') }}</div>
-              <div class="text-base font-semibold text-stone-900">{{ formatCurrency(session.openingBalance) }}</div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm text-stone-500">Monto actual</div>
-              <div class="text-base font-semibold text-stone-900">{{ formatCurrency(getSessionCurrentBalance(session)) }}</div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm text-stone-500">{{ $t('manager.cash.closingAmount') }}</div>
-              <div class="text-base font-semibold text-stone-900">{{ formatCurrency(session.closingBalance) }}</div>
-            </div>
-          </div>
-          <div class="mt-3 text-xs text-stone-500">
-            {{ session.closingTime ? formatDate(session.closingTime) : t('manager.cash.openSession') }}
-          </div>
-          <div class="mt-3">
-            <UButton
-              v-if="!session.closingTime"
-              size="xs"
-              variant="outline"
-              @click="() => { selectedCashBoxId = session.cashBoxId; openCloseModal() }"
-            >
-              {{ $t('manager.cash.closeSession') }}
-            </UButton>
-          </div>
         </div>
-      </div>
-    </div>
-
-    <div v-if="selectedSession" class="rounded-lg border border-stone-200 bg-white shadow-sm">
-      <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
-        {{ $t('manager.cash.movements') }}
-      </div>
-      <div v-if="!selectedSession.movements.length" class="p-6">
-        <CrudState
-          :title="$t('manager.cash.emptyMovements')"
-          :description="$t('manager.cash.subtitle')"
-          icon="i-lucide-list" 
-        />
-      </div>
-      <div v-else class="divide-y divide-stone-200">
-        <div v-for="movement in selectedSession.movements" :key="movement.id" class="p-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm font-medium text-stone-900">
-                {{ movement.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
+        <div v-if="!selectedSession.movements.length" class="p-6">
+          <CrudState
+            :title="$t('manager.cash.emptyMovements')"
+            :description="$t('manager.cash.subtitle')"
+            icon="i-lucide-list" 
+          />
+        </div>
+        <div v-else class="divide-y divide-stone-200">
+          <div v-for="movement in selectedSession.movements" :key="movement.id" class="p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm font-medium text-stone-900">
+                  {{ movement.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
+                </div>
+                <div class="text-xs text-stone-500">{{ formatDate(movement.createdAt) }}</div>
               </div>
-              <div class="text-xs text-stone-500">{{ formatDate(movement.createdAt) }}</div>
+              <div class="text-right text-sm font-semibold text-stone-900">
+                {{ formatCurrency(movement.amount) }}
+              </div>
             </div>
-            <div class="text-right text-sm font-semibold text-stone-900">
-              {{ formatCurrency(movement.amount) }}
-            </div>
+            <div v-if="movement.reason" class="mt-2 text-xs text-stone-600">{{ movement.reason }}</div>
           </div>
-          <div v-if="movement.reason" class="mt-2 text-xs text-stone-600">{{ movement.reason }}</div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section v-if="isAdmin" class="space-y-4">
+      <div>
+        <h2 class="text-lg font-semibold text-stone-900">Administración de Cajas</h2>
+        <p class="text-sm text-stone-600">Crear y mantener cajas por sucursal.</p>
+      </div>
+
+      <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-sm font-semibold text-stone-900">{{ $t('pages.private.manager.cashboxes.newTitle') }}</div>
+            <div class="text-xs text-stone-500">{{ $t('pages.private.manager.cashboxes.subtitle') }}</div>
+          </div>
+        </div>
+
+        <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_auto]">
+          <input
+            v-model="formState.name"
+            type="text"
+            class="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+            :placeholder="$t('pages.private.manager.cashboxes.namePlaceholder')"
+          />
+          <select v-model="cashBoxBranchId" class="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+            <option value="" disabled>{{ $t('pages.private.manager.cashboxes.selectBranch') }}</option>
+            <option v-for="branch in branchOptions" :key="branch.id" :value="branch.id">
+              {{ branch.name }}
+            </option>
+          </select>
+          <UButton color="primary" :loading="adminIsLoading" :disabled="!formState.name.trim() || !cashBoxBranchId" @click="handleCreateCashBox">
+            {{ $t('pages.private.manager.cashboxes.create') }}
+          </UButton>
+        </div>
+
+        <div v-if="adminIsLoading" class="mt-2 text-xs text-stone-500">{{ $t('common.loading') }}</div>
+        <div v-if="adminErrorMessage" class="mt-2 text-xs text-red-600">{{ adminErrorMessage }}</div>
+
+        <div class="mt-6 flex items-start justify-between gap-3">
+          <div>
+            <div class="text-sm font-semibold text-stone-900">{{ $t('pages.private.manager.cashboxes.listTitle') }}</div>
+            <div class="text-xs text-stone-500">{{ $t('pages.private.manager.cashboxes.branch') }}: {{ $t('common.all') || 'Todas' }}</div>
+          </div>
+        </div>
+
+        <div v-if="!adminCashBoxes.length" class="mt-3 text-sm text-stone-600">{{ $t('pages.private.manager.cashboxes.empty') }}</div>
+        <div v-else class="mt-3 space-y-4">
+          <div v-for="group in groupedCashBoxes" :key="group.branchId || group.branchName" class="rounded border border-stone-200">
+            <div class="flex items-center justify-between border-b border-stone-200 px-3 py-2">
+              <div class="text-sm font-semibold text-stone-900">{{ group.branchName || 'Sucursal' }}</div>
+              <div class="text-xs text-stone-500">{{ group.items.length }}</div>
+            </div>
+
+            <div class="divide-y divide-stone-200">
+              <div v-for="cb in group.items" :key="cb.id" class="flex items-center justify-between px-3 py-2">
+                <div>
+                  <div class="text-sm font-medium text-stone-900">{{ cb.name }}</div>
+                  <div class="text-xs text-stone-500">
+                    {{ cb.active ? $t('pages.private.manager.cashboxes.activeState') : $t('pages.private.manager.cashboxes.inactiveState') }}
+                  </div>
+                </div>
+                <UButton variant="outline" size="sm" :loading="adminIsLoading" @click="toggleCashBox(cb)">
+                  {{ cb.active ? $t('pages.private.manager.cashboxes.deactivate') : $t('pages.private.manager.cashboxes.activate') }}
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <UModal v-model:open="openingModal" :title="$t('manager.cash.openSession')" :ui="{ footer: 'justify-end' }">
