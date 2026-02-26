@@ -1,36 +1,27 @@
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
-
-const defaults = ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+import { ensurePaymentMethodConfigs, paymentMethodOrder } from '~/server/utils/paymentMethods'
 
 export default defineEventHandler(async (event) => {
   requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
-  const client = prisma as any
-  if (!client.paymentMethodConfig) {
-    return {
-      methods: defaults.map(method => ({ method, active: true }))
-    }
-  }
+  const client = prisma as typeof prisma
 
+  await ensurePaymentMethodConfigs(client)
   const methods = await client.paymentMethodConfig.findMany({
     orderBy: { method: 'asc' }
   })
-
-  if (!methods.length) {
-    return {
-      methods: defaults.map(method => ({ method, active: true }))
-    }
+  const map = new Map<(typeof paymentMethodOrder)[number], (typeof methods)[number]>()
+  for (const method of methods) {
+    map.set(method.method, method)
   }
-
-  const map = new Map(methods.map((m: any) => [m.method, m as { active?: boolean }]))
-  return {
-    methods: defaults.map(method => {
-      const entry = map.get(method) as { active?: boolean } | undefined
-      return {
-        method,
-        active: entry?.active ?? true
-      }
+  const ordered = paymentMethodOrder
+    .map((method) => {
+      const entry = map.get(method)
+      if (!entry) return null
+      return { method: entry.method, active: entry.active }
     })
-  }
+    .filter((method): method is { method: (typeof paymentMethodOrder)[number]; active: boolean } => method !== null)
+
+  return { methods: ordered }
 })

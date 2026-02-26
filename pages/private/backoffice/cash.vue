@@ -239,14 +239,14 @@ async function loadPaymentMethods() {
       TRANSFER: t('manager.cash.methodTransfer'),
       OTHER: t('manager.cash.methodOther')
     }
-    const defaultOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+    const defaultOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER'] as const
     paymentMethods.value = methods
-      .map((method: any) => ({
+      .map((method: { method: string; active: boolean }) => ({
         method: method.method,
         active: method.active,
         label: labelMap[method.method] || method.method
       }))
-      .sort((a: any, b: any) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
   } catch {
     paymentMethods.value = []
   }
@@ -355,7 +355,7 @@ async function submitClose(event: FormSubmitEvent<CloseForm>) {
 async function submitMovement(event: FormSubmitEvent<MovementForm>) {
   if (!selectedSession.value) return
   if (!hasActivePaymentMethods.value) {
-    toast.add({ title: 'No hay métodos de pago activos', color: 'error' })
+    toast.add({ title: t('manager.cash.noActiveMethods'), color: 'error' })
     return
   }
   isSaving.value = true

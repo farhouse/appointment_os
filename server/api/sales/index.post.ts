@@ -4,12 +4,13 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
+import { ensurePaymentMethodConfig, paymentMethodOrder } from '~/server/utils/paymentMethods'
 
 const schema = z.object({
   branchId: z.string().uuid(),
   clientId: z.string().uuid().optional().nullable(),
   userId: z.string().uuid().optional().nullable(),
-  paymentMethod: z.enum(['CASH', 'CARD', 'TRANSFER', 'OTHER']),
+  paymentMethod: z.enum(paymentMethodOrder),
   total: z.number().nonnegative(),
   items: z.array(z.object({
     productId: z.string().uuid(),
@@ -23,14 +24,9 @@ export default defineEventHandler(async (event) => {
 
   const parsed = await readBodyValidated(event, schema)
 
-  const client = prisma as any
-  if (client.paymentMethodConfig) {
-    const methodConfig = await client.paymentMethodConfig.findUnique({
-      where: { method: parsed.paymentMethod }
-    })
-    if (methodConfig && !methodConfig.active) {
-      badRequest('Payment method disabled')
-    }
+  const methodConfig = await ensurePaymentMethodConfig(prisma, parsed.paymentMethod)
+  if (!methodConfig.active) {
+    badRequest('Payment method disabled')
   }
 
   const today = new Date()
@@ -48,19 +44,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // MVP: create Sale + SaleItems. No split payments by design.
-  const sale = await prisma.$transaction(async (tx) => {
+  const sale = await prisma.$transaction(async (tx: typeof prisma) => {
     const created = await tx.sale.create({
       data: {
         branchId: parsed.branchId,
         clientId: parsed.clientId ?? null,
         userId: parsed.userId ?? null,
-        total: parsed.total as any,
-        paymentMethod: parsed.paymentMethod as any,
+        total: parsed.total,
+        paymentMethod: parsed.paymentMethod,
         items: {
           create: parsed.items.map(i => ({
             productId: i.productId,
             quantity: i.quantity,
-            price: i.price as any
+            price: i.price
           }))
         }
       },
@@ -71,11 +67,11 @@ export default defineEventHandler(async (event) => {
       data: {
         sessionId: openSession!.id,
         saleId: created.id,
-        amount: parsed.total as any,
+        amount: parsed.total,
         type: 'DEPOSIT',
-        paymentMethod: parsed.paymentMethod as any,
+        paymentMethod: parsed.paymentMethod,
         reason: 'SALE'
-      } as any
+      }
     })
 
     return created

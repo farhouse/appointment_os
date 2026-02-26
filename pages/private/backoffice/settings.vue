@@ -105,14 +105,14 @@ async function loadPaymentMethods() {
       TRANSFER: $t('manager.cash.methodTransfer'),
       OTHER: $t('manager.cash.methodOther')
     }
-    const defaultOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER']
+    const defaultOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER'] as const
     paymentMethods.value = methods
-      .map((method: any) => ({
+      .map((method: { method: string; active: boolean }) => ({
         method: method.method,
         active: method.active,
         label: labelMap[method.method] || method.method
       }))
-      .sort((a: any, b: any) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
   } catch (e: any) {
     paymentMethods.value = []
     paymentMethodsError.value = e?.data?.statusMessage || 'No se pudo cargar'

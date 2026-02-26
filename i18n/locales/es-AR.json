@@ -315,7 +315,8 @@
       "closeSuccess": "Sesión cerrada",
       "movementSuccess": "Movimiento creado",
       "emptySessions": "Sin sesiones",
-      "emptyMovements": "Sin movimientos"
+      "emptyMovements": "Sin movimientos",
+      "noActiveMethods": "No hay métodos de pago activos"
     }
   },
   "dashboard": {
