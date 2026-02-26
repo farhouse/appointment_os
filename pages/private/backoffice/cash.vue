@@ -60,6 +60,13 @@ const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.cashBoxId === selectedCashBoxId.value && !s.closingTime) || null)
 
 const openSessions = computed(() => sessions.value.filter(s => !s.closingTime))
+const openSessionsSorted = computed(() => {
+  return [...openSessions.value].sort((a, b) => {
+    const aTime = new Date(a.openingTime).getTime()
+    const bTime = new Date(b.openingTime).getTime()
+    return aTime - bTime
+  })
+})
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 
 
@@ -209,9 +216,19 @@ function openOpenModal() {
   openingModal.value = true
 }
 
+function openOpenModalFor(cashBoxId: string) {
+  selectedCashBoxId.value = cashBoxId
+  openOpenModal()
+}
+
 function openCloseModal() {
   closeForm.countedCash = 0
   closingModal.value = true
+}
+
+function openCloseModalFor(cashBoxId: string) {
+  selectedCashBoxId.value = cashBoxId
+  openCloseModal()
 }
 
 function openMovementModal() {
@@ -404,6 +421,37 @@ onMounted(() => {
         <p class="text-sm text-stone-600">Operaciones diarias: estado, aperturas, cierres y movimientos.</p>
       </div>
 
+      <div v-if="openSessionsSorted.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-sm font-semibold text-amber-900">Sesiones abiertas pendientes</div>
+            <div class="text-xs text-amber-800">
+              {{ openSessionsSorted.length }} caja(s) abierta(s) — revisá y cerrá las pendientes.
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 space-y-2">
+          <div
+            v-for="session in openSessionsSorted"
+            :key="session.id"
+            class="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-white px-3 py-2"
+          >
+            <div>
+              <div class="text-sm font-medium text-stone-900">{{ session.cashBox?.name || 'Caja' }}</div>
+              <div class="text-xs text-stone-500">
+                Abierta: {{ formatDate(session.openingTime) }}
+              </div>
+              <div class="text-xs text-stone-500">
+                Abrió: {{ session.openedByName || '—' }}
+              </div>
+            </div>
+            <UButton size="xs" variant="outline" @click="() => openCloseModalFor(session.cashBoxId)">
+              Cerrar caja
+            </UButton>
+          </div>
+        </div>
+      </div>
+
       <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
           Estado por caja
@@ -480,13 +528,22 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div v-if="getCashBoxOpenSession(box.id)" class="text-right">
+              <div class="text-right">
                 <UButton
+                  v-if="getCashBoxOpenSession(box.id)"
                   size="xs"
                   variant="outline"
-                  @click="() => { selectedCashBoxId = box.id; openCloseModal() }"
+                  @click="() => openCloseModalFor(box.id)"
                 >
                   {{ $t('manager.cash.closeSession') }}
+                </UButton>
+                <UButton
+                  v-else
+                  size="xs"
+                  variant="outline"
+                  @click="() => openOpenModalFor(box.id)"
+                >
+                  {{ $t('manager.cash.openSession') }}
                 </UButton>
               </div>
             </div>
@@ -571,7 +628,7 @@ onMounted(() => {
                 v-if="!session.closingTime"
                 size="xs"
                 variant="outline"
-                @click="() => { selectedCashBoxId = session.cashBoxId; openCloseModal() }"
+                @click="() => openCloseModalFor(session.cashBoxId)"
               >
                 {{ $t('manager.cash.closeSession') }}
               </UButton>
