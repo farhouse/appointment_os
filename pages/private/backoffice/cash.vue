@@ -21,6 +21,7 @@ type CashSession = {
   closingBalance?: string | null
   openingTime: string
   closingTime?: string | null
+  openedByName?: string | null
   cashBox: CashBox
   movements: CashMovement[]
 }
@@ -46,6 +47,7 @@ const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.cashBoxId === selectedCashBoxId.value && !s.closingTime) || null)
 
 const openSessions = computed(() => sessions.value.filter(s => !s.closingTime))
+
 
 const openSchema = z.object({
   cashBoxId: z.string().min(1),
@@ -127,7 +129,6 @@ async function loadSessions() {
   try {
     const query = new URLSearchParams()
     if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
-    if (selectedCashBoxId.value) query.set('cashBoxId', selectedCashBoxId.value)
     sessions.value = await $fetch(`/api/cash/sessions?${query.toString()}`)
   } catch (e: any) {
     sessions.value = []
@@ -231,7 +232,18 @@ function formatCurrency(value: string | number | null | undefined) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 }
 
-function getSessionCurrentBalance(session: CashSession) {
+function getLastMovement(session: CashSession | null) {
+  if (!session?.movements?.length) return null
+  return session.movements.reduce((latest, current) => {
+    if (!latest) return current
+    const latestTime = new Date(latest.createdAt).getTime()
+    const currentTime = new Date(current.createdAt).getTime()
+    return currentTime > latestTime ? current : latest
+  }, session.movements[0])
+}
+
+function getSessionCurrentBalance(session: CashSession | null) {
+  if (!session) return null
   // If session is closed and closingBalance exists, prefer that.
   if (session.closingTime && session.closingBalance != null) return toNumber(session.closingBalance)
 
@@ -244,6 +256,18 @@ function getSessionCurrentBalance(session: CashSession) {
     .reduce((acc, m) => acc + toNumber(m.amount), 0)
 
   return opening + deposits - withdrawals
+}
+
+function getCashBoxOpenSession(cashBoxId: string) {
+  return sessions.value.find(session => session.cashBoxId === cashBoxId && !session.closingTime) || null
+}
+
+function getCashBoxCurrentBalance(cashBoxId: string) {
+  return getSessionCurrentBalance(getCashBoxOpenSession(cashBoxId))
+}
+
+function getCashBoxLastMovement(cashBoxId: string) {
+  return getLastMovement(getCashBoxOpenSession(cashBoxId))
 }
 
 function formatDate(value: string | Date | null | undefined) {
@@ -266,6 +290,86 @@ onMounted(() => {
     <div>
       <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCash') }}</h1>
       <p class="text-sm text-gray-600">{{ $t('manager.cash.subtitle') }}</p>
+    </div>
+
+    <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
+      <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
+        Estado por caja
+      </div>
+      <div v-if="isLoading" class="p-6">
+        <USkeleton class="h-8 w-full" />
+        <USkeleton class="mt-3 h-8 w-full" />
+      </div>
+      <div v-else-if="errorMessage" class="p-6">
+        <CrudState
+          :title="$t('admin.common.errorTitle')"
+          :description="errorMessage"
+          icon="i-lucide-alert-triangle"
+          :action-label="$t('admin.common.retry')"
+          @action="loadSessions"
+        />
+      </div>
+      <div v-else-if="!cashBoxes.length" class="p-6">
+        <CrudState
+          :title="$t('manager.cash.emptySessions')"
+          :description="$t('manager.cash.subtitle')"
+          icon="i-lucide-briefcase"
+        />
+      </div>
+      <div v-else class="divide-y divide-stone-200">
+        <div v-for="box in cashBoxes" :key="box.id" class="p-4">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <div class="text-sm font-semibold text-stone-900">{{ box.name }}</div>
+                <UBadge
+                  :color="getCashBoxOpenSession(box.id) ? 'success' : 'neutral'"
+                  variant="subtle"
+                  class="text-[10px]"
+                >
+                  {{ getCashBoxOpenSession(box.id) ? 'OPEN' : 'CLOSED' }}
+                </UBadge>
+              </div>
+              <div class="mt-1 text-xs text-stone-500">
+                <span class="font-medium text-stone-600">Apertura:</span>
+                {{ formatDate(getCashBoxOpenSession(box.id)?.openingTime) }}
+              </div>
+              <div class="text-xs text-stone-500">
+                <span class="font-medium text-stone-600">Abrió:</span>
+                {{ getCashBoxOpenSession(box.id)?.openedByName || '—' }}
+              </div>
+            </div>
+
+            <div class="text-right">
+              <div class="text-sm text-stone-500">Monto actual</div>
+              <div class="text-base font-semibold text-stone-900">
+                {{ formatCurrency(getCashBoxCurrentBalance(box.id)) }}
+              </div>
+              <div class="text-xs text-stone-500">
+                <template v-if="getCashBoxOpenSession(box.id)">Sesión abierta</template>
+                <template v-else>Sin sesión abierta</template>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <div class="text-sm text-stone-500">Último movimiento</div>
+              <div class="text-sm font-medium text-stone-900">
+                <template v-if="getCashBoxLastMovement(box.id)">
+                  {{ formatDate(getCashBoxLastMovement(box.id)?.createdAt) }}
+                </template>
+                <template v-else>—</template>
+              </div>
+              <div class="text-xs text-stone-500">
+                <template v-if="getCashBoxLastMovement(box.id)">
+                  {{ getCashBoxLastMovement(box.id)?.type === 'DEPOSIT' ? $t('manager.cash.deposit') : $t('manager.cash.withdrawal') }}
+                  · {{ formatCurrency(getCashBoxLastMovement(box.id)?.amount) }}
+                </template>
+                <template v-else>Sin movimientos</template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">

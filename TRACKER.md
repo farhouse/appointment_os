@@ -108,6 +108,9 @@ Leyenda estado: `todo | doing | blocked | done`
 - [ ] **News**: audiencia (todos vs por sucursal) + expiración.
 
 ## P2 — Manager
+- [x] (done) **Caja / Visibilidad**: panel de estado por caja con OPEN/CLOSED, apertura, balance y último movimiento.
+  - Resultado: estado visible en `/private/backoffice/cash` por sucursal, actualizado al abrir/cerrar.
+  - Files: `pages/private/backoffice/cash.vue`, `server/api/cash/sessions/index.get.ts`.
 - [ ] (todo) **Calendar UX**: el modal de appointment debería mostrar más info + permitir mover el turno (y/o editar horario).
   - Acceptance: modal incluye datos (cliente, contacto, servicio, estado, pago, notas) + acción “Mover turno” con selector de fecha/hora.
   - NEXT: definir UI de move (drag&drop vs form) y conectar a endpoint `PATCH /api/appointments/:id/move`.
