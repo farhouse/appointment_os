@@ -129,22 +129,34 @@ const columns: TableColumn<Client>[] = [
     header: '',
     cell: ({ row }: any) => {
       return h('div', { class: 'flex justify-end gap-2' }, [
-        h(resolveComponent('UButton'), {
-          size: 'xs',
-          variant: 'outline',
-          onClick: () => openHistory(row.original)
-        }, () => 'Historial'),
-        h(resolveComponent('UButton'), {
-          size: 'xs',
-          variant: 'outline',
-          onClick: () => openEdit(row.original)
-        }, () => 'Editar'),
-        h(resolveComponent('UButton'), {
-          size: 'xs',
-          color: 'error',
-          variant: 'outline',
-          onClick: () => openDelete(row.original)
-        }, () => 'Eliminar')
+        h(resolveComponent('UTooltip'), { text: 'Historial' }, {
+          default: () => h(resolveComponent('UButton'), {
+            size: 'xs',
+            variant: 'outline',
+            icon: 'i-lucide-history',
+            'aria-label': 'Historial',
+            onClick: () => openHistory(row.original)
+          })
+        }),
+        h(resolveComponent('UTooltip'), { text: 'Editar' }, {
+          default: () => h(resolveComponent('UButton'), {
+            size: 'xs',
+            variant: 'outline',
+            icon: 'i-lucide-pencil',
+            'aria-label': 'Editar',
+            onClick: () => openEdit(row.original)
+          })
+        }),
+        h(resolveComponent('UTooltip'), { text: 'Eliminar' }, {
+          default: () => h(resolveComponent('UButton'), {
+            size: 'xs',
+            color: 'error',
+            variant: 'outline',
+            icon: 'i-lucide-trash-2',
+            'aria-label': 'Eliminar',
+            onClick: () => openDelete(row.original)
+          })
+        })
       ])
     }
   }
