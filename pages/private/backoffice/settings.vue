@@ -25,6 +25,7 @@ const cashBoxBranchId = ref('')
 const cashBoxes = ref<CashBox[]>([])
 const paymentMethods = ref<{ method: string; label: string; active: boolean }[]>([])
 const paymentMedia = ref<{ id: string; method: string; name: string; description?: string | null; active: boolean; isSystem: boolean }[]>([])
+const customPaymentMedia = computed(() => paymentMedia.value.filter(item => !item.isSystem))
 const paymentMethodsLoading = ref(false)
 const paymentMethodsError = ref('')
 const paymentMediaSaving = ref(false)
@@ -458,11 +459,12 @@ onMounted(() => {
           </UButton>
         </div>
 
-        <div class="mt-3 space-y-2" v-if="paymentMedia.length">
-          <div v-for="item in paymentMedia" :key="item.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
+        <div v-if="!customPaymentMedia.length" class="mt-3 text-sm text-gray-600">{{ $t('pages.private.manager.paymentMethods.customEmpty') }}</div>
+        <div class="mt-3 space-y-2" v-else>
+          <div v-for="item in customPaymentMedia" :key="item.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
             <div>
               <div class="text-sm font-medium text-gray-900">{{ item.name }} <span class="text-xs text-gray-500">({{ item.method }})</span></div>
-              <div class="text-xs text-gray-500">{{ item.description || '—' }}<span v-if="item.isSystem"> · base</span></div>
+              <div class="text-xs text-gray-500">{{ item.description || '—' }}</div>
             </div>
             <UButton size="xs" variant="outline" :loading="paymentMediaSaving" @click="togglePaymentMedium(item)">
               {{ item.active ? $t('pages.private.manager.paymentMethods.deactivate') : $t('pages.private.manager.paymentMethods.activate') }}

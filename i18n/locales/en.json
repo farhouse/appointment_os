@@ -110,7 +110,8 @@
           "mediaTitle": "Custom payment media",
           "mediaNamePlaceholder": "e.g. Visa promo 20%",
           "mediaDescPlaceholder": "Description / characterization",
-          "mediaCreate": "Add medium"
+          "mediaCreate": "Add medium",
+          "customEmpty": "No custom payment media yet."
         },
         "card": {
           "open": "Open module"

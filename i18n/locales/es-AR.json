@@ -110,7 +110,8 @@
           "mediaTitle": "Medios personalizados",
           "mediaNamePlaceholder": "Ej: Promo Visa 20%",
           "mediaDescPlaceholder": "Descripción / caracterización",
-          "mediaCreate": "Agregar medio"
+          "mediaCreate": "Agregar medio",
+          "customEmpty": "Sin medios personalizados."
         },
         "card": {
           "open": "Abrir módulo"
