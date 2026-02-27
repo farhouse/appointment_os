@@ -4,12 +4,13 @@ import prisma from '~/server/utils/prisma'
 import { getAuthUser } from '~/server/utils/permissions'
 import { readBodyValidated, requireParam } from '~/server/utils/http'
 import { badRequest, forbidden, notFound } from '~/server/utils/errors'
-import { isPaymentMethodEnabled, paymentMethodOrder } from '~/server/utils/paymentMethods'
+import { paymentMethodOrder, resolvePaymentMedium } from '~/server/utils/paymentMethods'
 
 const statusSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW']),
   cashBoxId: z.string().uuid().optional(),
   paymentMethod: z.enum(paymentMethodOrder).optional(),
+  paymentMediumId: z.string().uuid().optional(),
   amount: z.number().min(0).optional()
 })
 
@@ -57,9 +58,9 @@ export default defineEventHandler(async (event) => {
   today.setHours(0, 0, 0, 0)
 
   const paymentMethod = validation.paymentMethod ?? 'CASH'
-  const enabled = await isPaymentMethodEnabled(prisma, paymentMethod)
-  if (!enabled) {
-    badRequest('Payment method disabled')
+  const paymentMedium = await resolvePaymentMedium(prisma, paymentMethod, validation.paymentMediumId)
+  if (!paymentMedium) {
+    badRequest('Payment medium disabled or invalid')
   }
 
   const result = await prisma.$transaction(async (tx: typeof prisma) => {
@@ -82,6 +83,7 @@ export default defineEventHandler(async (event) => {
         paidById: u.userId,
         paidCashBoxId: validation.cashBoxId,
         paidPaymentMethod: paymentMethod,
+        paidPaymentMediumId: paymentMedium.id,
         paidAmount: finalAmount
       }
     })
@@ -119,7 +121,8 @@ export default defineEventHandler(async (event) => {
         appointmentId: id,
         amount: finalAmount,
         type: 'DEPOSIT',
-        paymentMethod
+        paymentMethod,
+        paymentMediumId: paymentMedium.id
       }
     })
 

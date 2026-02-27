@@ -150,8 +150,10 @@ model Appointment {
   paidBy        User?    @relation("PaidBy", fields: [paidById], references: [id])
   paidCashBoxId String?
   paidPaymentMethod PaymentMethod?
+  paidPaymentMediumId String?
   paidAmount   Decimal?
   paidCashBox  CashBox? @relation("PaidCashBox", fields: [paidCashBoxId], references: [id])
+  paidPaymentMedium PaymentMethodConfig? @relation("AppointmentPaidPaymentMedium", fields: [paidPaymentMediumId], references: [id])
 
   // Notification toggles
   notifyEmail    Boolean  @default(true)
@@ -242,11 +244,13 @@ model Sale {
   userId        String?       // Seller
   total         Decimal
   paymentMethod PaymentMethod
+  paymentMediumId String?
   createdAt     DateTime      @default(now())
   
   branch Branch @relation(fields: [branchId], references: [id])
   client Client? @relation(fields: [clientId], references: [id])
   user   User?   @relation(fields: [userId], references: [id])
+  paymentMedium PaymentMethodConfig? @relation("SalePaymentMedium", fields: [paymentMediumId], references: [id])
   items  SaleItem[]
   cashMovements CashMovement[]
 }
@@ -337,6 +341,7 @@ model CashMovement {
   appointmentId String?
   saleId        String?
   paymentMethod PaymentMethod    @default(CASH)
+  paymentMediumId String?
   amount        Decimal
   type          CashMovementType
   reason        String?
@@ -345,6 +350,7 @@ model CashMovement {
   session CashSession @relation(fields: [sessionId], references: [id])
   appointment Appointment? @relation(fields: [appointmentId], references: [id])
   sale Sale? @relation(fields: [saleId], references: [id])
+  paymentMedium PaymentMethodConfig? @relation("CashMovementPaymentMedium", fields: [paymentMediumId], references: [id])
 
   @@index([appointmentId])
   @@index([saleId])
@@ -359,6 +365,10 @@ model PaymentMethodConfig {
   isSystem    Boolean       @default(false)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  paidAppointments Appointment[] @relation("AppointmentPaidPaymentMedium")
+  sales            Sale[]        @relation("SalePaymentMedium")
+  cashMovements    CashMovement[] @relation("CashMovementPaymentMedium")
 
   @@index([method])
   @@index([active])

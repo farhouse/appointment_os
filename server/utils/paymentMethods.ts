@@ -35,3 +35,22 @@ export async function isPaymentMethodEnabled(prisma: PrismaClient, method: Payme
   })
   return count > 0
 }
+
+export async function resolvePaymentMedium(
+  prisma: PrismaClient,
+  method: PaymentMethodCode,
+  paymentMediumId?: string
+) {
+  if (paymentMediumId) {
+    const selected = await prisma.paymentMethodConfig.findUnique({ where: { id: paymentMediumId } })
+    if (!selected || !selected.active || selected.method !== method) {
+      return null
+    }
+    return selected
+  }
+
+  return prisma.paymentMethodConfig.findFirst({
+    where: { method, active: true },
+    orderBy: [{ isSystem: 'desc' }, { createdAt: 'asc' }]
+  })
+}

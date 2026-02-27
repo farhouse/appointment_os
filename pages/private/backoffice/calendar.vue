@@ -121,24 +121,42 @@ const isConfirming = ref(false)
 const isUpdatingStatus = ref(false)
 
 const cashBoxes = ref<{ id: string; name: string }[]>([])
+const paymentMedia = ref<{ id: string; method: string; name: string; active: boolean }[]>([])
 const isPaying = ref(false)
 const payError = ref('')
 
 const payForm = reactive({
   cashBoxId: '',
   paymentMethod: 'CASH',
+  paymentMediumId: '',
   amount: 0
 })
 
 async function loadCashBoxes() {
   if (!selectedBranchId.value) return
   try {
-    const query = new URLSearchParams({ branchId: selectedBranchId.value })
+    const query = new URLSearchParams({ branchId: selectedBranchId.value, activeOnly: 'true' })
     cashBoxes.value = await $fetch(`/api/cashboxes?${query.toString()}`)
   } catch {
     cashBoxes.value = []
   }
 }
+
+async function loadPaymentMedia() {
+  try {
+    const response = await $fetch('/api/settings/payment-methods')
+    paymentMedia.value = (response?.media || []).filter((m: any) => m.active)
+  } catch {
+    paymentMedia.value = []
+  }
+}
+
+const payMediaOptions = computed(() => paymentMedia.value.filter(m => m.method === payForm.paymentMethod))
+
+watch(() => payForm.paymentMethod, (method) => {
+  const first = paymentMedia.value.find(m => m.active && m.method === method)
+  payForm.paymentMediumId = first?.id || ''
+})
 
 function openDetailModal(event: any) {
   selectedEvent.value = event
@@ -190,14 +208,15 @@ function openPayModal() {
   const totalPrice = Number(selectedEvent.value?.extendedProps?.totalPrice ?? 0)
   payForm.amount = Number.isFinite(totalPrice) ? totalPrice : 0
   if (!cashBoxes.value.length) void loadCashBoxes()
+  if (!paymentMedia.value.length) void loadPaymentMedia()
 }
-
 function closePayModal() {
   payModalOpen.value = false
   payError.value = ''
   payForm.amount = 0
   payForm.cashBoxId = ''
   payForm.paymentMethod = 'CASH'
+  payForm.paymentMediumId = ''
 }
 
 async function confirmPayment() {
@@ -211,6 +230,7 @@ async function confirmPayment() {
         status: 'PAID',
         cashBoxId: payForm.cashBoxId,
         paymentMethod: payForm.paymentMethod,
+        paymentMediumId: payForm.paymentMediumId || undefined,
         amount: payForm.amount
       }
     })
@@ -412,6 +432,13 @@ function handleEventClick(e: any) {
             </select>
           </div>
           <div>
+            <label class="block text-sm font-medium text-gray-700">Medio</label>
+            <select v-model="payForm.paymentMediumId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
+              <option value="" disabled>Seleccioná un medio</option>
+              <option v-for="pm in payMediaOptions" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.amount') }}</label>
             <input v-model.number="payForm.amount" type="number" min="0" step="0.01" class="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
           </div>
@@ -420,7 +447,7 @@ function handleEventClick(e: any) {
 
         <div class="mt-4 flex justify-end gap-2">
           <UButton variant="outline" @click="closePayModal">{{ $t('common.cancel') }}</UButton>
-          <UButton color="primary" :disabled="!payForm.cashBoxId || isPaying" @click="confirmPayment">
+          <UButton color="primary" :disabled="!payForm.cashBoxId || !payForm.paymentMediumId || isPaying" @click="confirmPayment">
             {{ $t('common.confirm') }}
           </UButton>
         </div>

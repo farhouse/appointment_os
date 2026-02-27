@@ -4,13 +4,14 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
-import { isPaymentMethodEnabled, paymentMethodOrder } from '~/server/utils/paymentMethods'
+import { paymentMethodOrder, resolvePaymentMedium } from '~/server/utils/paymentMethods'
 
 const schema = z.object({
   branchId: z.string().uuid(),
   clientId: z.string().uuid().optional().nullable(),
   userId: z.string().uuid().optional().nullable(),
   paymentMethod: z.enum(paymentMethodOrder),
+  paymentMediumId: z.string().uuid().optional(),
   total: z.number().nonnegative(),
   items: z.array(z.object({
     productId: z.string().uuid(),
@@ -24,9 +25,9 @@ export default defineEventHandler(async (event) => {
 
   const parsed = await readBodyValidated(event, schema)
 
-  const enabled = await isPaymentMethodEnabled(prisma, parsed.paymentMethod)
-  if (!enabled) {
-    badRequest('Payment method disabled')
+  const paymentMedium = await resolvePaymentMedium(prisma, parsed.paymentMethod, parsed.paymentMediumId)
+  if (!paymentMedium) {
+    badRequest('Payment medium disabled or invalid')
   }
 
   const today = new Date()
@@ -52,6 +53,7 @@ export default defineEventHandler(async (event) => {
         userId: parsed.userId ?? null,
         total: parsed.total,
         paymentMethod: parsed.paymentMethod,
+        paymentMediumId: paymentMedium.id,
         items: {
           create: parsed.items.map(i => ({
             productId: i.productId,
@@ -70,6 +72,7 @@ export default defineEventHandler(async (event) => {
         amount: parsed.total,
         type: 'DEPOSIT',
         paymentMethod: parsed.paymentMethod,
+        paymentMediumId: paymentMedium.id,
         reason: 'SALE'
       }
     })

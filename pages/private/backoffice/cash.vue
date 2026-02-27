@@ -55,6 +55,7 @@ const sessions = ref<CashSession[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 const paymentMethods = ref<{ method: string; label: string; active: boolean }[]>([])
+const paymentMedia = ref<{ id: string; method: string; name: string; active: boolean; isSystem: boolean }[]>([])
 
 const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.branchId === selectedBranchId.value && !s.closingTime) || null)
@@ -91,6 +92,7 @@ const closeSchema = z.object({
 const movementSchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAWAL']),
   paymentMethod: z.enum(['CASH', 'CARD', 'TRANSFER', 'OTHER']),
+  paymentMediumId: z.string().optional().nullable(),
   amount: z.number().positive(),
   reason: z.string().optional().nullable()
 })
@@ -114,6 +116,7 @@ const closeForm = reactive<Partial<CloseForm>>({
 const movementForm = reactive<Partial<MovementForm>>({
   type: 'DEPOSIT',
   paymentMethod: 'CASH',
+  paymentMediumId: undefined,
   amount: 0,
   reason: ''
 })
@@ -159,6 +162,12 @@ const sectorOrder = computed(() => {
 const hasActivePaymentMethods = computed(() => {
   if (!paymentMethods.value.length) return true
   return paymentMethods.value.some(method => method.active)
+})
+
+const paymentMediumItems = computed(() => {
+  return paymentMedia.value
+    .filter(item => item.active && item.method === movementForm.paymentMethod)
+    .map(item => ({ label: item.name, value: item.id }))
 })
 
 function getMethodLabel(method: string) {
@@ -213,6 +222,11 @@ watch(selectedCashBoxId, (value) => {
   openForm.cashBoxId = value
 })
 
+watch(() => movementForm.paymentMethod, (method) => {
+  const first = paymentMedia.value.find(item => item.active && item.method === method)
+  movementForm.paymentMediumId = first?.id
+})
+
 
 async function loadCashboxes() {
   if (!selectedBranchId.value) return
@@ -233,6 +247,7 @@ async function loadPaymentMethods() {
   try {
     const response = await $fetch('/api/settings/payment-methods')
     const methods = response?.methods || []
+    const media = response?.media || []
     const labelMap: Record<string, string> = {
       CASH: t('manager.cash.methodCash'),
       CARD: t('manager.cash.methodCard'),
@@ -247,8 +262,19 @@ async function loadPaymentMethods() {
         label: labelMap[method.method] || method.method
       }))
       .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+
+    paymentMedia.value = media
+      .map((item: any) => ({
+        id: item.id,
+        method: item.method,
+        name: item.name,
+        active: item.active,
+        isSystem: item.isSystem
+      }))
+      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
   } catch {
     paymentMethods.value = []
+    paymentMedia.value = []
   }
 }
 
@@ -307,6 +333,7 @@ function openMovementModal() {
   movementForm.type = 'DEPOSIT'
   const activeMethod = paymentMethods.value.find(method => method.active)?.method || 'CASH'
   movementForm.paymentMethod = activeMethod
+  movementForm.paymentMediumId = paymentMedia.value.find(item => item.active && item.method === activeMethod)?.id
   movementForm.amount = 0
   movementForm.reason = ''
   movementModal.value = true
@@ -367,6 +394,7 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
         amount: event.data.amount,
         type: event.data.type,
         paymentMethod: event.data.paymentMethod,
+        paymentMediumId: event.data.paymentMediumId,
         reason: event.data.reason
       }
     })
@@ -839,6 +867,9 @@ watch(openSessionsSorted, (value) => {
         </UFormField>
         <UFormField :label="$t('manager.cash.movementMethod')" name="paymentMethod">
           <USelect v-model="movementForm.paymentMethod" :items="paymentMethodItems" value-key="value" />
+        </UFormField>
+        <UFormField label="Medio" name="paymentMediumId">
+          <USelect v-model="movementForm.paymentMediumId" :items="paymentMediumItems" value-key="value" />
         </UFormField>
         <UFormField :label="$t('manager.cash.movementAmount')" name="amount">
           <UInputNumber v-model="movementForm.amount" :min="0" />
