@@ -646,7 +646,7 @@ watch(openSessionsSorted, (value) => {
         </div>
       </div>
 
-      <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
+      <div v-if="me?.role === 'MANAGER'" class="rounded-lg border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
           Sectores por método de pago
         </div>
