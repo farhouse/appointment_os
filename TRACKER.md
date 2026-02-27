@@ -28,21 +28,14 @@ Leyenda estado: `todo | doing | blocked | done`
   - NEXT: validar en manager/backoffice/barber/client y en /book.
 
 ## P1 — UX / flujo
-- [ ] (todo) **Booking / Branch select**: en el dropdown de sucursal mostrar también la **dirección** (y/o barrio) para desambiguar.
-  - Acceptance: cada opción muestra `Nombre — Dirección` (si existe) sin romper el layout mobile.
-  - Files: `components/BookingWizard.vue` (branch select), `composables/useSelectedBranch.ts` (si aplica en layouts)
-  - NEXT: decidir formato exacto (ej. 2 líneas vs inline) y aplicar.
+- [x] (done) **Booking / Branch select**: en el dropdown de sucursal se muestra también la dirección para desambiguar.
+  - Resultado: opciones con nombre + contexto de dirección/barrio en el wizard.
 
-- [ ] (todo) **Booking / Identity**: si el usuario completa datos y **no existe** en `users`, proponer **crear cuenta de cliente** para acumular puntos.
-  - Decision: si acepta crear cuenta → pedir **password** (y confirmación).
-  - Acceptance: CTA claro (opt-in) + creación de cuenta con password + no bloquea el booking si el usuario no quiere.
-  - Files: `components/BookingWizard.vue`, `server/api/public/users/*` o nuevo endpoint, loyalty/points.
-  - NEXT: definir endpoint (crear user+client) y validaciones de password.
+- [x] (done) **Booking / Identity**: si el usuario no existe en `users`, se propone crear cuenta cliente.
+  - Resultado: flujo de opt-in activo en booking para crear usuario cliente sin bloquear la reserva.
 
-- [ ] (todo) **Booking / Email required**: el email **no es opcional** (se usará para confirmación por mail).
-  - Acceptance: validación en UI + server (no permitir submit sin email) + copy de error.
-  - Files: `components/BookingWizard.vue`, `server/api/public/clients/index.post.ts` (y/o appointments public)
-  - NEXT: hacer email required y ajustar endpoints.
+- [x] (done) **Booking / Email required**: email obligatorio en booking.
+  - Resultado: validación en UI/server para no permitir submit sin email.
 
 - [ ] (todo) **Booking / Confirmation system**: implementar confirmación por email (link/token) antes de confirmar el turno.
   - Status: POSTPONED (Iván: “dejemos para más adelante”).
@@ -50,14 +43,10 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `server/api/public/appointments/index.post.ts`, `server/api/public/appointments/[id]/confirm.*`, mailer.
   - NEXT: elegir provider real de email + UX de reenvío.
 
-- [ ] (todo) **Booking / Done screen**: después de bookear, navegar a una página de “finalizado” (journey cerrado).
-  - Decision: incluir botón **“Agregar al calendario”** vía **ICS** (primero).
-  - Acceptance: redirect a `/book/done?appointmentId=...` o similar; muestra resumen; botón descarga `.ics` válido.
-  - Files: `components/BookingWizard.vue`, `pages/book/done.vue` (nuevo), `server/api/public/appointments/[id]/calendar.ics.get.ts` (nuevo) o similar.
-  - NEXT: definir datos mínimos del evento (title/location/notes/timezone).
+- [x] (done) **Booking / Done screen**: después de reservar se navega a pantalla final de cierre de journey.
+  - Resultado: flujo de booking termina en pantalla de finalización.
 
-- [ ] (todo) **Booking UX**: vista tipo “día de calendar” (timeline/bloques) en vez de slots sueltos.
-  - NEXT: elegir diseño (timeline vertical vs grid 15m) + implementar en `BookingWizard`.
+- [x] (done) **Booking UX**: vista tipo día/timeline implementada en booking para reemplazar slots sueltos.
 - [ ] (todo) **Booking**: cuando no hay disponibilidad, mostrar mensaje/CTA claro (cambiar día / elegir otro barbero / etc.).
   - NEXT: definir copy y estados.
 
@@ -82,10 +71,8 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/backoffice/*` (nuevo), `server/api/news/*` (nuevo), prisma schema.
   - NEXT: definir schema (News: title/body/imageUrl/publishedAt/expiresAt/audience/branchId?).
 
-- [ ] (todo) **Client pages**: sacar selector de sucursal del layout en páginas CLIENT (no tiene sentido que cambie branch).
-  - Acceptance: CLIENT no ve selector; roles internos sí.
-  - Files: `layouts/private.vue` (probable), `composables/useSelectedBranch.ts`.
-  - NEXT: decidir regla exacta por rol.
+- [x] (done) **Client pages**: selector de sucursal oculto para rol CLIENT en layout privado.
+  - Resultado: CLIENT no ve selector; roles internos sí.
 
 - [ ] (todo) **Loading indicators**: agregar indicadores de carga en todas las páginas de CLIENT.
   - Acceptance: skeleton/spinner visible mientras fetch; sin flicker molesto.
