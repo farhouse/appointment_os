@@ -124,6 +124,19 @@ const isLoading = computed(() => isLoadingMe.value || isLoadingPoints.value || i
 
     <section class="grid gap-4 lg:grid-cols-3">
       <div class="space-y-4 lg:col-span-2">
+        <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-base font-semibold text-stone-900">Novedades y promos</div>
+              <div class="mt-1 text-sm text-stone-600">Enterate primero de combos, beneficios y descuentos personalizados para clientes frecuentes.</div>
+            </div>
+            <UBadge color="info" variant="subtle">Próximamente</UBadge>
+          </div>
+          <div class="mt-4 rounded-md border border-dashed border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
+            Estamos preparando un feed con promociones activas por sucursal y ofertas por medio de pago.
+          </div>
+        </div>
+
         <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
           <div class="flex items-center justify-between gap-3 border-b border-stone-200 px-4 py-3">
             <div>
@@ -171,24 +184,14 @@ const isLoading = computed(() => isLoadingMe.value || isLoadingPoints.value || i
           </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2">
-          <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-            <div class="text-sm font-semibold text-stone-900">Rebook rápido</div>
-            <div class="mt-1 text-sm text-stone-600">Repetí tu último servicio en pocos pasos.</div>
-            <div class="mt-4 space-y-2">
-              <div class="rounded-md border border-dashed border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
-                Última visita: {{ lastAppointment ? formatDateTime(lastAppointment.startTime) : 'Sin historial' }}
-              </div>
-              <UButton to="/private/client/book" color="primary" block>Reservar de nuevo</UButton>
+        <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div class="text-sm font-semibold text-stone-900">Rebook rápido</div>
+          <div class="mt-1 text-sm text-stone-600">Repetí tu último servicio en pocos pasos.</div>
+          <div class="mt-4 space-y-2">
+            <div class="rounded-md border border-dashed border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+              Última visita: {{ lastAppointment ? formatDateTime(lastAppointment.startTime) : 'Sin historial' }}
             </div>
-          </div>
-
-          <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-            <div class="text-sm font-semibold text-stone-900">Novedades y promos</div>
-            <div class="mt-1 text-sm text-stone-600">Muy pronto vas a ver beneficios personalizados.</div>
-            <div class="mt-4 rounded-md border border-dashed border-stone-200 bg-stone-50 p-3 text-sm text-stone-500">
-              En preparación: lanzamientos, combos y descuentos para clientes frecuentes.
-            </div>
+            <UButton to="/private/client/book" color="primary" block>Reservar de nuevo</UButton>
           </div>
         </div>
       </div>
