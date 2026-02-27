@@ -10,6 +10,8 @@ export default defineEventHandler(async (event) => {
   const branchId = query.branchId as string | undefined
   const cashBoxId = query.cashBoxId as string | undefined
   const status = query.status as string | undefined
+  const from = query.from as string | undefined
+  const to = query.to as string | undefined
   const includeTotals = query.includeTotals === 'true'
   const includeBranch = query.includeBranch === 'true'
 
@@ -21,12 +23,23 @@ export default defineEventHandler(async (event) => {
     forbidden('Forbidden')
   }
 
+  const dateFilter: { gte?: Date; lte?: Date } = {}
+  if (typeof from === 'string' && from) {
+    const d = new Date(`${from}T00:00:00.000Z`)
+    if (!Number.isNaN(d.getTime())) dateFilter.gte = d
+  }
+  if (typeof to === 'string' && to) {
+    const d = new Date(`${to}T23:59:59.999Z`)
+    if (!Number.isNaN(d.getTime())) dateFilter.lte = d
+  }
+
   const sessions = await prisma.cashSession.findMany({
     where: {
       ...(branchId ? { branchId } : {}),
       ...(cashBoxId ? { cashBoxId } : {}),
       ...(status === 'OPEN' ? { closingTime: null } : {}),
-      ...(status === 'CLOSED' ? { closingTime: { not: null } } : {})
+      ...(status === 'CLOSED' ? { closingTime: { not: null } } : {}),
+      ...(dateFilter.gte || dateFilter.lte ? { date: dateFilter } : {})
     },
     include: {
       movements: includeTotals

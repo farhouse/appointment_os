@@ -75,6 +75,8 @@ const globalOpenSessionsSorted = computed(() => {
 })
 
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
+const sessionFrom = ref(typeof route.query.from === 'string' ? route.query.from : '')
+const sessionTo = ref(typeof route.query.to === 'string' ? route.query.to : '')
 
 
 const openSchema = z.object({
@@ -130,6 +132,7 @@ const movementFormRef = useTemplateRef('movementFormRef')
 
 const isSaving = ref(false)
 const route = useRoute()
+const router = useRouter()
 
 const movementItems = computed(() => [
   { label: t('manager.cash.deposit'), value: 'DEPOSIT' },
@@ -216,6 +219,11 @@ watchEffect(() => {
   if (cashBoxId && cashBoxId !== selectedCashBoxId.value) {
     selectedCashBoxId.value = cashBoxId
   }
+
+  const from = typeof route.query.from === 'string' ? route.query.from : ''
+  if (from !== sessionFrom.value) sessionFrom.value = from
+  const to = typeof route.query.to === 'string' ? route.query.to : ''
+  if (to !== sessionTo.value) sessionTo.value = to
 })
 
 watch(selectedCashBoxId, (value) => {
@@ -284,6 +292,8 @@ async function loadSessions() {
   try {
     const query = new URLSearchParams()
     if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
+    if (sessionFrom.value) query.set('from', sessionFrom.value)
+    if (sessionTo.value) query.set('to', sessionTo.value)
     query.set('includeTotals', 'true')
     if (isAdmin.value) query.set('includeBranch', 'true')
     const scopedSessions = await $fetch<CashSession[]>(`/api/cash/sessions?${query.toString()}`)
@@ -408,6 +418,29 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
   }
 }
 
+async function applySessionDateFilter() {
+  await router.replace({
+    query: {
+      ...route.query,
+      ...(sessionFrom.value ? { from: sessionFrom.value } : { from: undefined }),
+      ...(sessionTo.value ? { to: sessionTo.value } : { to: undefined })
+    }
+  })
+  await loadSessions()
+}
+
+async function clearSessionDateFilter() {
+  sessionFrom.value = ''
+  sessionTo.value = ''
+  await router.replace({
+    query: {
+      ...route.query,
+      from: undefined,
+      to: undefined
+    }
+  })
+  await loadSessions()
+}
 
 function toNumber(value: string | number | null | undefined) {
   if (value == null) return 0
@@ -712,11 +745,20 @@ watch(openSessionsSorted, (value) => {
       </div>
 
       <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
-        <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800 flex items-center justify-between">
-          <span>{{ $t('manager.cash.sessions') }}</span>
-          <span v-if="selectedSession" class="text-xs font-medium text-stone-500">
-            Sesión activa
-          </span>
+        <div class="border-b border-stone-200 px-4 py-3 space-y-3">
+          <div class="text-sm font-semibold text-stone-800 flex items-center justify-between">
+            <span>{{ $t('manager.cash.sessions') }}</span>
+            <span v-if="selectedSession" class="text-xs font-medium text-stone-500">
+              Sesión activa
+            </span>
+          </div>
+          <div class="flex flex-wrap items-end gap-2">
+            <div class="text-xs text-stone-500">Filtrar por fecha:</div>
+            <input v-model="sessionFrom" type="date" class="rounded border border-stone-300 px-2 py-1 text-xs" />
+            <input v-model="sessionTo" type="date" class="rounded border border-stone-300 px-2 py-1 text-xs" />
+            <UButton size="xs" variant="outline" @click="applySessionDateFilter">Aplicar</UButton>
+            <UButton size="xs" color="neutral" variant="ghost" @click="clearSessionDateFilter">Limpiar</UButton>
+          </div>
         </div>
         <div v-if="isLoading" class="p-6">
           <USkeleton class="h-8 w-full" />
