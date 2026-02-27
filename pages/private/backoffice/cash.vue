@@ -75,8 +75,8 @@ const globalOpenSessionsSorted = computed(() => {
 })
 
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
-const sessionFrom = ref(typeof route.query.from === 'string' ? route.query.from : '')
-const sessionTo = ref(typeof route.query.to === 'string' ? route.query.to : '')
+const sessionFrom = ref('')
+const sessionTo = ref('')
 
 
 const openSchema = z.object({
