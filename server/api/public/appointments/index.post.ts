@@ -1,4 +1,5 @@
 import { defineEventHandler, getRequestURL } from 'h3'
+import { format } from 'date-fns'
 import prisma from '~/server/utils/prisma'
 import { sendBookingConfirmationEmail } from '~/server/utils/mailer'
 import { appointmentSchema } from '~/server/utils/schemas'
@@ -53,20 +54,35 @@ export default defineEventHandler(async (event) => {
       }
     },
     include: {
-      services: true,
-      client: { select: { email: true } }
+      services: { include: { service: true } },
+      client: { select: { email: true, firstName: true, lastName: true } },
+      branch: { select: { name: true } }
     }
   })
 
-  // Send confirmation email (dev: logs to console)
+  // Send confirmation email (do not block booking if it fails)
   try {
-    if ((appointment as any)?.client?.email) {
+    const clientEmail = appointment.client?.email
+    if (clientEmail) {
+      const clientName = [appointment.client?.firstName, appointment.client?.lastName]
+        .filter(Boolean)
+        .join(' ')
       const origin = getRequestURL(event).origin
       const confirmUrl = `${origin}/book/confirm/${appointment.id}?token=${encodeURIComponent(confirmToken)}`
+      const appointmentDateTime = format(new Date(appointment.startTime), 'PPPP p')
+      const servicesSummary = appointment.services
+        .map(item => item.service?.name || 'Service')
+        .join(', ')
+      const expiresAtText = format(confirmTokenExpiresAt, 'PPPP p')
+
       await sendBookingConfirmationEmail({
-        to: (appointment as any).client.email,
+        to: clientEmail,
+        clientName: clientName || 'Client',
+        appointmentDateTime,
+        branchName: appointment.branch?.name || 'BarberOS',
+        servicesSummary: servicesSummary || 'Services booked',
         confirmUrl,
-        appointmentId: appointment.id
+        expiresAtText: `on ${expiresAtText}`
       })
     }
   } catch {

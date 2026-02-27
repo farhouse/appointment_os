@@ -137,6 +137,23 @@ curl -i 'http://localhost:3000/api/public/branches'
 curl -i 'http://localhost:3000/api/public/services'
 ```
 
+## Email Confirmation (Resend)
+
+Required environment variables:
+
+- `MAIL_PROVIDER` (set to `resend`)
+- `MAIL_FROM`
+- `MAIL_REPLY_TO` (optional)
+- `RESEND_API_KEY`
+
+Optional:
+
+- `MAIL_DRY_RUN=true` to log email payloads instead of sending
+
+Test email send path:
+
+- Create a public appointment with a client email. The confirmation email will be sent from the server on booking creation.
+
 4) Calendar events (BARBER users only see their own when `professionalId` is omitted)
 
 ```bash
