@@ -489,12 +489,17 @@ function getSessionCurrentBalance(session: CashSession | null) {
   // If session is closed and closingBalance exists, prefer that.
   if (session.closingTime && session.closingBalance != null) return toNumber(session.closingBalance)
 
-  const opening = toNumber(session.openingBalance)
-  const total = session.totalAmount != null
-    ? Number(session.totalAmount)
-    : (session.movements || []).reduce((acc, m) => acc + toNumber(m.amount), 0)
+  if (session.totalAmount != null) return Number(session.totalAmount)
 
-  return opening + total
+  const movements = session.movements || []
+  const openingBalance = toNumber(session.openingBalance)
+  const hasOpeningMovement = movements.some(movement => movement.reason === 'OPENING_CASH')
+  const openingContribution = !hasOpeningMovement ? openingBalance : 0
+
+  return movements.reduce((acc, movement) => {
+    const signed = movement.type === 'WITHDRAWAL' ? -toNumber(movement.amount) : toNumber(movement.amount)
+    return acc + signed
+  }, openingContribution)
 }
 
 function buildCloseUrl(session: CashSession) {
@@ -846,7 +851,7 @@ watch(openSessionsSorted, (value) => {
                 </div>
               </div>
               <div class="text-right text-sm font-semibold text-stone-900">
-                {{ formatCurrency(movement.amount) }}
+                {{ formatCurrency(movement.type === 'WITHDRAWAL' ? -toNumber(movement.amount) : movement.amount) }}
               </div>
             </div>
             <div v-if="movement.reason" class="mt-2 text-xs text-stone-600">{{ movement.reason }}</div>
@@ -863,7 +868,7 @@ watch(openSessionsSorted, (value) => {
         <UFormField :label="$t('manager.cash.cashboxes')" name="cashBoxId">
           <USelect v-model="openForm.cashBoxId" :items="cashBoxes" value-key="id" label-key="name" />
         </UFormField>
-        <UFormField :label="$t('manager.cash.openingAmount')" name="openingAmount">
+        <UFormField label="Monto efectivo de apertura" name="openingAmount">
           <UInputNumber v-model="openForm.openingAmount" :min="0" />
         </UFormField>
         <div class="hidden">

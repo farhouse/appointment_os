@@ -198,7 +198,8 @@ Leyenda estado: `todo | doing | blocked | done`
   - Resultado: filtro por rol (dropdown) + sort por rol + paginado se resetea al filtrar.
   - Files: `pages/private/backoffice/employees.vue`, `components/CrudTableShell.vue`.
 
-- [ ] (todo) **Caja**: validar cálculo de “monto actual” vs movimientos automáticos por `PAID` + manuales.
+- [x] (done) **Caja**: validar cálculo de “monto actual” vs movimientos automáticos por `PAID` + manuales.
+  - Resultado: apertura se registra como movimiento CASH; totales incluyen apertura y mantienen signos para depósitos/retiros.
   - NEXT: test con 1 sesión real con depósitos/retiros + cierre.
 
 ## P3 — Tech / hygiene

@@ -63,12 +63,16 @@ export default defineEventHandler(async (event) => {
 
   return sessions.map(session => {
     const movements = session.movements || []
+    const openingBalance = Number(session.openingBalance)
+    const hasOpeningMovement = movements.some(movement => movement.reason === 'OPENING_CASH')
+    const openingContribution = !hasOpeningMovement && Number.isFinite(openingBalance) ? openingBalance : 0
+
     const totalsByMethod = movements.reduce((acc, movement) => {
       const method = (movement as any).paymentMethod || 'CASH'
       const signed = movement.type === 'WITHDRAWAL' ? -Number(movement.amount) : Number(movement.amount)
       acc[method] = (acc[method] || 0) + signed
       return acc
-    }, {} as Record<string, number>)
+    }, { CASH: openingContribution } as Record<string, number>)
 
     const lastMovement = movements.reduce((latest: any, current: any) => {
       if (!latest) return current
@@ -82,7 +86,7 @@ export default defineEventHandler(async (event) => {
       totalAmount: movements.reduce((acc, movement) => {
         const signed = movement.type === 'WITHDRAWAL' ? -Number(movement.amount) : Number(movement.amount)
         return acc + signed
-      }, 0),
+      }, openingContribution),
       lastMovement
     }
   })

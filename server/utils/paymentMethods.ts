@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client'
+import type { Prisma, PrismaClient } from '@prisma/client'
 
 export const paymentMethodOrder = ['CASH', 'CARD', 'TRANSFER', 'OTHER'] as const
 export type PaymentMethodCode = (typeof paymentMethodOrder)[number]
@@ -10,7 +10,9 @@ const defaultLabels: Record<PaymentMethodCode, string> = {
   OTHER: 'Otro'
 }
 
-export async function ensurePaymentMethodConfigs(prisma: PrismaClient) {
+type PaymentPrismaClient = PrismaClient | Prisma.TransactionClient
+
+export async function ensurePaymentMethodConfigs(prisma: PaymentPrismaClient) {
   for (const method of paymentMethodOrder) {
     const systemRow = await prisma.paymentMethodConfig.findFirst({
       where: { method, isSystem: true }
@@ -29,7 +31,7 @@ export async function ensurePaymentMethodConfigs(prisma: PrismaClient) {
   }
 }
 
-export async function isPaymentMethodEnabled(prisma: PrismaClient, method: PaymentMethodCode) {
+export async function isPaymentMethodEnabled(prisma: PaymentPrismaClient, method: PaymentMethodCode) {
   const count = await prisma.paymentMethodConfig.count({
     where: { method, active: true }
   })
@@ -37,7 +39,7 @@ export async function isPaymentMethodEnabled(prisma: PrismaClient, method: Payme
 }
 
 export async function resolvePaymentMedium(
-  prisma: PrismaClient,
+  prisma: PaymentPrismaClient,
   method: PaymentMethodCode,
   paymentMediumId?: string
 ) {
