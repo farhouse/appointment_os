@@ -46,7 +46,7 @@
     "actions": {
       "bookTitle": "Reservá tu turno",
       "bookSubtitle": "Mirá la agenda y elegí el horario que te quede cómodo.",
-      "loginTitle": "Ya soy cliente",
+      "loginTitle": "Ya tengo cuenta",
       "loginSubtitle": "Iniciá sesión para ver tus turnos y tu cuenta."
     },
     "login": "Iniciar sesión",
