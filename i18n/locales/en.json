@@ -100,13 +100,17 @@
           "deactivate": "Deactivate"
         },
         "paymentMethods": {
-          "title": "Payment methods",
+          "title": "Payment media",
           "subtitle": "Global cash configuration.",
-          "empty": "No payment methods configured.",
+          "empty": "No media configured.",
           "active": "Active",
           "inactive": "Inactive",
           "activate": "Activate",
-          "deactivate": "Deactivate"
+          "deactivate": "Deactivate",
+          "mediaTitle": "Custom payment media",
+          "mediaNamePlaceholder": "e.g. Visa promo 20%",
+          "mediaDescPlaceholder": "Description / characterization",
+          "mediaCreate": "Add medium"
         },
         "card": {
           "open": "Open module"

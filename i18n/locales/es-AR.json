@@ -100,13 +100,17 @@
           "deactivate": "Desactivar"
         },
         "paymentMethods": {
-          "title": "Métodos de pago",
+          "title": "Medios de pago",
           "subtitle": "Configuración global para caja.",
-          "empty": "Sin métodos configurados.",
+          "empty": "Sin medios configurados.",
           "active": "Activo",
           "inactive": "Inactivo",
           "activate": "Activar",
-          "deactivate": "Desactivar"
+          "deactivate": "Desactivar",
+          "mediaTitle": "Medios personalizados",
+          "mediaNamePlaceholder": "Ej: Promo Visa 20%",
+          "mediaDescPlaceholder": "Descripción / caracterización",
+          "mediaCreate": "Agregar medio"
         },
         "card": {
           "open": "Abrir módulo"

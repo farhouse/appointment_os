@@ -351,13 +351,17 @@ model CashMovement {
 }
 
 model PaymentMethodConfig {
-  id        String        @id @default(uuid())
-  method    PaymentMethod
-  active    Boolean       @default(true)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id          String        @id @default(uuid())
+  method      PaymentMethod
+  name        String
+  description String?
+  active      Boolean       @default(true)
+  isSystem    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  @@unique([method])
+  @@index([method])
+  @@index([active])
 }
 
 model AuditLog {

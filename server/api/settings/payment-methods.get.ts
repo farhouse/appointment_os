@@ -5,23 +5,16 @@ import { ensurePaymentMethodConfigs, paymentMethodOrder } from '~/server/utils/p
 export default defineEventHandler(async (event) => {
   requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
-  const client = prisma as typeof prisma
+  await ensurePaymentMethodConfigs(prisma)
 
-  await ensurePaymentMethodConfigs(client)
-  const methods = await client.paymentMethodConfig.findMany({
-    orderBy: { method: 'asc' }
+  const media = await prisma.paymentMethodConfig.findMany({
+    orderBy: [{ method: 'asc' }, { isSystem: 'desc' }, { createdAt: 'asc' }]
   })
-  const map = new Map<(typeof paymentMethodOrder)[number], (typeof methods)[number]>()
-  for (const method of methods) {
-    map.set(method.method, method)
-  }
-  const ordered = paymentMethodOrder
-    .map((method) => {
-      const entry = map.get(method)
-      if (!entry) return null
-      return { method: entry.method, active: entry.active }
-    })
-    .filter((method): method is { method: (typeof paymentMethodOrder)[number]; active: boolean } => method !== null)
 
-  return { methods: ordered }
+  const methods = paymentMethodOrder.map((method) => ({
+    method,
+    active: media.some((m) => m.method === method && m.active)
+  }))
+
+  return { methods, media }
 })

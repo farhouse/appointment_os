@@ -127,10 +127,10 @@ Leyenda estado: `todo | doing | blocked | done`
 - [x] (done) **Caja / Settings vs Cash split + sesiones globales**: configuración de cajas/métodos en Settings y panel global de sesiones abiertas para admin.
   - Resultado: administración de cajas/métodos en Settings; caja operativa sin setup; admin ve sesiones abiertas multi-sucursal.
   - Files: `pages/private/backoffice/settings.vue`, `pages/private/backoffice/cash.vue`, `server/api/cash/sessions/index.get.ts`, `server/api/settings/payment-methods.*`.
-- [x] (done) **Caja / Hardening métodos de pago**: implementación tipada y consistente con migración.
-  - Estrategia: métodos fijos (`CASH`, `CARD`, `TRANSFER`, `OTHER`) con activación/desactivación desde Settings.
-  - Resultado: se eliminan fallbacks frágiles (`as any`), se centraliza validación en `server/utils/paymentMethods.ts`, y se bloquean cobros/movimientos con método desactivado.
-  - Files: `prisma/migrations/20260226123000_payment_method_config/migration.sql`, `server/utils/paymentMethods.ts`, `server/api/settings/payment-methods.*`, `server/api/appointments/[id]/status.patch.ts`, `server/api/sales/index.post.ts`, `server/api/cash/movements.post.ts`, `pages/private/backoffice/{settings,cash}.vue`.
+- [x] (done) **Caja / Hardening medios de pago**: implementación tipada y consistente con migración.
+  - Estrategia: rieles base fijos (`CASH`, `CARD`, `TRANSFER`, `OTHER`) + medios personalizados (nombre/descr.) configurables.
+  - Resultado: se eliminan fallbacks frágiles (`as any`), se centraliza validación en `server/utils/paymentMethods.ts`, se agregan medios personalizados desde Settings y se bloquean cobros/movimientos cuando no hay medio activo para el riel.
+  - Files: `prisma/migrations/20260226123000_payment_method_config/migration.sql`, `prisma/migrations/20260227120000_payment_media_profiles/migration.sql`, `server/utils/paymentMethods.ts`, `server/api/settings/payment-methods.*`, `server/api/appointments/[id]/status.patch.ts`, `server/api/sales/index.post.ts`, `server/api/cash/movements.post.ts`, `pages/private/backoffice/{settings,cash}.vue`.
 - [ ] (todo) **Calendar UX**: el modal de appointment debería mostrar más info + permitir mover el turno (y/o editar horario).
   - Acceptance: modal incluye datos (cliente, contacto, servicio, estado, pago, notas) + acción “Mover turno” con selector de fecha/hora.
   - NEXT: definir UI de move (drag&drop vs form) y conectar a endpoint `PATCH /api/appointments/:id/move`.

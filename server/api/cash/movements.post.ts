@@ -4,7 +4,7 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
-import { ensurePaymentMethodConfig, paymentMethodOrder } from '~/server/utils/paymentMethods'
+import { isPaymentMethodEnabled, paymentMethodOrder } from '~/server/utils/paymentMethods'
 
 const schema = z.object({
   sessionId: z.string().uuid(),
@@ -28,8 +28,8 @@ export default defineEventHandler(async (event) => {
     badRequest('Open cash session required')
   }
 
-  const methodConfig = await ensurePaymentMethodConfig(prisma, parsed.paymentMethod)
-  if (!methodConfig.active) {
+  const enabled = await isPaymentMethodEnabled(prisma, parsed.paymentMethod)
+  if (!enabled) {
     badRequest('Payment method disabled')
   }
 
