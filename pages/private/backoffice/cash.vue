@@ -771,7 +771,7 @@ watch(openSessionsSorted, (value) => {
             <input v-model="sessionFrom" type="date" class="rounded border border-stone-300 px-2 py-1 text-xs" />
             <input v-model="sessionTo" type="date" class="rounded border border-stone-300 px-2 py-1 text-xs" />
             <UButton size="xs" variant="outline" @click="applySessionDateFilter">Aplicar</UButton>
-            <UButton size="xs" color="neutral" variant="ghost" @click="clearSessionDateFilter">Limpiar</UButton>
+            <UButton size="xs" variant="outline" @click="clearSessionDateFilter">Limpiar</UButton>
           </div>
         </div>
         <div v-if="isLoading" class="p-6">
