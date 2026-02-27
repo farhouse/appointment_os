@@ -31,11 +31,7 @@ type ClientHistoryItem = {
 
 const { t } = useI18n()
 const toast = useToast()
-const tableUi = {
-  th: 'bg-stone-100 text-stone-700 font-semibold',
-  td: 'text-stone-800',
-  tr: 'hover:bg-stone-50'
-}
+const tableUi = useBackofficeTableUi()
 
 const clients = ref<Client[]>([])
 const isLoading = ref(false)
