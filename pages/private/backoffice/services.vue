@@ -2,7 +2,6 @@
 import { h, resolveComponent } from 'vue'
 import { z } from 'zod'
 import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
-import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { PaginationState } from '@tanstack/table-core'
@@ -27,7 +26,7 @@ type Service = {
 }
 
 const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
+const UTooltip = resolveComponent('UTooltip')
 
 const toast = useToast()
 const { t } = useI18n()
@@ -164,15 +163,27 @@ const columns = computed<TableColumn<Service>[]>(() => {
     {
       id: 'actions',
       meta: { class: { td: 'text-right' } },
-      cell: ({ row }) => h(UDropdownMenu, {
-        items: getRowItems(row),
-        content: { align: 'end' }
-      }, () => h(UButton, {
-        icon: 'i-lucide-ellipsis-vertical',
-        color: 'neutral',
-        variant: 'ghost',
-        'aria-label': t('admin.common.actions')
-      }))
+      cell: ({ row }) => h('div', { class: 'flex justify-end gap-2' }, [
+        h(UTooltip, { text: t('admin.common.edit') }, {
+          default: () => h(UButton, {
+            size: 'xs',
+            variant: 'outline',
+            icon: 'i-lucide-pencil',
+            'aria-label': t('admin.common.edit'),
+            onClick: () => openEdit(row.original)
+          })
+        }),
+        h(UTooltip, { text: t('admin.common.delete') }, {
+          default: () => h(UButton, {
+            size: 'xs',
+            color: 'error',
+            variant: 'outline',
+            icon: 'i-lucide-trash-2',
+            'aria-label': t('admin.common.delete'),
+            onClick: () => openDelete(row.original)
+          })
+        })
+      ])
     }
   ]
 })
@@ -215,21 +226,6 @@ function openEdit(item: Service) {
 function openDelete(item: Service) {
   selected.value = item
   deleteOpen.value = true
-}
-
-function getRowItems(row: Row<Service>): DropdownMenuItem[][] {
-  return [[
-    {
-      label: t('admin.common.edit'),
-      icon: 'i-lucide-pencil',
-      onSelect: () => openEdit(row.original)
-    },
-    {
-      label: t('admin.common.delete'),
-      icon: 'i-lucide-trash',
-      onSelect: () => openDelete(row.original)
-    }
-  ]]
 }
 
 async function loadServices() {

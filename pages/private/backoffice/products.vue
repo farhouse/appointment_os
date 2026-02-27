@@ -2,7 +2,6 @@
 import { h, resolveComponent } from 'vue'
 import { z } from 'zod'
 import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
-import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { PaginationState } from '@tanstack/table-core'
@@ -27,7 +26,7 @@ type Product = {
 }
 
 const UButton = resolveComponent('UButton')
-const UDropdownMenu = resolveComponent('UDropdownMenu')
+const UTooltip = resolveComponent('UTooltip')
 
 const toast = useToast()
 const { t } = useI18n()
@@ -181,15 +180,27 @@ const columns = computed<TableColumn<Product>[]>(() => {
     {
       id: 'actions',
       meta: { class: { td: 'text-right' } },
-      cell: ({ row }) => h(UDropdownMenu, {
-        items: getRowItems(row),
-        content: { align: 'end' }
-      }, () => h(UButton, {
-        icon: 'i-lucide-ellipsis-vertical',
-        color: 'neutral',
-        variant: 'ghost',
-        'aria-label': t('admin.common.actions')
-      }))
+      cell: ({ row }) => h('div', { class: 'flex justify-end gap-2' }, [
+        h(UTooltip, { text: t('admin.common.edit') }, {
+          default: () => h(UButton, {
+            size: 'xs',
+            variant: 'outline',
+            icon: 'i-lucide-pencil',
+            'aria-label': t('admin.common.edit'),
+            onClick: () => openEdit(row.original)
+          })
+        }),
+        h(UTooltip, { text: t('admin.common.delete') }, {
+          default: () => h(UButton, {
+            size: 'xs',
+            color: 'error',
+            variant: 'outline',
+            icon: 'i-lucide-trash-2',
+            'aria-label': t('admin.common.delete'),
+            onClick: () => requestDelete(row.original)
+          })
+        })
+      ])
     }
   ]
 })
@@ -265,15 +276,6 @@ watch(modalOpen, (value) => {
     resetForm()
   }
 })
-
-function getRowItems(row: Row<Product>): DropdownMenuItem[][] {
-  return [
-    [
-      { label: t('admin.common.edit'), icon: 'i-lucide-pencil', onSelect: () => openEdit(row.original) },
-      { label: t('admin.common.delete'), icon: 'i-lucide-trash', color: 'error', onSelect: () => requestDelete(row.original) }
-    ]
-  ]
-}
 
 async function saveProduct(event: FormSubmitEvent<ProductForm>) {
   isSaving.value = true
