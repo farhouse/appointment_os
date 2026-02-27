@@ -20,6 +20,14 @@ type Client = {
   createdAt: string
 }
 
+type ClientHistoryItem = {
+  id: string
+  startTime: string
+  status: string
+  services?: { service?: { name?: string } }[]
+  professional?: { name?: string }
+}
+
 const { t } = useI18n()
 const toast = useToast()
 
@@ -30,9 +38,13 @@ const search = ref('')
 
 const modalOpen = ref(false)
 const deleteOpen = ref(false)
+const historyOpen = ref(false)
 const isSaving = ref(false)
 const isDeleting = ref(false)
+const historyLoading = ref(false)
+const historyRows = ref<ClientHistoryItem[]>([])
 const selected = ref<Client | null>(null)
+const historyClient = ref<Client | null>(null)
 const formRef = ref<any>(null)
 
 const schema = z.object({
@@ -98,6 +110,11 @@ const columns = [
         h(resolveComponent('UButton'), {
           size: 'xs',
           variant: 'outline',
+          onClick: () => openHistory(row.original)
+        }, () => 'Historial'),
+        h(resolveComponent('UButton'), {
+          size: 'xs',
+          variant: 'outline',
           onClick: () => openEdit(row.original)
         }, () => 'Editar'),
         h(resolveComponent('UButton'), {
@@ -145,6 +162,20 @@ function openEdit(client: Client) {
   formState.phone = client.phone || ''
   formState.notes = client.notes || ''
   modalOpen.value = true
+}
+
+async function openHistory(client: Client) {
+  historyClient.value = client
+  historyRows.value = []
+  historyOpen.value = true
+  historyLoading.value = true
+  try {
+    historyRows.value = await $fetch(`/api/clients/${client.id}/history`)
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || 'No se pudo cargar historial', color: 'error' })
+  } finally {
+    historyLoading.value = false
+  }
 }
 
 function openDelete(client: Client) {
@@ -244,6 +275,29 @@ onMounted(loadClients)
       <template #footer>
         <UButton variant="outline" @click="modalOpen = false">Cancelar</UButton>
         <UButton color="primary" :loading="isSaving" @click="formRef?.submit()">Guardar</UButton>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="historyOpen" :title="`Historial · ${historyClient?.firstName || ''}`" :ui="{ footer: 'justify-end' }">
+      <template #body>
+        <div v-if="historyLoading" class="space-y-2">
+          <USkeleton class="h-8 w-full" />
+          <USkeleton class="h-8 w-full" />
+        </div>
+        <div v-else-if="!historyRows.length" class="text-sm text-stone-500">Sin historial de turnos.</div>
+        <div v-else class="max-h-[55vh] overflow-auto space-y-2">
+          <div v-for="row in historyRows" :key="row.id" class="rounded border border-stone-200 p-3">
+            <div class="text-sm font-medium text-stone-900">{{ new Date(row.startTime).toLocaleString('es-AR') }}</div>
+            <div class="text-xs text-stone-500">Estado: {{ row.status }}</div>
+            <div class="text-xs text-stone-500">Profesional: {{ row.professional?.name || '—' }}</div>
+            <div class="text-xs text-stone-600">
+              Servicios: {{ (row.services || []).map(s => s.service?.name).filter(Boolean).join(', ') || '—' }}
+            </div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <UButton variant="outline" @click="historyOpen = false">Cerrar</UButton>
       </template>
     </UModal>
 
