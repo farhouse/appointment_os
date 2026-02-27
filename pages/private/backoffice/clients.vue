@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
+import { getPaginationRowModel } from '@tanstack/vue-table'
+import type { PaginationState } from '@tanstack/table-core'
 
 definePageMeta({
   layout: 'private',
@@ -36,7 +38,33 @@ const tableUi = useBackofficeTableUi()
 const clients = ref<Client[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
-const search = ref('')
+
+const tableRef = useTemplateRef('table')
+const { search: globalFilter, sorted } = useCrudTable(clients, {
+  search: (item, query) => {
+    const q = query.toLowerCase()
+    const fullName = `${item.firstName} ${item.lastName || ''}`.toLowerCase()
+    return (
+      fullName.includes(q)
+      || (item.email || '').toLowerCase().includes(q)
+      || (item.phone || '').toLowerCase().includes(q)
+    )
+  },
+  initialSortBy: 'createdAt',
+  initialSortDir: 'desc'
+})
+
+const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 8 })
+const page = computed({
+  get: () => pagination.value.pageIndex + 1,
+  set: (value: number) => {
+    pagination.value.pageIndex = Math.max(0, value - 1)
+  }
+})
+const pageSize = computed(() => pagination.value.pageSize)
+const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
+const hasData = computed(() => clients.value.length > 0)
+const isEmpty = computed(() => !isLoading.value && !errorMessage.value && clients.value.length === 0)
 
 const modalOpen = ref(false)
 const deleteOpen = ref(false)
@@ -69,20 +97,7 @@ const formState = reactive<Partial<ClientForm>>({
 
 const isEditing = computed(() => !!selected.value)
 
-const rows = computed(() => {
-  const q = search.value.trim().toLowerCase()
-  if (!q) return clients.value
-  return clients.value.filter(c => {
-    const fullName = `${c.firstName} ${c.lastName || ''}`.toLowerCase()
-    return (
-      fullName.includes(q) ||
-      (c.email || '').toLowerCase().includes(q) ||
-      (c.phone || '').toLowerCase().includes(q)
-    )
-  })
-})
-
-const columns = [
+const columns: TableColumn<Client>[] = [
   { accessorKey: 'firstName', header: 'Nombre' },
   {
     id: 'lastName',
@@ -234,29 +249,47 @@ onMounted(loadClients)
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-      <div>
-        <h1 class="text-2xl font-semibold">Clientes</h1>
-        <p class="text-sm text-stone-600">Gestioná clientes y visualizá sus puntos acumulados.</p>
-      </div>
-      <UButton color="primary" @click="openCreate">Nuevo cliente</UButton>
+    <div>
+      <h1 class="text-2xl font-semibold">Clientes</h1>
+      <p class="text-sm text-stone-600">Gestioná clientes y visualizá sus puntos acumulados.</p>
     </div>
 
-    <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
-      <div class="border-b border-stone-200 p-3">
-        <UInput v-model="search" placeholder="Buscar por nombre, email o teléfono" />
-      </div>
-
-      <div v-if="isLoading" class="p-4">
+    <CrudTableShell
+      title="Clientes"
+      search-placeholder="Buscar por nombre, email o teléfono"
+      :search-value="globalFilter"
+      :is-loading="isLoading"
+      :error-message="errorMessage"
+      :can-create="true"
+      create-label="Nuevo cliente"
+      @search="globalFilter = $event"
+      @create="openCreate"
+    >
+      <div v-if="isLoading && !hasData" class="p-6">
         <USkeleton class="h-8 w-full" />
         <USkeleton class="mt-3 h-8 w-full" />
       </div>
+      <div v-else-if="isEmpty" class="p-6 text-sm text-stone-500">Sin clientes.</div>
       <div v-else-if="errorMessage" class="p-4 text-sm text-red-600">{{ errorMessage }}</div>
-      <div v-else-if="!rows.length" class="p-4 text-sm text-stone-500">Sin clientes.</div>
       <div v-else>
-        <UTable :data="rows" :columns="columns" :ui="tableUi" />
+        <UTable
+          ref="table"
+          v-model:global-filter="globalFilter"
+          v-model:pagination="pagination"
+          :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
+          :data="sorted"
+          :columns="columns"
+          :loading="isLoading"
+          :ui="tableUi"
+        />
+        <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
+          <div class="text-xs text-stone-500">
+            {{ $t('admin.common.pageInfo', { page, total: filteredTotal, size: pageSize }) }}
+          </div>
+          <UPagination v-model:page="page" :total="filteredTotal" :items-per-page="pageSize" />
+        </div>
       </div>
-    </div>
+    </CrudTableShell>
 
     <UModal v-model:open="modalOpen" :title="isEditing ? 'Editar cliente' : 'Nuevo cliente'" :ui="{ footer: 'justify-end' }">
       <template #body>
