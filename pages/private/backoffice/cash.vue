@@ -77,6 +77,7 @@ const globalOpenSessionsSorted = computed(() => {
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 const sessionFrom = ref('')
 const sessionTo = ref('')
+const globalOpenFilter = ref('')
 
 const sessionsForList = computed(() => {
   const fromTs = sessionFrom.value ? new Date(`${sessionFrom.value}T00:00:00`).getTime() : null
@@ -536,6 +537,17 @@ const globalOpenRows = computed(() => {
   })
 })
 
+const filteredGlobalOpenRows = computed(() => {
+  const query = globalOpenFilter.value.trim().toLowerCase()
+  if (!query) return globalOpenRows.value
+
+  return globalOpenRows.value.filter((row) => {
+    return [row.branch, row.cashBox, row.openedBy, row.openedAt]
+      .filter(Boolean)
+      .some(value => String(value).toLowerCase().includes(query))
+  })
+})
+
 function getCashBoxOpenSession(cashBoxId: string) {
   return sessions.value.find(session => session.cashBoxId === cashBoxId && !session.closingTime) || null
 }
@@ -623,29 +635,42 @@ watch(openSessionsSorted, (value) => {
         </div>
       </div>
 
-      <div v-if="isAdmin" class="rounded-lg border border-stone-200 bg-white shadow-sm">
-        <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">
-          Sesiones abiertas (todas las sucursales)
+      <CrudTableShell
+        v-if="isAdmin"
+        title="Sesiones abiertas"
+        search-placeholder="Buscar por sucursal o caja"
+        :search-value="globalOpenFilter"
+        @search="globalOpenFilter = $event"
+      >
+        <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
+          <div>Otras sucursales</div>
+          <div>{{ $t('admin.common.count', { count: filteredGlobalOpenRows.length }) }}</div>
         </div>
         <div v-if="isLoading" class="p-6">
           <USkeleton class="h-8 w-full" />
           <USkeleton class="mt-3 h-8 w-full" />
+          <USkeleton class="mt-3 h-8 w-full" />
         </div>
-        <div v-else-if="globalOpenRows.length === 0" class="p-6">
+        <div v-else-if="filteredGlobalOpenRows.length === 0" class="p-6">
           <CrudState
             :title="'Sin sesiones abiertas'"
-            :description="'No hay sesiones abiertas en otras sucursales.'"
+            :description="globalOpenRows.length
+              ? 'No hay sesiones que coincidan con el filtro.'
+              : 'No hay sesiones abiertas en otras sucursales.'"
             icon="i-lucide-briefcase"
           />
         </div>
         <div v-else>
-          <UTable :data="globalOpenRows" :columns="globalOpenColumns" :ui="tableUi">
+          <UTable :data="filteredGlobalOpenRows" :columns="globalOpenColumns" :ui="tableUi">
             <template #actions-cell="{ row }">
               <UButton size="xs" variant="outline" :to="row.original.closeUrl">Ir a cerrar</UButton>
             </template>
           </UTable>
+          <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
+            <div class="text-xs text-stone-500">{{ filteredGlobalOpenRows.length }} sesiones abiertas</div>
+          </div>
         </div>
-      </div>
+      </CrudTableShell>
 
       <div v-if="me?.role === 'MANAGER'" class="rounded-lg border border-stone-200 bg-white shadow-sm">
         <div class="border-b border-stone-200 px-4 py-3 text-sm font-semibold text-stone-800">

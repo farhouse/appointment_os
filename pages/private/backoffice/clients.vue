@@ -168,7 +168,7 @@ async function loadClients() {
   try {
     clients.value = await $fetch('/api/clients')
   } catch (e: any) {
-    errorMessage.value = e?.data?.statusMessage || t('admin.common.errorTitle')
+    errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
   } finally {
     isLoading.value = false
   }
@@ -277,12 +277,33 @@ onMounted(loadClients)
       @search="globalFilter = $event"
       @create="openCreate"
     >
+      <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
+        <div>{{ $t('admin.common.count', { count: filteredTotal }) }}</div>
+      </div>
+
       <div v-if="isLoading && !hasData" class="p-6">
         <USkeleton class="h-8 w-full" />
         <USkeleton class="mt-3 h-8 w-full" />
+        <USkeleton class="mt-3 h-8 w-full" />
       </div>
-      <div v-else-if="isEmpty" class="p-6 text-sm text-stone-500">Sin clientes.</div>
-      <div v-else-if="errorMessage" class="p-4 text-sm text-red-600">{{ errorMessage }}</div>
+      <div v-else-if="isEmpty" class="p-6">
+        <CrudState
+          title="Sin clientes"
+          description="Todavía no hay clientes registrados."
+          icon="i-lucide-users"
+          action-label="Nuevo cliente"
+          @action="openCreate"
+        />
+      </div>
+      <div v-else-if="errorMessage" class="p-6">
+        <CrudState
+          :title="$t('admin.common.errorTitle')"
+          :description="errorMessage"
+          icon="i-lucide-alert-triangle"
+          :action-label="$t('admin.common.retry')"
+          @action="loadClients"
+        />
+      </div>
       <div v-else>
         <UTable
           ref="table"
