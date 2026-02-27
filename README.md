@@ -153,6 +153,7 @@ Optional:
 Test email send path:
 
 - Create a public appointment with a client email. The confirmation email will be sent from the server on booking creation.
+- Backoffice (ADMIN/OWNER): Settings -> Email / Confirmaciones -> "Enviar email de prueba".
 
 4) Calendar events (BARBER users only see their own when `professionalId` is omitted)
 

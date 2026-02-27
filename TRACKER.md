@@ -41,6 +41,10 @@ Leyenda estado: `todo | doing | blocked | done`
   - Resultado: booking genera token + envío; endpoint público confirma o informa estado; endpoint público reenvía con cooldown.
   - Files: `server/api/public/appointments/index.post.ts`, `server/api/public/appointments/[id]/confirm.*`, mailer.
 
+- [x] (done) **Backoffice / Email settings visibility**: estado seguro de proveedor/from/reply-to y acción de test-send.
+  - Resultado: sección de Settings muestra status desde env (sin secretos), endpoint de test-send disponible para ADMIN/OWNER.
+  - Files: `pages/private/backoffice/settings.vue`, `server/api/settings/email.get.ts`, `server/api/settings/email-test.post.ts`.
+
 - [x] (done) **Booking / Done screen**: después de reservar se navega a pantalla final de cierre de journey.
   - Resultado: flujo de booking termina en pantalla de finalización.
 
