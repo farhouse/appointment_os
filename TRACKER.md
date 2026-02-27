@@ -64,6 +64,7 @@ Leyenda estado: `todo | doing | blocked | done`
   - Incluye: noticias/ofertas + resumen de últimos turnos + puntos + “hace cuánto no se corta el pelo”.
   - Acceptance: carga rápida + estados loading + responsive.
   - Files: `pages/private/client/index.vue`, endpoints nuevos.
+  - Estado: dashboard base implementado con loading/empty/error states y placeholders de ofertas.
   - NEXT: definir modelo de “news/offers” y UI mínima.
 
 - [ ] (todo) **News/Offers CMS**: permitir crear/editar noticias desde Backoffice (ADMIN/OWNER).
