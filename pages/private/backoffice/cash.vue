@@ -78,6 +78,18 @@ const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 
 const sessionFrom = ref('')
 const sessionTo = ref('')
 
+const sessionsForList = computed(() => {
+  const fromTs = sessionFrom.value ? new Date(`${sessionFrom.value}T00:00:00`).getTime() : null
+  const toTs = sessionTo.value ? new Date(`${sessionTo.value}T23:59:59`).getTime() : null
+
+  return sessions.value.filter((session) => {
+    const ts = new Date(session.openingTime).getTime()
+    if (fromTs != null && ts < fromTs) return false
+    if (toTs != null && ts > toTs) return false
+    return true
+  })
+})
+
 
 const openSchema = z.object({
   cashBoxId: z.string().optional().nullable(),
@@ -773,7 +785,7 @@ watch(openSessionsSorted, (value) => {
             @action="loadSessions"
           />
         </div>
-        <div v-else-if="!sessions.length" class="p-6">
+        <div v-else-if="!sessionsForList.length" class="p-6">
           <CrudState
             :title="$t('manager.cash.emptySessions')"
             :description="$t('manager.cash.subtitle')"
@@ -781,7 +793,7 @@ watch(openSessionsSorted, (value) => {
           />
         </div>
         <div v-else class="divide-y divide-stone-200">
-          <div v-for="session in sessions" :key="session.id" class="p-4">
+          <div v-for="session in sessionsForList" :key="session.id" class="p-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div class="text-sm font-semibold text-stone-900">{{ session.cashBox?.name || 'Caja del día' }}</div>
