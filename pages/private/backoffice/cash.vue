@@ -48,6 +48,7 @@ type CashMovement = {
 const { t } = useI18n()
 const { selectedBranchId } = useSelectedBranch()
 const toast = useToast()
+const tableUi = useBackofficeTableUi()
 const me = useMeState()
 
 const cashBoxes = ref<CashBox[]>([])
@@ -638,7 +639,7 @@ watch(openSessionsSorted, (value) => {
           />
         </div>
         <div v-else>
-          <UTable :data="globalOpenRows" :columns="globalOpenColumns">
+          <UTable :data="globalOpenRows" :columns="globalOpenColumns" :ui="tableUi">
             <template #actions-cell="{ row }">
               <UButton size="xs" variant="outline" :to="row.original.closeUrl">Ir a cerrar</UButton>
             </template>
