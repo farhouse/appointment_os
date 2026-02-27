@@ -74,10 +74,9 @@ Leyenda estado: `todo | doing | blocked | done`
 - [x] (done) **Client pages**: selector de sucursal oculto para rol CLIENT en layout privado.
   - Resultado: CLIENT no ve selector; roles internos sí.
 
-- [ ] (todo) **Loading indicators**: agregar indicadores de carga en todas las páginas de CLIENT.
-  - Acceptance: skeleton/spinner visible mientras fetch; sin flicker molesto.
+- [x] (done) **Loading indicators**: agregar indicadores de carga en todas las páginas de CLIENT.
+  - Resultado: skeletons visibles en `/private/client` (loading de `me`), `/private/client/appointments`, `/private/client/redeem` y `/private/client/book`.
   - Files: `pages/private/client/*.vue`.
-  - NEXT: estandarizar componente de loading.
 
 - [ ] (todo) **Redeem**: mostrar solo productos canjeables *y* que el cliente pueda pagar con sus puntos.
   - Acceptance: no mostrar productos con `pointsCost <= 0` ni los que `pointsCost > balance`.

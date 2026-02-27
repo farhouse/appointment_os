@@ -107,7 +107,12 @@ onMounted(() => {
 
     <div class="grid gap-4 sm:grid-cols-3">
       <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm sm:col-span-2">
-        <div class="flex items-center justify-between">
+        <div v-if="isLoading" class="space-y-2">
+          <USkeleton class="h-4 w-32" />
+          <USkeleton class="h-8 w-24" />
+          <USkeleton class="h-4 w-20" />
+        </div>
+        <div v-else class="flex items-center justify-between">
           <div>
             <div class="text-xs uppercase tracking-wide text-stone-500">{{ $t('client.redeem.balanceLabel') }}</div>
             <div class="text-2xl font-semibold text-stone-900">{{ balance }}</div>
@@ -117,7 +122,12 @@ onMounted(() => {
       </div>
       <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-stone-500">{{ $t('client.redeem.recentTitle') }}</div>
-        <div v-if="entries.length === 0" class="mt-3 text-sm text-stone-500">{{ $t('client.redeem.recentEmpty') }}</div>
+        <div v-if="isLoading" class="mt-3 space-y-2">
+          <USkeleton class="h-4 w-full" />
+          <USkeleton class="h-4 w-4/5" />
+          <USkeleton class="h-4 w-3/5" />
+        </div>
+        <div v-else-if="entries.length === 0" class="mt-3 text-sm text-stone-500">{{ $t('client.redeem.recentEmpty') }}</div>
         <div v-else class="mt-3 space-y-3">
           <div v-for="entry in entries" :key="entry.id" class="flex items-center justify-between text-sm">
             <div>

@@ -10,17 +10,17 @@ definePageMeta({
 
 const { selectedBranchId } = useSelectedBranch()
 
-const me = await loadMe()
+const { data: me, pending: isLoading } = await useAsyncData('client-book-me', () => loadMe())
 const initialClient = computed(() => {
-  if (!me) return {}
-  const parts = (me.name || '').split(' ')
-  const firstName = parts.shift() || me.name
+  if (!me.value) return {}
+  const parts = (me.value.name || '').split(' ')
+  const firstName = parts.shift() || me.value.name
   const lastName = parts.join(' ') || ''
   return {
     firstName,
     lastName,
-    email: me.email,
-    phone: (me as any).phone || undefined,
+    email: me.value.email,
+    phone: (me.value as any).phone || undefined,
   }
 })
 </script>
@@ -28,15 +28,27 @@ const initialClient = computed(() => {
 <template>
   <div class="space-y-4">
     <div>
-      <h1 class="text-2xl font-semibold">{{ $t('pages.private.clientBook') }}</h1>
-      <p class="text-sm text-gray-600">{{ $t('booking.subtitle') }}</p>
+    <h1 class="text-2xl font-semibold">{{ $t('pages.private.clientBook') }}</h1>
+    <div v-if="isLoading" class="mt-2">
+      <USkeleton class="h-4 w-64" />
     </div>
+    <p v-else class="text-sm text-gray-600">{{ $t('booking.subtitle') }}</p>
+  </div>
 
     <p v-if="!selectedBranchId" class="text-sm text-gray-600">
       {{ $t('booking.selectBranch') }}
     </p>
 
+    <div v-if="isLoading" class="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+      <div class="space-y-3">
+        <USkeleton class="h-5 w-40" />
+        <USkeleton class="h-8 w-full" />
+        <USkeleton class="h-8 w-5/6" />
+        <USkeleton class="h-8 w-4/6" />
+      </div>
+    </div>
     <BookingWizard
+      v-else
       :initial-branch-id="selectedBranchId || undefined"
       :initial-client="initialClient"
       :hide-details-title="true"
