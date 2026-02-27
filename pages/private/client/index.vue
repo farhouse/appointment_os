@@ -21,19 +21,17 @@ definePageMeta({
   roles: ['CLIENT'],
 })
 
-const { data: me, pending: isLoadingMe } = await useAsyncData('client-dashboard-me', () => loadMe())
-const { data: pointsSummary, pending: isLoadingPoints, error: pointsError } = await useAsyncData('client-dashboard-points', () => $fetch<PointsSummary>('/api/client/points'))
+const { data: me, pending: isLoadingMe } = await useAsyncData('client-dashboard-me', () => loadMe(), { server: false })
+const { data: pointsSummary, pending: isLoadingPoints, error: pointsError } = await useAsyncData(
+  'client-dashboard-points',
+  () => $fetch<PointsSummary>('/api/client/points'),
+  { server: false }
+)
 const { data: appointments, pending: isLoadingAppointments, error: appointmentsError } = await useAsyncData(
   'client-dashboard-appointments',
-  () => $fetch<Appointment[]>('/api/client/appointments')
+  () => $fetch<Appointment[]>('/api/client/appointments'),
+  { server: false }
 )
-
-const pointsRetried = ref(false)
-watch([me, pointsError], async ([user, err]) => {
-  if (!user || !err || pointsRetried.value) return
-  pointsRetried.value = true
-  await refreshNuxtData('client-dashboard-points')
-})
 
 const { formatDateTime, statusColor, statusLabel } = useAppointmentStatus()
 
