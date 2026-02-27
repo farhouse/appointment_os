@@ -28,6 +28,13 @@ const { data: appointments, pending: isLoadingAppointments, error: appointmentsE
   () => $fetch<Appointment[]>('/api/client/appointments')
 )
 
+const pointsRetried = ref(false)
+watch([me, pointsError], async ([user, err]) => {
+  if (!user || !err || pointsRetried.value) return
+  pointsRetried.value = true
+  await refreshNuxtData('client-dashboard-points')
+})
+
 const { formatDateTime, statusColor, statusLabel } = useAppointmentStatus()
 
 const greetingName = computed(() => {
