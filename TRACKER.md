@@ -37,11 +37,9 @@ Leyenda estado: `todo | doing | blocked | done`
 - [x] (done) **Booking / Email required**: email obligatorio en booking.
   - Resultado: validación en UI/server para no permitir submit sin email.
 
-- [ ] (todo) **Booking / Confirmation system**: implementar confirmación por email (link/token) antes de confirmar el turno.
-  - Status: POSTPONED (Iván: “dejemos para más adelante”).
-  - Acceptance: al crear appointment queda PENDING_UNCONFIRMED (o similar) hasta click; link expira; reenvío.
+- [x] (done) **Booking / Confirmation system**: confirmación por email (link/token) antes de confirmar el turno.
+  - Resultado: booking genera token + envío; endpoint público confirma o informa estado; endpoint público reenvía con cooldown.
   - Files: `server/api/public/appointments/index.post.ts`, `server/api/public/appointments/[id]/confirm.*`, mailer.
-  - NEXT: elegir provider real de email + UX de reenvío.
 
 - [x] (done) **Booking / Done screen**: después de reservar se navega a pantalla final de cierre de journey.
   - Resultado: flujo de booking termina en pantalla de finalización.

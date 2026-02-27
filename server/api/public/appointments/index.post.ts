@@ -60,10 +60,21 @@ export default defineEventHandler(async (event) => {
     }
   })
 
+  const confirmationEmail: {
+    status: 'sent' | 'skipped' | 'failed'
+    reason?: 'missing_email' | 'notifications_disabled'
+    error?: string
+  } = { status: 'skipped' }
+
   // Send confirmation email (do not block booking if it fails)
-  try {
-    const clientEmail = appointment.client?.email
-    if (clientEmail) {
+  const clientEmail = appointment.client?.email
+  const shouldSendEmail = appointment.notifyEmail !== false && !!clientEmail
+  if (!shouldSendEmail) {
+    confirmationEmail.reason = appointment.notifyEmail === false
+      ? 'notifications_disabled'
+      : 'missing_email'
+  } else {
+    try {
       const clientName = [appointment.client?.firstName, appointment.client?.lastName]
         .filter(Boolean)
         .join(' ')
@@ -75,7 +86,7 @@ export default defineEventHandler(async (event) => {
         .join(', ')
       const expiresAtText = format(confirmTokenExpiresAt, 'PPPP p')
 
-      await sendBookingConfirmationEmail({
+      const result = await sendBookingConfirmationEmail({
         to: clientEmail,
         clientName: clientName || 'Client',
         appointmentDateTime,
@@ -84,10 +95,26 @@ export default defineEventHandler(async (event) => {
         confirmUrl,
         expiresAtText: `on ${expiresAtText}`
       })
+
+      if (result.ok) {
+        confirmationEmail.status = 'sent'
+      } else {
+        confirmationEmail.status = 'failed'
+        confirmationEmail.error = result.error
+      }
+    } catch (error) {
+      confirmationEmail.status = 'failed'
+      confirmationEmail.error = error instanceof Error ? error.message : 'Unknown error'
     }
-  } catch {
-    // don't fail booking if email fails
+
+    if (confirmationEmail.status === 'failed') {
+      // eslint-disable-next-line no-console
+      console.error('[booking] confirmation email failed', {
+        appointmentId: appointment.id,
+        error: confirmationEmail.error
+      })
+    }
   }
 
-  return appointment
+  return { ...appointment, confirmationEmail }
 })

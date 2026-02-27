@@ -15,10 +15,21 @@ export default defineEventHandler(async (event) => {
   })
   if (!apt) notFound('Appointment not found')
 
-  if (!apt.confirmToken || apt.confirmToken !== t) badRequest('invalid token')
-  if (apt.confirmTokenExpiresAt && apt.confirmTokenExpiresAt.getTime() < Date.now()) badRequest('token expired')
+  if (apt.status === 'CONFIRMED' || apt.status === 'IN_PROGRESS' || apt.status === 'FINISHED' || apt.status === 'PAID') {
+    return { status: 'already_confirmed' as const }
+  }
+  if (apt.status !== 'PENDING') {
+    return { status: 'not_pending' as const }
+  }
 
-  return prisma.appointment.update({
+  if (!apt.confirmToken || apt.confirmToken !== t) {
+    return { status: 'invalid_token' as const }
+  }
+  if (apt.confirmTokenExpiresAt && apt.confirmTokenExpiresAt.getTime() < Date.now()) {
+    return { status: 'expired_token' as const }
+  }
+
+  const updated = await prisma.appointment.update({
     where: { id },
     data: {
       status: 'CONFIRMED',
@@ -29,4 +40,6 @@ export default defineEventHandler(async (event) => {
       confirmTokenExpiresAt: null
     }
   })
+
+  return { status: 'confirmed' as const, appointment: updated }
 })
