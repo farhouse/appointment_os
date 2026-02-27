@@ -17,6 +17,7 @@ type Client = {
   phone?: string | null
   notes?: string | null
   pointsBalance?: number
+  hasUser?: boolean
   createdAt: string
 }
 
@@ -30,6 +31,11 @@ type ClientHistoryItem = {
 
 const { t } = useI18n()
 const toast = useToast()
+const tableUi = {
+  th: 'bg-stone-100 text-stone-700 font-semibold',
+  td: 'text-stone-800',
+  tr: 'hover:bg-stone-50'
+}
 
 const clients = ref<Client[]>([])
 const isLoading = ref(false)
@@ -101,6 +107,11 @@ const columns = [
     id: 'pointsBalance',
     header: 'Puntos',
     cell: ({ row }: any) => row.original.pointsBalance ?? 0
+  },
+  {
+    id: 'hasUser',
+    header: 'Usuario',
+    cell: ({ row }: any) => row.original.hasUser ? 'Sí' : 'No'
   },
   {
     id: 'actions',
@@ -247,7 +258,7 @@ onMounted(loadClients)
       <div v-else-if="errorMessage" class="p-4 text-sm text-red-600">{{ errorMessage }}</div>
       <div v-else-if="!rows.length" class="p-4 text-sm text-stone-500">Sin clientes.</div>
       <div v-else>
-        <UTable :data="rows" :columns="columns" />
+        <UTable :data="rows" :columns="columns" :ui="tableUi" />
       </div>
     </div>
 
