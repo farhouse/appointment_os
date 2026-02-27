@@ -123,11 +123,10 @@ Leyenda estado: `todo | doing | blocked | done`
   - Acceptance: modal incluye datos (cliente, contacto, servicio, estado, pago, notas) + acción “Mover turno” con selector de fecha/hora.
   - NEXT: definir UI de move (drag&drop vs form) y conectar a endpoint `PATCH /api/appointments/:id/move`.
 
-- [ ] (todo) **Calendar drag&drop**: arrastrar el turno en el calendario hoy no hace nada.
+- [x] (done) **Calendar drag&drop**: arrastrar el turno en el calendario hoy no hace nada.
   - Scope: aplicar a calendarios de **Manager + Admin/Owner**.
-  - Acceptance: drag&drop habilitado (con confirmación) y persiste via endpoint move; feedback visual.
-  - Files: `pages/private/backoffice/calendar.vue` (y manager calendar), `server/api/appointments/[id]/move.patch.ts`.
-  - NEXT: revisar configuración del componente calendar y eventos.
+  - Resultado: drag&drop persiste con `PATCH /api/appointments/:id/move`, feedback toast y refresh del calendario.
+  - Files: `pages/private/backoffice/calendar.vue`, `server/api/appointments/[id]/move.patch.ts`.
 
 - [ ] (todo) **Calendar resources separators**: agregar separación visual entre resources (barberos) para mejorar legibilidad.
   - Decision: **C** = zebra suave (fondo alternado por resource) + divider entre columnas.

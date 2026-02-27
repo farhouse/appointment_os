@@ -10,7 +10,8 @@ definePageMeta({
 
 const { selectedBranchId } = useSelectedBranch()
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
+const toast = useToast()
 
 const calendarView = ref<VueCalView | null>(null)
 const calendarApiView = ref<VueCalView | null>(null)
@@ -267,6 +268,46 @@ function handleEventClick(e: any) {
   if (!event) return
   openDetailModal(event)
 }
+
+function getEventPayload(event: VueCalEvent, schedule?: string) {
+  if (!event.start || !event.end) return null
+  return {
+    startTime: new Date(event.start).toISOString(),
+    endTime: new Date(event.end).toISOString(),
+    ...(schedule ? { professionalId: schedule } : {})
+  }
+}
+
+async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent; originalEvent?: VueCalEvent }) {
+  if (!event?.id) return
+  if (!confirm(t('calendar.confirmMove'))) {
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+    return
+  }
+
+  const schedule = (event as any)?.schedule
+  const payload = getEventPayload(event, schedule)
+  if (!payload) return
+
+  try {
+    await $fetch(`/api/appointments/${event.id}/move`, {
+      method: 'PATCH',
+      body: payload
+    })
+    toast.add({ title: t('calendar.moveSuccess'), color: 'success' })
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || t('calendar.moveError'), color: 'error' })
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+    if (originalEvent) {
+      event.start = originalEvent.start
+      event.end = originalEvent.end
+      if ((originalEvent as any)?.schedule) {
+        ;(event as any).schedule = (originalEvent as any).schedule
+      }
+    }
+  }
+}
 </script>
 
 <template>
@@ -312,6 +353,7 @@ function handleEventClick(e: any) {
         @ready="handleReady"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
+        @event-dropped="handleEventDropped"
       />
     </div>
 

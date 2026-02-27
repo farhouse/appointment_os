@@ -192,6 +192,7 @@
       "next": "Next"
     },
     "confirmMove": "Are you sure about this change?",
+    "moveSuccess": "Appointment moved",
     "moveError": "Failed to move appointment",
     "eventAlert": "Event:",
     "status": "Status:",

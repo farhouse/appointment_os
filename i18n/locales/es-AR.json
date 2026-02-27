@@ -192,6 +192,7 @@
       "next": "Siguiente"
     },
     "confirmMove": "¿Confirmás este cambio?",
+    "moveSuccess": "Turno movido",
     "moveError": "No se pudo mover el turno",
     "eventAlert": "Turno:",
     "status": "Estado:",

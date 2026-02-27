@@ -3,7 +3,7 @@ import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
 import { getAuthUser, requireRole } from '~/server/utils/permissions'
 import { readBodyValidated, requireParam } from '~/server/utils/http'
-import { forbidden, notFound } from '~/server/utils/errors'
+import { badRequest, forbidden, notFound } from '~/server/utils/errors'
 
 const moveSchema = z.object({
   startTime: z.string().datetime(),
@@ -21,8 +21,17 @@ export default defineEventHandler(async (event) => {
     forbidden('Forbidden')
   }
 
-  // Managers/admins only.
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  // Managers/admins/owners only.
+  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+
+  const start = new Date(validation.startTime)
+  const end = new Date(validation.endTime)
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+    badRequest('Invalid startTime/endTime')
+  }
+  if (end <= start) {
+    badRequest('endTime must be after startTime')
+  }
 
   try {
     const appointment = await prisma.appointment.update({
