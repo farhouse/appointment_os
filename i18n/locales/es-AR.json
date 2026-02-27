@@ -121,12 +121,15 @@
           "openCalendar": "Abrir calendario"
         },
         "stats": {
-          "today": "Turnos hoy",
-          "todayHint": "Placeholder (vamos a contar por estado y sucursal)",
-          "pendingPayments": "Pagos pendientes",
-          "pendingPaymentsHint": "Placeholder (turnos FINISHED sin PAID)",
-          "weekRevenue": "Ingresos semana",
-          "weekRevenueHint": "Placeholder (sumatoria de turnos PAID)"
+          "appointmentsToday": "Turnos hoy",
+          "appointmentsTodayHint": "Agenda del día según estado.",
+          "revenueToday": "Facturación hoy",
+          "revenueTodayHint": "Sumatoria de turnos cobrados hoy.",
+          "openCashSessions": "Sesiones de caja abiertas",
+          "openCashSessionsHint": "Cajas abiertas ahora mismo.",
+          "clientsServedToday": "Clientes atendidos hoy",
+          "clientsServedTodayHint": "Clientes únicos con turnos pagados hoy.",
+          "branchRequired": "Seleccioná una sucursal para ver el resumen."
         },
         "shortcuts": {
           "calendar": "Calendario",

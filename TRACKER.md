@@ -135,10 +135,9 @@ Leyenda estado: `todo | doing | blocked | done`
   - Acceptance: líneas/espaciado/fondo alternado por resource; no rompe responsive.
   - NEXT: revisar capacidades del componente (VueCal) y aplicar CSS.
 
-- [ ] (todo) **Dashboard/Resumen**: implementar métricas reales (reemplazar placeholders).
-  - Items: “Turnos hoy”, “Pagos pendientes”, “Ingresos de la semana”.
-  - Acceptance: números consistentes con queries; loading/skeleton; filtros por sucursal (si aplica).
-  - NEXT: definir fuentes (appointments + payments/cash) y rango de fechas.
+- [x] (done) **Dashboard/Resumen**: implementar métricas reales (reemplazar placeholders).
+  - Resultado: métricas reales para turnos hoy, facturación hoy, sesiones de caja abiertas y clientes atendidos hoy.
+  - Files: `pages/private/backoffice/index.vue`, `server/api/dashboard/summary.get.ts`, `i18n/locales/{es-AR,en}.json`.
 
 - [ ] (todo) **Caja**: revisar flujo abrir→cerrar→cobrar (comportamiento confuso) + clarificar botón “Movimientos”.
   - Acceptance: movimientos muestran claramente depósitos/retiros/auto; si caja cerrada, qué pasa con cobros posteriores (regla explícita).

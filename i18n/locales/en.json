@@ -121,12 +121,15 @@
           "openCalendar": "Open calendar"
         },
         "stats": {
-          "today": "Appointments today",
-          "todayHint": "Placeholder (we'll count by status and branch)",
-          "pendingPayments": "Pending payments",
-          "pendingPaymentsHint": "Placeholder (FINISHED without PAID)",
-          "weekRevenue": "Week revenue",
-          "weekRevenueHint": "Placeholder (sum of PAID appointments)"
+          "appointmentsToday": "Appointments today",
+          "appointmentsTodayHint": "Today's appointments by status.",
+          "revenueToday": "Revenue today",
+          "revenueTodayHint": "Sum of paid appointments today.",
+          "openCashSessions": "Open cash sessions",
+          "openCashSessionsHint": "Cash sessions currently open.",
+          "clientsServedToday": "Clients served today",
+          "clientsServedTodayHint": "Distinct clients with paid appointments today.",
+          "branchRequired": "Select a branch to see the summary."
         },
         "shortcuts": {
           "calendar": "Calendar",

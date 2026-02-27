@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { loadMe, useMeState } from '~/composables/useMe'
+import { useSelectedBranch } from '~/composables/useSelectedBranch'
 
 definePageMeta({
   layout: 'private',
@@ -10,7 +11,76 @@ definePageMeta({
 await loadMe()
 const me = useMeState()
 
+const { t, locale } = useI18n()
+const { selectedBranchId } = useSelectedBranch()
+
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
+const isManager = computed(() => me.value?.role === 'MANAGER')
+
+type DashboardSummary = {
+  appointmentsToday: number
+  revenueToday: number
+  openCashSessions: number
+  clientsServedToday: number
+}
+
+const summary = ref<DashboardSummary | null>(null)
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+const numberFormatter = computed(() => new Intl.NumberFormat(locale.value || 'es-AR'))
+const currencyFormatter = computed(() => new Intl.NumberFormat(locale.value || 'es-AR', { style: 'currency', currency: 'ARS' }))
+
+const appointmentsTodayLabel = computed(() => {
+  if (isLoading.value) return t('common.loading')
+  if (!summary.value) return '—'
+  return numberFormatter.value.format(summary.value.appointmentsToday)
+})
+
+const revenueTodayLabel = computed(() => {
+  if (isLoading.value) return t('common.loading')
+  if (!summary.value) return '—'
+  return currencyFormatter.value.format(summary.value.revenueToday)
+})
+
+const openCashSessionsLabel = computed(() => {
+  if (isLoading.value) return t('common.loading')
+  if (!summary.value) return '—'
+  return numberFormatter.value.format(summary.value.openCashSessions)
+})
+
+const clientsServedTodayLabel = computed(() => {
+  if (isLoading.value) return t('common.loading')
+  if (!summary.value) return '—'
+  return numberFormatter.value.format(summary.value.clientsServedToday)
+})
+
+async function loadSummary() {
+  errorMessage.value = ''
+
+  if (isManager.value && !selectedBranchId.value) {
+    summary.value = null
+    errorMessage.value = t('pages.private.manager.stats.branchRequired')
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const query = new URLSearchParams()
+    if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    summary.value = await $fetch<DashboardSummary>(`/api/dashboard/summary${suffix}`)
+  } catch (e: any) {
+    summary.value = null
+    errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+watch(selectedBranchId, () => {
+  void loadSummary()
+}, { immediate: true })
 
 const shortcuts = computed(() => {
   const base = [
@@ -46,22 +116,28 @@ const shortcuts = computed(() => {
       <div>
         <h2 class="text-lg font-semibold">{{ $t('pages.private.manager.sections.overview.title') }}</h2>
         <p class="text-sm text-gray-600">{{ $t('pages.private.manager.sections.overview.subtitle') }}</p>
+        <p v-if="errorMessage" class="mt-2 text-sm text-rose-600">{{ errorMessage }}</p>
       </div>
-      <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-4">
         <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.today') }}</div>
-          <div class="mt-1 text-2xl font-semibold">—</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.todayHint') }}</div>
+          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.appointmentsToday') }}</div>
+          <div class="mt-1 text-2xl font-semibold">{{ appointmentsTodayLabel }}</div>
+          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.appointmentsTodayHint') }}</div>
         </div>
-      <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-        <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.pendingPayments') }}</div>
-        <div class="mt-1 text-2xl font-semibold">—</div>
-        <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.pendingPaymentsHint') }}</div>
-      </div>
         <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.weekRevenue') }}</div>
-          <div class="mt-1 text-2xl font-semibold">—</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.weekRevenueHint') }}</div>
+          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.revenueToday') }}</div>
+          <div class="mt-1 text-2xl font-semibold">{{ revenueTodayLabel }}</div>
+          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.revenueTodayHint') }}</div>
+        </div>
+        <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.openCashSessions') }}</div>
+          <div class="mt-1 text-2xl font-semibold">{{ openCashSessionsLabel }}</div>
+          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.openCashSessionsHint') }}</div>
+        </div>
+        <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.clientsServedToday') }}</div>
+          <div class="mt-1 text-2xl font-semibold">{{ clientsServedTodayLabel }}</div>
+          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.clientsServedTodayHint') }}</div>
         </div>
       </div>
     </section>
