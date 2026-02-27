@@ -8,11 +8,12 @@ export default defineEventHandler(async (event) => {
 
   const q = getQuery(event)
   const branchId = typeof q.branchId === 'string' && q.branchId.length ? q.branchId : null
+  const activeOnly = q.activeOnly === 'true' || q.activeOnly === '1'
 
   const cashBoxes = await prisma.cashBox.findMany({
     where: {
       ...(branchId ? { branchId } : {}),
-      ...(authUser.role === 'MANAGER' ? { active: true } : {})
+      ...(authUser.role === 'MANAGER' || activeOnly ? { active: true } : {})
     },
     orderBy: [{ branchId: 'asc' }, { name: 'asc' }],
     include: {

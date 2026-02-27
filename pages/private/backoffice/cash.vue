@@ -219,7 +219,7 @@ async function loadCashboxes() {
   isLoading.value = true
   errorMessage.value = ''
   try {
-    const query = new URLSearchParams({ branchId: selectedBranchId.value })
+    const query = new URLSearchParams({ branchId: selectedBranchId.value, activeOnly: 'true' })
     cashBoxes.value = await $fetch(`/api/cashboxes?${query.toString()}`)
   } catch (e: any) {
     cashBoxes.value = []
