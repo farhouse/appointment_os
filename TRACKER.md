@@ -195,10 +195,9 @@ Leyenda estado: `todo | doing | blocked | done`
     - listado incluye campo de puntos (`pointsBalance`).
   - Files: `pages/private/backoffice/clients.vue`, `layouts/private.vue`, `server/api/clients/index.get.ts`, `server/api/clients/index.post.ts`, `server/api/clients/[id].patch.ts`, `server/api/clients/[id].delete.ts`, `i18n/locales/{es-AR,en}.json`.
 
-- [ ] (todo) **Employees table**: permitir ordenar/filtrar por Rol (y que se vea bien).
-  - Acceptance: filtro por rol (dropdown) + sort por rol.
-  - Files: `pages/private/backoffice/employees.vue`.
-  - NEXT: agregar filter state y aplicarlo en `useCrudTable`.
+- [x] (done) **Employees table**: permitir ordenar/filtrar por Rol (y que se vea bien).
+  - Resultado: filtro por rol (dropdown) + sort por rol + paginado se resetea al filtrar.
+  - Files: `pages/private/backoffice/employees.vue`, `components/CrudTableShell.vue`.
 
 - [ ] (todo) **Caja**: validar cálculo de “monto actual” vs movimientos automáticos por `PAID` + manuales.
   - NEXT: test con 1 sesión real con depósitos/retiros + cierre.

@@ -367,6 +367,7 @@
       "delete": "Delete",
       "save": "Save",
       "create": "Create",
+      "all": "All",
       "retry": "Retry",
       "active": "Active",
       "inactive": "Inactive",

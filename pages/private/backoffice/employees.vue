@@ -117,12 +117,33 @@ const roleItems = computed(() => {
   return all
 })
 
+const roleFilterItems = computed(() => [
+  { label: t('admin.common.all'), value: 'ALL' },
+  ...roleItems.value
+])
+
+const roleFilter = ref<'ALL' | Employee['role']>('ALL')
+
 const tableRef = useTemplateRef('table')
 
-const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(employees, {
+const roleOrder = ['OWNER', 'ADMIN', 'MANAGER', 'BARBER', 'CLIENT'] as const
+
+const filteredEmployees = computed(() => {
+  if (roleFilter.value === 'ALL') return employees.value
+  return employees.value.filter((employee) => employee.role === roleFilter.value)
+})
+
+const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(filteredEmployees, {
   search: (item, query) => {
     const q = query.toLowerCase()
     return [item.name, item.email, item.role].some(value => value.toLowerCase().includes(q))
+  },
+  sort: (a, b, key, direction) => {
+    if (key !== 'role') return 0
+    const aIndex = roleOrder.indexOf(a.role)
+    const bIndex = roleOrder.indexOf(b.role)
+    const delta = aIndex - bIndex
+    return direction === 'asc' ? delta : -delta
   },
   initialSortBy: 'name',
   initialSortDir: 'asc'
@@ -146,6 +167,10 @@ const pageSize = computed({
 })
 
 watch(globalFilter, () => {
+  pagination.value.pageIndex = 0
+})
+
+watch(roleFilter, () => {
   pagination.value.pageIndex = 0
 })
 
@@ -233,7 +258,11 @@ const tableMeta = {
   }
 }
 
-const sortLabel = computed(() => sortBy.value ? `${sortBy.value}:${sortDir.value}` : '')
+const sortLabel = computed(() => {
+  if (!sortBy.value) return ''
+  if (sortBy.value === 'role') return `${t('admin.employees.columns.role')}:${sortDir.value}`
+  return `${sortBy.value}:${sortDir.value}`
+})
 const hasData = computed(() => employees.value.length > 0)
 const isEmpty = computed(() => !isLoading.value && !hasData.value && !errorMessage.value)
 
@@ -378,6 +407,14 @@ onMounted(() => {
     @search="globalFilter = $event"
     @create="openCreate"
   >
+    <template #controls>
+      <USelect
+        v-model="roleFilter"
+        :items="roleFilterItems"
+        value-key="value"
+        class="w-40"
+      />
+    </template>
     <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
       <div>{{ $t('admin.common.count', { count: filteredTotal }) }}</div>
       <div v-if="sortLabel">{{ $t('admin.common.sorting', { value: sortLabel }) }}</div>

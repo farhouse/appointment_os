@@ -28,6 +28,7 @@ defineEmits<{ search: [value: string]; create: [] }>()
           class="w-56"
           @update:model-value="$emit('search', $event as string)"
         />
+        <slot name="controls" />
         <UButton v-if="canCreate" color="primary" @click="$emit('create')">
           {{ createLabel || 'New' }}
         </UButton>
