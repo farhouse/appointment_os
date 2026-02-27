@@ -203,13 +203,12 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/barber/appointments.vue`.
 
 ## P2 — Backoffice
-- [ ] (todo) **Staff vs Clients split**: separar CRUD de staff (employees) vs CRUD de clientes.
-  - Decision: CRUD de clientes se basa en entidad `Client` (booking/loyalty). `User(role=CLIENT)` es opcional/vinculado.
-  - Acceptance:
-    - `/private/backoffice/employees` = staff only (OWNER/ADMIN/MANAGER/BARBER).
-    - nueva página `/private/backoffice/clients` = CRUD de `Client`.
-  - Files: `pages/private/backoffice/employees.vue`, `pages/private/backoffice/clients.vue` (nuevo), `server/api/clients/*` (si falta), permisos.
-  - NEXT: definir columnas/acciones mínimas para clients (ver historial turnos, puntos, contacto).
+- [x] (done) **Staff vs Clients split**: separar CRUD de staff (employees) vs CRUD de clientes.
+  - Resultado:
+    - `/private/backoffice/employees` mantiene staff only (OWNER/ADMIN/MANAGER/BARBER).
+    - nueva página `/private/backoffice/clients` con CRUD de `Client` para OWNER/ADMIN/MANAGER.
+    - listado incluye campo de puntos (`pointsBalance`).
+  - Files: `pages/private/backoffice/clients.vue`, `layouts/private.vue`, `server/api/clients/index.get.ts`, `server/api/clients/index.post.ts`, `server/api/clients/[id].patch.ts`, `server/api/clients/[id].delete.ts`, `i18n/locales/{es-AR,en}.json`.
 
 - [ ] (todo) **Employees table**: permitir ordenar/filtrar por Rol (y que se vea bien).
   - Acceptance: filtro por rol (dropdown) + sort por rol.
