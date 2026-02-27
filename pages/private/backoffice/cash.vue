@@ -59,7 +59,6 @@ const paymentMedia = ref<{ id: string; method: string; name: string; active: boo
 
 const selectedCashBoxId = ref('')
 const selectedSession = computed(() => sessions.value.find(s => s.branchId === selectedBranchId.value && !s.closingTime) || null)
-const sessionStatus = computed(() => (selectedSession.value ? 'OPEN' : 'CLOSED'))
 
 const openSessions = computed(() => sessions.value.filter(s => !s.closingTime))
 const openSessionsSorted = computed(() => {
@@ -504,6 +503,38 @@ function buildCloseUrl(session: CashSession) {
   return `/private/backoffice/cash?${params.toString()}#close-session`
 }
 
+const globalOpenColumns = [
+  { accessorKey: 'branch', header: 'Sucursal' },
+  { accessorKey: 'cashBox', header: 'Caja' },
+  { accessorKey: 'openedAt', header: 'Apertura' },
+  { accessorKey: 'openedBy', header: 'Abrió' },
+  { accessorKey: 'total', header: 'Balance total' },
+  { accessorKey: 'cash', header: 'Efectivo' },
+  { accessorKey: 'card', header: 'Tarjeta' },
+  { accessorKey: 'transfer', header: 'Transferencia' },
+  { accessorKey: 'other', header: 'Otro' },
+  { id: 'actions', header: '' }
+]
+
+const globalOpenRows = computed(() => {
+  return globalOpenSessionsSorted.value.map((session) => {
+    const totals = getTotalsByMethod(session)
+    return {
+      id: session.id,
+      branch: session.branch?.name || 'Sucursal',
+      cashBox: session.cashBox?.name || 'Caja del día',
+      openedAt: formatDate(session.openingTime),
+      openedBy: session.openedByName || '—',
+      total: formatCurrency(getSessionCurrentBalance(session)),
+      cash: formatCurrency(totals.CASH || 0),
+      card: formatCurrency(totals.CARD || 0),
+      transfer: formatCurrency(totals.TRANSFER || 0),
+      other: formatCurrency(totals.OTHER || 0),
+      closeUrl: buildCloseUrl(session)
+    }
+  })
+})
+
 function getCashBoxOpenSession(cashBoxId: string) {
   return sessions.value.find(session => session.cashBoxId === cashBoxId && !session.closingTime) || null
 }
@@ -559,54 +590,6 @@ watch(openSessionsSorted, (value) => {
         <p class="text-sm text-stone-600">Sesión diaria por sucursal con sectores por método de pago.</p>
       </div>
 
-      <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2">
-              <div class="text-sm font-semibold text-stone-900">Estado de sesión</div>
-              <UBadge :color="sessionStatus === 'OPEN' ? 'success' : 'neutral'" variant="subtle" class="text-[10px]">
-                {{ sessionStatus }}
-              </UBadge>
-            </div>
-            <div class="mt-1 text-xs text-stone-500">
-              <span class="font-medium text-stone-600">Abrió:</span>
-              {{ selectedSession?.openedByName || '—' }}
-            </div>
-            <div class="text-xs text-stone-500">
-              <span class="font-medium text-stone-600">Apertura:</span>
-              {{ formatDate(selectedSession?.openingTime) }}
-            </div>
-          </div>
-
-          <div class="text-right">
-            <div class="text-sm text-stone-500">Balance actual</div>
-            <div class="text-base font-semibold text-stone-900">
-              {{ formatCurrency(getSessionCurrentBalance(selectedSession)) }}
-            </div>
-            <div class="text-xs text-stone-500">
-              <template v-if="selectedSession">Sesión abierta</template>
-              <template v-else>Sin sesión abierta</template>
-            </div>
-          </div>
-
-          <div class="text-right">
-            <div class="text-sm text-stone-500">Último movimiento</div>
-            <div class="text-sm font-medium text-stone-900">
-              <template v-if="selectedSession?.lastMovement">
-                {{ formatDate(selectedSession?.lastMovement?.createdAt) }}
-              </template>
-              <template v-else>—</template>
-            </div>
-            <div class="text-xs text-stone-500">
-              <template v-if="selectedSession?.lastMovement">
-                {{ getMethodLabel(selectedSession?.lastMovement?.paymentMethod || 'CASH') }}
-                · {{ formatCurrency(selectedSession?.lastMovement?.amount) }}
-              </template>
-              <template v-else>Sin movimientos</template>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div v-if="selectedBranchOpenSessions.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -647,36 +630,19 @@ watch(openSessionsSorted, (value) => {
           <USkeleton class="h-8 w-full" />
           <USkeleton class="mt-3 h-8 w-full" />
         </div>
-        <div v-else-if="globalOpenSessionsSorted.length === 0" class="p-6">
+        <div v-else-if="globalOpenRows.length === 0" class="p-6">
           <CrudState
             :title="'Sin sesiones abiertas'"
             :description="'No hay sesiones abiertas en otras sucursales.'"
             icon="i-lucide-briefcase"
           />
         </div>
-        <div v-else class="divide-y divide-stone-200">
-          <div v-for="session in globalOpenSessionsSorted" :key="session.id" class="p-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div class="text-sm font-semibold text-stone-900">{{ session.branch?.name || 'Sucursal' }}</div>
-                <div class="text-xs text-stone-500">Abrió: {{ session.openedByName || '—' }}</div>
-                <div class="text-xs text-stone-500">Apertura: {{ formatDate(session.openingTime) }}</div>
-              </div>
-              <div class="text-right">
-                <div class="text-sm text-stone-500">Balance actual</div>
-                <div class="text-base font-semibold text-stone-900">{{ formatCurrency(getSessionCurrentBalance(session)) }}</div>
-              </div>
-              <div>
-                <UButton
-                  size="xs"
-                  variant="outline"
-                  :to="buildCloseUrl(session)"
-                >
-                  Ir a cerrar
-                </UButton>
-              </div>
-            </div>
-          </div>
+        <div v-else>
+          <UTable :data="globalOpenRows" :columns="globalOpenColumns">
+            <template #actions-cell="{ row }">
+              <UButton size="xs" variant="outline" :to="row.original.closeUrl">Ir a cerrar</UButton>
+            </template>
+          </UTable>
         </div>
       </div>
 
