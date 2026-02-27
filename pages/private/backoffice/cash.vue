@@ -221,22 +221,24 @@ watch(selectedBranchId, (value, prev) => {
   }
 })
 
-watchEffect(() => {
-  const branchId = typeof route.query.branchId === 'string' ? route.query.branchId : ''
-  if (branchId && branchId !== selectedBranchId.value) {
-    selectedBranchId.value = branchId
-  }
+watch(
+  () => route.query,
+  (query) => {
+    const branchId = typeof query.branchId === 'string' ? query.branchId : ''
+    if (branchId && branchId !== selectedBranchId.value) {
+      selectedBranchId.value = branchId
+    }
 
-  const cashBoxId = typeof route.query.cashBoxId === 'string' ? route.query.cashBoxId : ''
-  if (cashBoxId && cashBoxId !== selectedCashBoxId.value) {
-    selectedCashBoxId.value = cashBoxId
-  }
+    const cashBoxId = typeof query.cashBoxId === 'string' ? query.cashBoxId : ''
+    if (cashBoxId && cashBoxId !== selectedCashBoxId.value) {
+      selectedCashBoxId.value = cashBoxId
+    }
 
-  const from = typeof route.query.from === 'string' ? route.query.from : ''
-  if (from !== sessionFrom.value) sessionFrom.value = from
-  const to = typeof route.query.to === 'string' ? route.query.to : ''
-  if (to !== sessionTo.value) sessionTo.value = to
-})
+    sessionFrom.value = typeof query.from === 'string' ? query.from : ''
+    sessionTo.value = typeof query.to === 'string' ? query.to : ''
+  },
+  { immediate: true }
+)
 
 watch(selectedCashBoxId, (value) => {
   openForm.cashBoxId = value
