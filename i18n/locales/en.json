@@ -158,6 +158,20 @@
       "managerEmployees": "Manager · Employees",
       "managerSettings": "Manager · Settings",
       "managerBranches": "Manager · Branches",
+      "managerSettingsHub": {
+        "subtitle": "Choose a sector to configure.",
+        "open": "Open sector"
+      },
+      "managerSettingsNav": {
+        "branches": "Branches",
+        "branchesDesc": "Manage branches and contact details.",
+        "paymentMedia": "Payment media",
+        "paymentMediaDesc": "Activate methods and custom media.",
+        "email": "Email",
+        "emailDesc": "Confirmation status and test send.",
+        "cashboxes": "Cashboxes",
+        "cashboxesDesc": "Create and manage cashboxes by branch."
+      },
       "barberToday": "Barber · Today",
       "profileTitle": "Profile",
       "profileSubtitle": "Your account details.",

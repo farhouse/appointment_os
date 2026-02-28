@@ -190,6 +190,8 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/barber/appointments.vue`.
 
 ## P2 — Backoffice
+- [x] (done) **Settings split**: sectores de configuración separados en subpáginas dedicadas.
+  - Resultado: hub en `/private/backoffice/settings` con accesos a Sucursales, Medios de pago, Email y Cajas.
 - [x] (done) **Staff vs Clients split**: separar CRUD de staff (employees) vs CRUD de clientes.
   - Resultado:
     - `/private/backoffice/employees` mantiene staff only (OWNER/ADMIN/MANAGER/BARBER).

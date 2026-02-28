@@ -158,6 +158,20 @@
       "managerEmployees": "Gerencia · Empleados",
       "managerSettings": "Gerencia · Configuración",
       "managerBranches": "Gerencia · Sucursales",
+      "managerSettingsHub": {
+        "subtitle": "Selecciona el sector a configurar.",
+        "open": "Abrir sector"
+      },
+      "managerSettingsNav": {
+        "branches": "Sucursales",
+        "branchesDesc": "Administración de sucursales y datos de contacto.",
+        "paymentMedia": "Medios de pago",
+        "paymentMediaDesc": "Activación de métodos y medios personalizados.",
+        "email": "Email",
+        "emailDesc": "Estado de confirmaciones y prueba de envío.",
+        "cashboxes": "Cajas",
+        "cashboxesDesc": "Alta y control de cajas por sucursal."
+      },
       "barberToday": "Barbero · Hoy",
       "profileTitle": "Perfil",
       "profileSubtitle": "Tus datos de cuenta.",
