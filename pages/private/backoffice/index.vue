@@ -137,45 +137,11 @@ const shortcuts = computed(() => {
       </div>
     </div>
 
-    <section>
-      <div>
-        <h2 class="text-lg font-semibold">{{ $t('pages.private.manager.sections.overview.title') }}</h2>
-        <p class="text-sm text-gray-600">{{ $t('pages.private.manager.sections.overview.subtitle') }}</p>
-        <p v-if="errorMessage" class="mt-2 text-sm text-rose-600">{{ errorMessage }}</p>
-      </div>
-      <div class="grid grid-cols-1 gap-4 mt-4" :class="isAdmin ? 'md:grid-cols-5' : 'md:grid-cols-4'">
-        <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.appointmentsToday') }}</div>
-          <div class="mt-1 text-2xl font-semibold">{{ appointmentsTodayLabel }}</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.appointmentsTodayHint') }}</div>
-        </div>
-        <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.revenueToday') }}</div>
-          <div class="mt-1 text-2xl font-semibold">{{ revenueTodayLabel }}</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.revenueTodayHint') }}</div>
-        </div>
-        <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.openCashSessions') }}</div>
-          <div class="mt-1 text-2xl font-semibold">{{ openCashSessionsLabel }}</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.openCashSessionsHint') }}</div>
-        </div>
-        <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.clientsServedToday') }}</div>
-          <div class="mt-1 text-2xl font-semibold">{{ clientsServedTodayLabel }}</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.clientsServedTodayHint') }}</div>
-        </div>
-        <div v-if="isAdmin" class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.totalBranches') }}</div>
-          <div class="mt-1 text-2xl font-semibold">{{ totalBranchesLabel }}</div>
-          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.totalBranchesHint') }}</div>
-        </div>
-      </div>
-    </section>
 
     <section v-if="isAdmin">
       <div>
         <h2 class="text-lg font-semibold">Resumen por sucursal</h2>
-        <p class="text-sm text-gray-600">Vista rápida por sucursal sin depender del selector.</p>
+        <p class="text-sm text-gray-600">Vista rápida por sucursal.</p>
       </div>
 
       <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2 xl:grid-cols-3">
