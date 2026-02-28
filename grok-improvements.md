@@ -1,5 +1,30 @@
 # Barber OS Consistency Audit Report
 
+## Status Update (2026-02-28)
+
+### ✅ Addressed
+- Missing overlap validation in appointment creation/move.
+  - Commits: `510bc67`
+- Inconsistent role enforcement (normalized with `requireRole` in targeted endpoints).
+  - Commits: `0884ec5`
+- Multiple payment allowance for same appointment (duplicate payment hardening).
+  - Commits: `e00ed8a`, `148b732`
+- Race-safety hardening in appointment payment transitions.
+  - Commits: `148b732`
+- Hardcoded i18n strings in private layout.
+  - Commits: `0a1e001`
+- Client endpoint behavior when profile is missing (normalized).
+  - Commits: (covered in Task #6 run)
+- Dev data-loss risk in docker compose flow.
+  - Commits: `5c74f31`
+- Calendar conflict UX hint added.
+  - Commits: `5113f9d`
+
+### ⚠️ Still pending / needs explicit verification
+- Placeholder secrets in docker-compose (if any remain hardcoded in current file).
+- “Inconsistent branch selection handling in booking flows” (low severity UX consistency item from audit).
+
+
 ## 1. UX Consistency (Backoffice/Client Booking Flows)
 
 ### Finding: Hardcoded Localized Text in Layout
