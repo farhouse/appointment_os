@@ -1,5 +1,5 @@
 import { serverMisconfigured } from '~/server/utils/errors'
-import { renderBookingConfirmationEmail } from '~/server/utils/email/bookingConfirmation'
+import { renderBookingConfirmationEmail } from '~/server/utils/email/bookingConfirmation.ts'
 
 type MailProvider = 'resend'
 
