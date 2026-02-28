@@ -85,6 +85,7 @@ export default defineEventHandler(async (event) => {
         professional: apt.professional ? { id: apt.professional.id, name: apt.professional.name } : null,
         services: apt.services.map(s => ({ id: s.service.id, name: s.service.name, price: s.price }))
       },
+      class: `status-${apt.status.toLowerCase()}`,
       classNames: [`status-${apt.status.toLowerCase()}`]
     }
   })
