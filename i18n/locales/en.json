@@ -192,10 +192,35 @@
       "paidDefinitionNote": "Note: we treat appointments with status PAID as “paid”.",
       "clientBook": "Client · Book",
       "clientAppointments": "Client · Appointments",
-      "clientRedeem": "Client · Redeem",
-      "placeholder": "Placeholder page."
-    }
-  },
+       "clientRedeem": "Client · Redeem",
+       "placeholder": "Placeholder page."
+     },
+     "settings": {
+       "email": {
+         "sectionTitle": "Email / Confirmations",
+         "sectionSubtitle": "Secure visibility of configuration and test sending.",
+         "providerActive": "Active provider",
+         "fromLabel": "From",
+         "replyToLabel": "Reply-To",
+         "confirmationsLabel": "Confirmations",
+         "enabled": "Enabled",
+         "disabled": "Disabled",
+         "notConfigured": "Not configured",
+         "whatsappTemplateTitle": "WhatsApp Template (appointments)",
+          "whatsappPlaceholders": "Available placeholders: {name}, {date}, {branch}.",
+         "saveWhatsappTemplate": "Save WhatsApp template",
+         "testEmailTitle": "Send test email",
+         "testEmailPlaceholder": "email@domain.com",
+         "sendTestEmail": "Send test email",
+         "testEmailSent": "Test email sent.",
+         "testEmailError": "Could not send.",
+         "whatsappTemplateSaved": "WhatsApp template saved.",
+         "whatsappTemplateError": "Could not save WhatsApp template.",
+         "whatsappTemplateLoadError": "Could not load WhatsApp template.",
+         "emailLoadError": "Could not load email status."
+       }
+     }
+   },
   "calendar": {
     "schedule": "Schedule",
     "backToDashboard": "Back to Dashboard",
@@ -354,7 +379,9 @@
   "branch": {
     "label": "Branch",
     "all": "All",
-    "select": "Select a branch"
+    "select": "Select a branch",
+    "loading": "Loading branches…",
+    "switching": "Applying…"
   },
   "language": {
     "label": "Language"

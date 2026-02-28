@@ -159,7 +159,7 @@ function localePrefix(code: string) {
 
               <div v-if="isLoading || isSwitching" class="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-300">
                 <span class="inline-block size-3 rounded-full border-2 border-stone-400 border-t-transparent animate-spin" aria-hidden="true" />
-                <span>{{ isLoading ? 'Cargando sucursales…' : 'Aplicando…' }}</span>
+                <span>{{ isLoading ? $t('branch.loading') : $t('branch.switching') }}</span>
               </div>
             </div>
           </div>
