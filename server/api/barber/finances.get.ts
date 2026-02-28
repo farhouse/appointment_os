@@ -2,14 +2,13 @@ import { defineEventHandler, getQuery } from 'h3'
 import { startOfWeek, addWeeks, formatISO } from 'date-fns'
 
 import prisma from '~/server/utils/prisma'
-import { getAuthUser } from '~/server/utils/permissions'
-import { badRequest, forbidden } from '~/server/utils/errors'
+import { requireRole } from '~/server/utils/permissions'
+import { badRequest } from '~/server/utils/errors'
 
 // Read-only barber finance summary.
 // "Paid" = AppointmentStatus.PAID.
 export default defineEventHandler(async (event) => {
-  const u = getAuthUser(event)
-  if (u.role !== 'BARBER') forbidden('Forbidden')
+  const u = requireRole(event, ['BARBER'])
 
   const q = getQuery(event)
   const weeks = q.weeks ? Number(q.weeks) : 8

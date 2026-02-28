@@ -1,9 +1,9 @@
 import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
-import { getAuthUser } from '~/server/utils/permissions'
+import { requireRole } from '~/server/utils/permissions'
 
 export default defineEventHandler(async (event) => {
-  const u = getAuthUser(event)
+  const u = requireRole(event, ['CLIENT'])
 
   const client = await prisma.client.findFirst({ where: { email: u.email || '' } })
   if (!client) return []

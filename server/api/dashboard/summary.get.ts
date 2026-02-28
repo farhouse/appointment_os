@@ -1,13 +1,10 @@
 import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
-import { getAuthUser } from '~/server/utils/permissions'
+import { requireRole } from '~/server/utils/permissions'
 import { badRequest, forbidden } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
-  const u = getAuthUser(event)
-  if (u.role !== 'OWNER' && u.role !== 'ADMIN' && u.role !== 'MANAGER') {
-    forbidden('Forbidden')
-  }
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const query = getQuery(event)
   const branchId = typeof query.branchId === 'string' ? query.branchId : ''

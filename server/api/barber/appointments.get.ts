@@ -1,13 +1,12 @@
 import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
-import { getAuthUser } from '~/server/utils/permissions'
+import { requireRole } from '~/server/utils/permissions'
 import { badRequest } from '~/server/utils/errors'
 
 const rangePresets = new Set(['week', 'month'])
 
 export default defineEventHandler(async (event) => {
-  const u = getAuthUser(event)
-  if (u.role !== 'BARBER') return []
+  const u = requireRole(event, ['BARBER'])
 
   const query = getQuery(event)
   const range = String(query.range || 'week')

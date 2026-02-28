@@ -1,18 +1,14 @@
 import { defineEventHandler, getRouterParam } from 'h3'
 
 import prisma from '~/server/utils/prisma'
-import { getAuthUser } from '~/server/utils/permissions'
+import { requireRole } from '~/server/utils/permissions'
 import { forbidden } from '~/server/utils/errors'
 
 // Returns last 3 appointments for a client.
 // BARBER can only access if the client has at least one appointment assigned to them.
 export default defineEventHandler(async (event) => {
-  const u = getAuthUser(event)
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER', 'BARBER'])
   const clientId = getRouterParam(event, 'id')
-
-  if (u.role !== 'OWNER' && u.role !== 'ADMIN' && u.role !== 'MANAGER' && u.role !== 'BARBER') {
-    forbidden('Forbidden')
-  }
 
   if (u.role === 'BARBER') {
     const canSee = await prisma.appointment.findFirst({

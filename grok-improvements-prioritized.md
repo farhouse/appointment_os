@@ -35,12 +35,13 @@ Objetivo: quedarnos con un backlog **realista y ejecutable** (sin ruido), para c
 - **Acceptance:** ningún texto UI hardcodeado en ese bloque.
 - **Done commit:** `0a1e001`
 
-### 5) Normalize role checks with requireRole
+### 5) Normalize role checks with requireRole ✅ DONE
 - **Severity:** Medium
 - **Problema:** mezcla de checks manuales y `requireRole`.
 - **Expected fix:** unificar en `requireRole` en endpoints relevantes.
-- **Files (start):** `server/api/barber/appointments.get.ts`, `server/api/barber/finances.get.ts`, otros con checks manuales.
+- **Files (normalized):** `server/api/barber/appointments.get.ts`, `server/api/barber/finances.get.ts`, `server/api/barber/clients/[id]/recent.get.ts`, `server/api/dashboard/summary.get.ts`, `server/api/appointments/[id]/status.patch.ts`, `server/api/client/appointments.get.ts`
 - **Acceptance:** patrón homogéneo de autorización en APIs.
+- **Done commit:** (pending)
 
 ### 6) Clarify client endpoints behavior when client profile missing
 - **Severity:** Medium

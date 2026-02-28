@@ -1,7 +1,7 @@
 import { defineEventHandler } from 'h3'
 import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
-import { getAuthUser } from '~/server/utils/permissions'
+import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated, requireParam } from '~/server/utils/http'
 import { badRequest, forbidden, notFound } from '~/server/utils/errors'
 import { paymentMethodOrder, resolvePaymentMedium } from '~/server/utils/paymentMethods'
@@ -15,14 +15,9 @@ const statusSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const u = getAuthUser(event)
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
   const id = requireParam(event, 'id')
   const validation = await readBodyValidated(event, statusSchema)
-
-  // Only manager roles can update status.
-  if (u.role !== 'OWNER' && u.role !== 'ADMIN' && u.role !== 'MANAGER') {
-    forbidden('Forbidden')
-  }
 
   if (validation.status !== 'PAID') {
     try {
