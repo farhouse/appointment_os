@@ -56,7 +56,7 @@ Objetivo: quedarnos con un backlog **realista y ejecutable** (sin ruido), para c
 - **Expected fix:** flujo más seguro (migrate deploy en normal path, flag explícito para reset).
 - **Files:** `docker-compose.yml`, docs dev setup
 - **Acceptance:** levantar dev no implica potencial pérdida accidental por default.
-- **Done commit:** TBD
+- **Done commit:** `5c74f31`
 
 ### 8) Add visual conflict hint in calendar (optional UX hardening) ✅ DONE
 - **Severity:** Medium

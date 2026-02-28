@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "seed": "ts-node --esm prisma/seed.ts"
+    "seed": "ts-node --esm prisma/seed.ts",
+    "sanity": "ts-node scripts/sanity.ts"
   },
   "dependencies": {
     "@nuxt/ui": "^4.4.0",
