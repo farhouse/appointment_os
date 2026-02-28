@@ -58,9 +58,13 @@ export default defineEventHandler(async (event) => {
      })
      if (!appointment) notFound('Appointment not found')
 
-     if (appointment.status !== 'FINISHED') {
-       badRequest('Appointment must be finished to mark as paid')
-     }
+      if (appointment.status !== 'FINISHED') {
+        badRequest('Appointment must be finished to mark as paid')
+      }
+
+      if (appointment.status === 'PAID') {
+        badRequest('Appointment already paid')
+      }
 
      const computedAmount = appointment.services.reduce((acc: number, service: { price: unknown }) => acc + Number(service.price), 0)
      const finalAmount = validation.amount ?? computedAmount
