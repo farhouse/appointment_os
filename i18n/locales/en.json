@@ -232,6 +232,7 @@
       "next": "Next"
     },
     "confirmMove": "Are you sure about this change?",
+    "confirmMoveConflict": "This change may conflict with another appointment. Confirm anyway?",
     "moveSuccess": "Appointment moved",
     "moveError": "Failed to move appointment",
     "eventAlert": "Event:",

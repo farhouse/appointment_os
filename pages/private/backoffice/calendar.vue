@@ -193,6 +193,10 @@ async function loadPaymentMedia() {
   }
 }
 
+function overlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
+  return aStart < bEnd && aEnd > bStart
+}
+
 const payMediaOptions = computed(() => paymentMedia.value.filter(m => m.method === payForm.paymentMethod))
 
 watch(() => payForm.paymentMethod, (method) => {
@@ -321,14 +325,28 @@ function getEventPayload(event: VueCalEvent, schedule?: string) {
 
 async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent; originalEvent?: VueCalEvent }) {
   if (!event?.id) return
-  if (!confirm(t('calendar.confirmMove'))) {
-    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
-    return
-  }
-
   const schedule = (event as any)?.schedule
   const payload = getEventPayload(event, schedule)
   if (!payload) return
+
+  // Check for potential conflicts if professional is assigned
+  let hasConflict = false
+  if (schedule) {
+    const conflictingEvents = calendarEvents.value.filter(e =>
+      e.id !== event.id &&
+      e.extendedProps?.status &&
+      !['CANCELED', 'NO_SHOW'].includes(e.extendedProps.status) &&
+      (e as any).schedule === schedule &&
+      overlap(new Date(event.start), new Date(event.end), new Date(e.start), new Date(e.end))
+    )
+    hasConflict = conflictingEvents.length > 0
+  }
+
+  const confirmMessage = hasConflict ? t('calendar.confirmMoveConflict') : t('calendar.confirmMove')
+  if (!confirm(confirmMessage)) {
+    if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+    return
+  }
 
   try {
     await $fetch(`/api/appointments/${event.id}/move`, {
