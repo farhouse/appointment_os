@@ -484,7 +484,7 @@ async function submitBooking() {
                 : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'"
               @click="serviceId = s.id"
             >
-              {{ s.name }}
+              {{ s.name }} · {{ s.duration }} min
             </button>
           </div>
           <p v-if="!services.length && !loadingServices" class="mt-2 text-xs text-gray-500">
