@@ -416,9 +416,9 @@ async function submitBooking() {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
     <!-- Left column: details + contact (on large screens, contact sits under details) -->
-    <div class="lg:col-span-1 space-y-4">
+    <div class="lg:col-span-2 space-y-4">
       <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
         <h2 v-if="!hideDetailsTitle" class="font-semibold mb-3">{{ $t('booking.details') }}</h2>
 
@@ -430,19 +430,19 @@ async function submitBooking() {
           </span>
         </div>
         <div class="mt-2" role="radiogroup" :aria-label="$t('booking.branch')">
-          <div class="flex flex-wrap gap-2">
+          <div class="space-y-2">
             <button
               type="button"
               role="radio"
               :aria-checked="!branchId"
               :disabled="loadingBranches"
-              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              class="w-full rounded-lg border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               :class="!branchId
                 ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
                 : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
               @click="branchId = ''"
             >
-              {{ $t('booking.selectBranch') }}
+              <div class="text-sm font-medium">{{ $t('booking.selectBranch') }}</div>
             </button>
             <button
               v-for="b in branches"
@@ -451,13 +451,20 @@ async function submitBooking() {
               role="radio"
               :aria-checked="branchId === b.id"
               :disabled="loadingBranches"
-              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              class="w-full rounded-lg border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               :class="branchId === b.id
                 ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
                 : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'"
               @click="branchId = b.id"
             >
-              {{ b.address ? `${b.name} — ${b.address}` : b.name }}
+              <div class="text-sm font-semibold leading-tight">{{ b.name }}</div>
+              <div
+                v-if="b.address"
+                class="text-xs"
+                :class="branchId === b.id ? 'text-white/80' : 'text-gray-500'"
+              >
+                {{ b.address }}
+              </div>
             </button>
           </div>
           <p v-if="!branches.length && !loadingBranches" class="mt-2 text-xs text-gray-500">
@@ -653,7 +660,7 @@ async function submitBooking() {
     </div>
 
     <!-- Right column: slots -->
-    <div class="lg:col-span-2 space-y-4">
+    <div class="lg:col-span-3 space-y-4">
       <div v-if="detailsComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="slotsEl">
         <div class="flex items-center justify-between gap-3 flex-wrap">
           <h2 class="font-semibold">{{ $t('booking.slots') }}</h2>
