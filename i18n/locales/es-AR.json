@@ -207,10 +207,9 @@
          "disabled": "Deshabilitadas",
          "notConfigured": "No configurado",
          "whatsappTemplateTitle": "Template WhatsApp (turnos)",
-          "whatsappPlaceholders": "Placeholders disponibles: {nombre}, {fecha}, {sucursal}.",
+          "whatsappPlaceholders": "Placeholders disponibles: {name}, {date}, {branch}.",
          "saveWhatsappTemplate": "Guardar template WhatsApp",
          "testEmailTitle": "Enviar email de prueba",
-         "testEmailPlaceholder": "correo@dominio.com",
          "sendTestEmail": "Enviar email de prueba",
          "testEmailSent": "Email de prueba enviado.",
          "testEmailError": "No se pudo enviar.",
@@ -583,8 +582,13 @@
         "deleted": "Servicio eliminado"
       }
     }
-  },
-  "setup": {
+   },
+   "placeholder": {
+     "name": "nombre",
+     "date": "fecha",
+     "branch": "sucursal"
+   },
+   "setup": {
     "title": "Configuración inicial",
     "subtitle": "Creá el primer usuario OWNER para empezar a usar la app.",
     "name": "Nombre",

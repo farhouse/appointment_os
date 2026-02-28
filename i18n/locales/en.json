@@ -210,7 +210,6 @@
           "whatsappPlaceholders": "Available placeholders: {name}, {date}, {branch}.",
          "saveWhatsappTemplate": "Save WhatsApp template",
          "testEmailTitle": "Send test email",
-         "testEmailPlaceholder": "email@domain.com",
          "sendTestEmail": "Send test email",
          "testEmailSent": "Test email sent.",
          "testEmailError": "Could not send.",
@@ -583,8 +582,13 @@
         "deleted": "Service deleted"
       }
     }
-  },
-  "setup": {
+   },
+   "placeholder": {
+     "name": "name",
+     "date": "date",
+     "branch": "branch"
+   },
+   "setup": {
     "title": "Initial setup",
     "subtitle": "Create the first OWNER user to start using the app.",
     "name": "Name",
