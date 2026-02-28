@@ -28,6 +28,11 @@ const emailTestLoading = ref(false)
 const emailTestMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const emailTestTarget = ref('')
 
+const whatsappTemplate = ref('')
+const whatsappTemplateLoading = ref(false)
+const whatsappTemplateSaving = ref(false)
+const whatsappTemplateMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+
 async function loadEmailStatus() {
   emailStatusLoading.value = true
   emailStatusError.value = ''
@@ -63,8 +68,38 @@ async function sendTestEmail() {
   }
 }
 
+async function loadWhatsappTemplate() {
+  whatsappTemplateLoading.value = true
+  whatsappTemplateMessage.value = null
+  try {
+    const response = await $fetch('/api/settings/whatsapp-template')
+    whatsappTemplate.value = response?.template || ''
+  } catch (e: any) {
+    whatsappTemplateMessage.value = { type: 'error', text: e?.data?.statusMessage || 'No se pudo cargar template de WhatsApp.' }
+  } finally {
+    whatsappTemplateLoading.value = false
+  }
+}
+
+async function saveWhatsappTemplate() {
+  if (!whatsappTemplate.value.trim()) return
+  whatsappTemplateSaving.value = true
+  whatsappTemplateMessage.value = null
+  try {
+    await $fetch('/api/settings/whatsapp-template', {
+      method: 'PATCH',
+      body: { template: whatsappTemplate.value }
+    })
+    whatsappTemplateMessage.value = { type: 'success', text: 'Template de WhatsApp guardado.' }
+  } catch (e: any) {
+    whatsappTemplateMessage.value = { type: 'error', text: e?.data?.statusMessage || 'No se pudo guardar template de WhatsApp.' }
+  } finally {
+    whatsappTemplateSaving.value = false
+  }
+}
+
 onMounted(() => {
-  void loadEmailStatus()
+  void Promise.all([loadEmailStatus(), loadWhatsappTemplate()])
 })
 </script>
 
@@ -114,21 +149,41 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="mt-4 border-t border-gray-200 pt-4">
-        <div class="text-sm font-semibold text-gray-900">Enviar email de prueba</div>
-        <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-          <input
-            v-model="emailTestTarget"
-            type="email"
-            class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            placeholder="correo@dominio.com"
+      <div class="mt-4 border-t border-gray-200 pt-4 space-y-4">
+        <div>
+          <div class="text-sm font-semibold text-gray-900">Template WhatsApp (turnos)</div>
+          <div class="text-xs text-gray-500">Placeholders disponibles: <span v-pre>{{nombre}}</span>, <span v-pre>{{fecha}}</span>, <span v-pre>{{sucursal}}</span>.</div>
+          <textarea
+            v-model="whatsappTemplate"
+            class="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm min-h-[96px]"
+            :disabled="whatsappTemplateLoading"
           />
-          <UButton color="primary" :disabled="!emailTestTarget.trim()" :loading="emailTestLoading" @click="sendTestEmail">
-            Enviar email de prueba
-          </UButton>
+          <div class="mt-2 flex justify-end">
+            <UButton color="primary" :loading="whatsappTemplateSaving" :disabled="!whatsappTemplate.trim()" @click="saveWhatsappTemplate">
+              Guardar template WhatsApp
+            </UButton>
+          </div>
+          <div v-if="whatsappTemplateMessage" class="mt-2 text-xs" :class="whatsappTemplateMessage.type === 'success' ? 'text-green-700' : 'text-red-600'">
+            {{ whatsappTemplateMessage.text }}
+          </div>
         </div>
-        <div v-if="emailTestMessage" class="mt-2 text-xs" :class="emailTestMessage.type === 'success' ? 'text-green-700' : 'text-red-600'">
-          {{ emailTestMessage.text }}
+
+        <div class="border-t border-gray-200 pt-4">
+          <div class="text-sm font-semibold text-gray-900">Enviar email de prueba</div>
+          <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+            <input
+              v-model="emailTestTarget"
+              type="email"
+              class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              placeholder="correo@dominio.com"
+            />
+            <UButton color="primary" :disabled="!emailTestTarget.trim()" :loading="emailTestLoading" @click="sendTestEmail">
+              Enviar email de prueba
+            </UButton>
+          </div>
+          <div v-if="emailTestMessage" class="mt-2 text-xs" :class="emailTestMessage.type === 'success' ? 'text-green-700' : 'text-red-600'">
+            {{ emailTestMessage.text }}
+          </div>
         </div>
       </div>
     </div>

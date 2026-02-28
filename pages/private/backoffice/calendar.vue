@@ -78,6 +78,8 @@ watch(locale, () => {
 // Keep calendar fresh: new appointments can be created from other tabs/pages.
 let refreshTimer: any
 onMounted(() => {
+  void loadWhatsappTemplate()
+
   refreshTimer = setInterval(() => {
     if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
   }, 15000)
@@ -118,12 +120,22 @@ const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
 const selectedEvent = ref<any | null>(null)
 const detailModalOpen = ref(false)
+const whatsappTemplate = ref('Hola {{nombre}}, te recordamos tu turno para el {{fecha}}. {{sucursal}}')
 
 const selectedClientPhone = computed(() => {
   const raw = selectedEvent.value?.extendedProps?.client?.phone
   if (!raw) return ''
   return String(raw).trim()
 })
+
+async function loadWhatsappTemplate() {
+  try {
+    const response = await $fetch('/api/settings/whatsapp-template')
+    if (response?.template) whatsappTemplate.value = response.template
+  } catch {
+    // keep default template
+  }
+}
 
 function buildWhatsappMessage(template?: string) {
   const clientName = selectedEvent.value?.extendedProps?.client?.firstName || 'cliente'
@@ -143,8 +155,7 @@ function buildWhatsappMessage(template?: string) {
 const whatsappHref = computed(() => {
   const phone = selectedClientPhone.value.replace(/\D/g, '')
   if (!phone) return ''
-  const template = useRuntimeConfig().public.whatsappAppointmentMessageTemplate as string | undefined
-  const message = encodeURIComponent(buildWhatsappMessage(template))
+  const message = encodeURIComponent(buildWhatsappMessage(whatsappTemplate.value))
   return `https://wa.me/${phone}?text=${message}`
 })
 const payModalOpen = ref(false)

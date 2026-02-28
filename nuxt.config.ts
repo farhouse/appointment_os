@@ -12,11 +12,6 @@ export default defineNuxtConfig({
     preference: 'light',
     fallback: 'light'
   },
-  runtimeConfig: {
-    public: {
-      whatsappAppointmentMessageTemplate: process.env.WHATSAPP_APPOINTMENT_MESSAGE_TEMPLATE || 'Hola {{nombre}}, te recordamos tu turno para el {{fecha}}. {{sucursal}}'
-    }
-  },
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'es-AR',
