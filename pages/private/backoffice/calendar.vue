@@ -125,11 +125,26 @@ const selectedClientPhone = computed(() => {
   return String(raw).trim()
 })
 
+function buildWhatsappMessage(template?: string) {
+  const clientName = selectedEvent.value?.extendedProps?.client?.firstName || 'cliente'
+  const branchName = selectedEvent.value?.extendedProps?.branch?.name || ''
+  const start = selectedEvent.value?.start
+  const dateText = start ? new Date(start).toLocaleString('es-AR') : ''
+
+  const raw = (template || 'Hola {{nombre}}, te recordamos tu turno para el {{fecha}}. {{sucursal}}').trim()
+  return raw
+    .replaceAll('{{nombre}}', clientName)
+    .replaceAll('{{fecha}}', dateText)
+    .replaceAll('{{sucursal}}', branchName ? `Sucursal: ${branchName}` : '')
+    .replaceAll('  ', ' ')
+    .trim()
+}
+
 const whatsappHref = computed(() => {
   const phone = selectedClientPhone.value.replace(/\D/g, '')
   if (!phone) return ''
-  const clientName = selectedEvent.value?.extendedProps?.client?.firstName || ''
-  const message = encodeURIComponent(`Hola ${clientName}, te escribimos de Barber OS por tu turno.`)
+  const template = useRuntimeConfig().public.whatsappAppointmentMessageTemplate as string | undefined
+  const message = encodeURIComponent(buildWhatsappMessage(template))
   return `https://wa.me/${phone}?text=${message}`
 })
 const payModalOpen = ref(false)
