@@ -82,7 +82,7 @@ Objetivo: quedarnos con un backlog **realista y ejecutable** (sin ruido), para c
   - avoid duplicate payment
 - **Files:** `scripts/sanity.ts`, `package.json`, `README.md`
 - **Acceptance:** suite mínima detecta regresiones de caja/pagos.
-- **Done commit:** (pending)
+- **Done commit:** `8402f90`
 
 ---
 
