@@ -43,6 +43,9 @@ export default defineEventHandler(async (event) => {
       professional: {
         select: { id: true, name: true }
       },
+      branch: {
+        select: { id: true, name: true }
+      },
       services: {
         select: {
           price: true,
