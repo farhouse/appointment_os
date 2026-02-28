@@ -33,13 +33,38 @@ export default defineEventHandler(async (event) => {
     badRequest('endTime must be after startTime')
   }
 
-  try {
-    const appointment = await prisma.appointment.update({
-      where: { id },
-      data: validation
-    })
-    return appointment
-  } catch (e) {
+  // Fetch current appointment to get branchId and current professionalId
+  const currentAppointment = await prisma.appointment.findUnique({
+    where: { id },
+    select: { branchId: true, professionalId: true }
+  })
+  if (!currentAppointment) {
     notFound('Appointment not found')
   }
+
+  const professionalId = validation.professionalId || currentAppointment.professionalId
+  const branchId = currentAppointment.branchId
+
+  // Check for overlapping appointments if professional is assigned
+  if (professionalId) {
+    const overlapping = await prisma.appointment.findFirst({
+      where: {
+        id: { not: id },
+        professionalId,
+        branchId,
+        status: { notIn: ['CANCELED', 'NO_SHOW'] },
+        startTime: { lt: end },
+        endTime: { gt: start }
+      }
+    })
+    if (overlapping) {
+      badRequest('Appointment overlaps with an existing appointment for this professional')
+    }
+  }
+
+  const appointment = await prisma.appointment.update({
+    where: { id },
+    data: validation
+  })
+  return appointment
 })

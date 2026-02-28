@@ -9,6 +9,22 @@ export default defineEventHandler(async (event) => {
   requireRole(event, ['ADMIN', 'MANAGER'])
   const { serviceIds, ...data } = await readBodyValidated(event, appointmentSchema)
 
+  // Check for overlapping appointments if professional is assigned
+  if (data.professionalId) {
+    const overlapping = await prisma.appointment.findFirst({
+      where: {
+        professionalId: data.professionalId,
+        branchId: data.branchId,
+        status: { notIn: ['CANCELED', 'NO_SHOW'] },
+        startTime: { lt: new Date(data.endTime) },
+        endTime: { gt: new Date(data.startTime) }
+      }
+    })
+    if (overlapping) {
+      badRequest('Appointment overlaps with an existing appointment for this professional')
+    }
+  }
+
   // Fetch services to get current price and duration
   const services = await prisma.service.findMany({
     where: { id: { in: serviceIds } }
