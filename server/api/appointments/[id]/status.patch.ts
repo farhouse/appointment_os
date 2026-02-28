@@ -36,98 +36,99 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  if (!validation.cashBoxId) {
-    badRequest('cashBoxId required')
-  }
+   if (!validation.cashBoxId) {
+     badRequest('cashBoxId required')
+   }
 
-  const appointment = await prisma.appointment.findUnique({
-    where: { id },
-    include: { services: true }
-  })
-  if (!appointment) notFound('Appointment not found')
+   const cashBox = await prisma.cashBox.findFirst({
+     where: { id: validation.cashBoxId, active: true }
+   })
+   if (!cashBox) badRequest('Invalid cashBoxId')
 
-  const cashBox = await prisma.cashBox.findFirst({
-    where: { id: validation.cashBoxId, active: true }
-  })
-  if (!cashBox) badRequest('Invalid cashBoxId')
+   const paymentMethod = validation.paymentMethod ?? 'CASH'
+   const paymentMedium = await resolvePaymentMedium(prisma, paymentMethod, validation.paymentMediumId)
+   if (!paymentMedium) {
+     badRequest('Payment medium disabled or invalid')
+   }
 
-  const computedAmount = appointment.services.reduce((acc: number, service: { price: unknown }) => acc + Number(service.price), 0)
-  const finalAmount = validation.amount ?? computedAmount
+   const result = await prisma.$transaction(async (tx) => {
+     const appointment = await tx.appointment.findUnique({
+       where: { id },
+       include: { services: true }
+     })
+     if (!appointment) notFound('Appointment not found')
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+     if (appointment.status !== 'FINISHED') {
+       badRequest('Appointment must be finished to mark as paid')
+     }
 
-  const paymentMethod = validation.paymentMethod ?? 'CASH'
-  const paymentMedium = await resolvePaymentMedium(prisma, paymentMethod, validation.paymentMediumId)
-  if (!paymentMedium) {
-    badRequest('Payment medium disabled or invalid')
-  }
+     const computedAmount = appointment.services.reduce((acc: number, service: { price: unknown }) => acc + Number(service.price), 0)
+     const finalAmount = validation.amount ?? computedAmount
 
-  const result = await prisma.$transaction(async (tx: typeof prisma) => {
-    const session = await tx.cashSession.findFirst({
-      where: {
-        branchId: appointment.branchId,
-        closingTime: null
-      }
-    })
+     const session = await tx.cashSession.findFirst({
+       where: {
+         branchId: appointment.branchId,
+         closingTime: null
+       }
+     })
 
-    if (!session) {
-      badRequest('Open cash session required')
-    }
+     if (!session) {
+       badRequest('Open cash session required')
+     }
 
-    const updatedAppointment = await tx.appointment.update({
-      where: { id },
-      data: {
-        status: 'PAID',
-        paidAt: new Date(),
-        paidById: u.userId,
-        paidCashBoxId: validation.cashBoxId,
-        paidPaymentMethod: paymentMethod,
-        paidPaymentMediumId: paymentMedium.id,
-        paidAmount: finalAmount
-      }
-    })
+     const updatedAppointment = await tx.appointment.update({
+       where: { id },
+       data: {
+         status: 'PAID',
+         paidAt: new Date(),
+         paidById: u.userId,
+         paidCashBoxId: validation.cashBoxId,
+         paidPaymentMethod: paymentMethod,
+         paidPaymentMediumId: paymentMedium.id,
+         paidAmount: finalAmount
+       }
+     })
 
-    if (updatedAppointment.clientId && finalAmount > 0) {
-      const existingLedger = await tx.loyaltyLedger.findFirst({
-        where: { appointmentId: updatedAppointment.id } as any
-      })
-      if (!existingLedger) {
-        // Prefer service-configured points reward. Fallback: amount-based heuristic.
-        const aptWithServices = await tx.appointment.findUnique({
-          where: { id: updatedAppointment.id },
-          include: { services: { include: { service: true } } }
-        })
+     if (updatedAppointment.clientId && finalAmount > 0) {
+       const existingLedger = await tx.loyaltyLedger.findFirst({
+         where: { appointmentId: updatedAppointment.id } as any
+       })
+       if (!existingLedger) {
+         // Prefer service-configured points reward. Fallback: amount-based heuristic.
+         const aptWithServices = await tx.appointment.findUnique({
+           where: { id: updatedAppointment.id },
+           include: { services: { include: { service: true } } }
+         })
 
-        const servicePoints = (aptWithServices?.services || []).reduce((acc: number, s: any) => acc + (s.service?.pointsReward || 0), 0)
-        const points = servicePoints > 0 ? servicePoints : Math.floor(Number(finalAmount) / 1000)
+         const servicePoints = (aptWithServices?.services || []).reduce((acc: number, s: any) => acc + (s.service?.pointsReward || 0), 0)
+         const points = servicePoints > 0 ? servicePoints : Math.floor(Number(finalAmount) / 1000)
 
-        if (points > 0) {
-          await tx.loyaltyLedger.create({
-            data: {
-              clientId: updatedAppointment.clientId,
-              appointmentId: updatedAppointment.id,
-              points,
-              reason: `APPOINTMENT: ${updatedAppointment.id}`
-            } as any
-          })
-        }
-      }
-    }
+         if (points > 0) {
+           await tx.loyaltyLedger.create({
+             data: {
+               clientId: updatedAppointment.clientId,
+               appointmentId: updatedAppointment.id,
+               points,
+               reason: `APPOINTMENT: ${updatedAppointment.id}`
+             } as any
+           })
+         }
+       }
+     }
 
-    await tx.cashMovement.create({
-      data: {
-        sessionId: session.id,
-        appointmentId: id,
-        amount: finalAmount,
-        type: 'DEPOSIT',
-        paymentMethod,
-        paymentMediumId: paymentMedium.id
-      }
-    })
+     await tx.cashMovement.create({
+       data: {
+         sessionId: session.id,
+         appointmentId: id,
+         amount: finalAmount,
+         type: 'DEPOSIT',
+         paymentMethod,
+         paymentMediumId: paymentMedium.id
+       }
+     })
 
-    return updatedAppointment
-  })
+     return updatedAppointment
+   })
 
   return result
 })
