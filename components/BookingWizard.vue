@@ -432,19 +432,6 @@ async function submitBooking() {
         <div class="mt-2" role="radiogroup" :aria-label="$t('booking.branch')">
           <div class="space-y-2">
             <button
-              type="button"
-              role="radio"
-              :aria-checked="!branchId"
-              :disabled="loadingBranches"
-              class="w-full rounded-lg border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              :class="!branchId
-                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
-              @click="branchId = ''"
-            >
-              <div class="text-sm font-medium">{{ $t('booking.selectBranch') }}</div>
-            </button>
-            <button
               v-for="b in branches"
               :key="b.id"
               type="button"
@@ -485,19 +472,6 @@ async function submitBooking() {
         <div class="mt-2" role="radiogroup" :aria-label="$t('booking.service')">
           <div class="flex flex-wrap gap-2">
             <button
-              type="button"
-              role="radio"
-              :aria-checked="!serviceId"
-              :disabled="loadingServices"
-              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              :class="!serviceId
-                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
-              @click="serviceId = ''"
-            >
-              {{ $t('booking.selectService') }}
-            </button>
-            <button
               v-for="s in services"
               :key="s.id"
               type="button"
@@ -527,19 +501,6 @@ async function submitBooking() {
         </div>
         <div class="mt-2" role="radiogroup" :aria-label="$t('booking.barber')">
           <div class="flex flex-wrap gap-2">
-            <button
-              type="button"
-              role="radio"
-              :aria-checked="!barberId"
-              :disabled="!branchId || loadingBarbers"
-              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              :class="!barberId
-                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
-              @click="barberId = ''"
-            >
-              {{ $t('booking.selectBarber') }}
-            </button>
             <button
               v-for="b in barbers"
               :key="b.id"
