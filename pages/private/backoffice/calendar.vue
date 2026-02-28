@@ -11,6 +11,7 @@ definePageMeta({
 const { selectedBranchId } = useSelectedBranch()
 
 const { locale, t } = useI18n()
+const { statusLabel } = useAppointmentStatus()
 const toast = useToast()
 
 const calendarView = ref<VueCalView | null>(null)
@@ -371,7 +372,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         <div class="mt-4 space-y-3 text-sm">
           <div class="text-gray-700">
             <span class="font-medium">{{ $t('calendar.status') }}</span>
-            {{ selectedEvent?.extendedProps?.status }}
+            {{ statusLabel(selectedEvent?.extendedProps?.status) }}
           </div>
           <div v-if="selectedEvent?.extendedProps?.notes" class="text-sm">
             <div class="font-medium">Notas</div>
@@ -420,7 +421,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             :loading="isUpdatingStatus"
             @click="setAppointmentStatus('NO_SHOW')"
           >
-            No show
+            {{ $t('appointments.status.no_show') }}
           </UButton>
 
           <UButton
