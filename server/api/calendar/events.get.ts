@@ -76,10 +76,12 @@ export default defineEventHandler(async (event) => {
           phone: apt.client.phone,
           email: apt.client.email
         },
-        branch: {
-          id: apt.branch.id,
-          name: apt.branch.name
-        },
+        branch: apt.branch
+          ? {
+              id: apt.branch.id,
+              name: apt.branch.name
+            }
+          : null,
         professional: apt.professional ? { id: apt.professional.id, name: apt.professional.name } : null,
         services: apt.services.map(s => ({ id: s.service.id, name: s.service.name, price: s.price }))
       },
