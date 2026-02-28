@@ -72,9 +72,14 @@ const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading, isSwitching } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
 
+const managerBranchCount = computed(() => {
+  if (!isManager.value) return 0
+  return me.value?.branches?.length || 0
+})
+
 const showBranchSelector = computed(() => {
   if (isClient.value) return false
-  if (isManager.value) return branchOptions.value.length > 1
+  if (isManager.value) return managerBranchCount.value > 1
   return true
 })
 
