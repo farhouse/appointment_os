@@ -118,6 +118,20 @@ const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
 const selectedEvent = ref<any | null>(null)
 const detailModalOpen = ref(false)
+
+const selectedClientPhone = computed(() => {
+  const raw = selectedEvent.value?.extendedProps?.client?.phone
+  if (!raw) return ''
+  return String(raw).trim()
+})
+
+const whatsappHref = computed(() => {
+  const phone = selectedClientPhone.value.replace(/\D/g, '')
+  if (!phone) return ''
+  const clientName = selectedEvent.value?.extendedProps?.client?.firstName || ''
+  const message = encodeURIComponent(`Hola ${clientName}, te escribimos de Barber OS por tu turno.`)
+  return `https://wa.me/${phone}?text=${message}`
+})
 const payModalOpen = ref(false)
 const isConfirming = ref(false)
 const isUpdatingStatus = ref(false)
@@ -385,6 +399,18 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         </div>
 
         <div class="mt-4 flex justify-end gap-2 flex-wrap">
+          <UButton
+            v-if="whatsappHref"
+            :to="whatsappHref"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="success"
+            variant="outline"
+            icon="i-simple-icons-whatsapp"
+          >
+            WhatsApp
+          </UButton>
+
           <UButton variant="outline" @click="closeDetailModal">{{ $t('common.close') }}</UButton>
 
           <!-- Status transitions (manager/admin) -->
