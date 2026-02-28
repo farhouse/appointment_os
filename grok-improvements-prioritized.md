@@ -41,7 +41,7 @@ Objetivo: quedarnos con un backlog **realista y ejecutable** (sin ruido), para c
 - **Expected fix:** unificar en `requireRole` en endpoints relevantes.
 - **Files (normalized):** `server/api/barber/appointments.get.ts`, `server/api/barber/finances.get.ts`, `server/api/barber/clients/[id]/recent.get.ts`, `server/api/dashboard/summary.get.ts`, `server/api/appointments/[id]/status.patch.ts`, `server/api/client/appointments.get.ts`
 - **Acceptance:** patrón homogéneo de autorización en APIs.
-- **Done commit:** (pending)
+- **Done commit:** `0884ec5`
 
 ### 6) Clarify client endpoints behavior when client profile missing
 - **Severity:** Medium
