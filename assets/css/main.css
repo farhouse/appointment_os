@@ -2,6 +2,35 @@
 @import "@nuxt/ui";
 @import "./theme.css";
 
+/* Calendar appointment status colors (Vue Cal events) */
+.vuecal__event.status-pending {
+  background: #fef3c7 !important;
+  border-left: 4px solid #f59e0b !important;
+  color: #78350f !important;
+}
+
+.vuecal__event.status-confirmed,
+.vuecal__event.status-in_progress {
+  background: #dbeafe !important;
+  border-left: 4px solid #2563eb !important;
+  color: #1e3a8a !important;
+}
+
+.vuecal__event.status-finished,
+.vuecal__event.status-paid {
+  background: #dcfce7 !important;
+  border-left: 4px solid #16a34a !important;
+  color: #14532d !important;
+}
+
+.vuecal__event.status-canceled,
+.vuecal__event.status-cancelled,
+.vuecal__event.status-no_show {
+  background: #fee2e2 !important;
+  border-left: 4px solid #dc2626 !important;
+  color: #7f1d1d !important;
+}
+
 /* Custom scrollbars (used in booking timeline) */
 .scrollbar-nice {
   scrollbar-width: thin; /* Firefox */
