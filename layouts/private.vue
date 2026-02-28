@@ -72,6 +72,12 @@ const primaryBranchId = computed(() => me.value?.branches?.[0]?.branchId)
 const { selectedBranchId, branchOptions, isLoading, isSwitching } = useSelectedBranch(primaryBranchId)
 const { locale, locales } = useI18n()
 
+const showBranchSelector = computed(() => {
+  if (isClient.value) return false
+  if (isManager.value) return branchOptions.value.length > 1
+  return true
+})
+
 // Workaround: native <select disabled> attribute is getting stuck even after options load
 // (likely hydration/patching issue). Force-enable it once we have options.
 const branchSelectEl = ref<HTMLSelectElement | null>(null)
@@ -127,7 +133,7 @@ function localePrefix(code: string) {
 
       <main class="flex-1 p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div v-if="!isClient" class="flex items-center gap-2 text-sm">
+          <div v-if="showBranchSelector" class="flex items-center gap-2 text-sm">
             <label class="text-stone-600 dark:text-stone-300" for="branch-selector">{{ $t('branch.label') }}</label>
 
             <div class="flex items-center gap-2">
