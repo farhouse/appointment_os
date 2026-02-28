@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const query = getQuery(event)
   const branchId = typeof query.branchId === 'string' ? query.branchId : ''
+  const includeBranchBreakdown = query.includeBranchBreakdown === 'true'
 
   if (u.role === 'MANAGER' && !branchId) {
     forbidden('Forbidden')
@@ -21,61 +22,99 @@ export default defineEventHandler(async (event) => {
   const endOfDay = new Date(startOfDay)
   endOfDay.setHours(23, 59, 59, 999)
 
-  const branchFilter = branchId ? { branchId } : {}
+  async function summarizeForBranch(targetBranchId?: string) {
+    const filter = targetBranchId ? { branchId: targetBranchId } : {}
+
+    const [appointmentsToday, paidAppointmentsToday, openCashSessions, clientsServedTodayRaw] = await prisma.$transaction([
+      prisma.appointment.count({
+        where: {
+          ...filter,
+          startTime: { gte: startOfDay, lte: endOfDay },
+          status: { in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID'] }
+        }
+      }),
+      prisma.appointment.aggregate({
+        where: {
+          ...filter,
+          paidAt: { gte: startOfDay, lte: endOfDay },
+          status: 'PAID'
+        },
+        _sum: { paidAmount: true }
+      }),
+      prisma.cashSession.count({
+        where: {
+          ...filter,
+          closingTime: null
+        }
+      }),
+      prisma.appointment.findMany({
+        where: {
+          ...filter,
+          paidAt: { gte: startOfDay, lte: endOfDay },
+          status: 'PAID'
+        },
+        select: { clientId: true }
+      })
+    ])
+
+    const clientsServedToday = new Set(
+      clientsServedTodayRaw
+        .map(item => item.clientId)
+        .filter((id): id is string => Boolean(id))
+    ).size
+
+    const revenueToday = paidAppointmentsToday._sum.paidAmount ? Number(paidAppointmentsToday._sum.paidAmount) : 0
+    if (Number.isNaN(revenueToday)) {
+      badRequest('Invalid revenue')
+    }
+
+    return {
+      appointmentsToday,
+      revenueToday,
+      openCashSessions,
+      clientsServedToday
+    }
+  }
 
   const totalBranchesPromise = u.role === 'MANAGER'
     ? prisma.userBranch.count({ where: { userId: u.userId } })
     : prisma.branch.count()
 
-  const [appointmentsToday, paidAppointmentsToday, openCashSessions, clientsServedTodayRaw, totalBranches] = await prisma.$transaction([
-    prisma.appointment.count({
-      where: {
-        ...branchFilter,
-        startTime: { gte: startOfDay, lte: endOfDay },
-        status: { in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID'] }
-      }
-    }),
-    prisma.appointment.aggregate({
-      where: {
-        ...branchFilter,
-        paidAt: { gte: startOfDay, lte: endOfDay },
-        status: 'PAID'
-      },
-      _sum: { paidAmount: true }
-    }),
-    prisma.cashSession.count({
-      where: {
-        ...branchFilter,
-        closingTime: null
-      }
-    }),
-    prisma.appointment.findMany({
-      where: {
-        ...branchFilter,
-        paidAt: { gte: startOfDay, lte: endOfDay },
-        status: 'PAID'
-      },
-      select: { clientId: true }
-    }),
+  const [summary, totalBranches] = await Promise.all([
+    summarizeForBranch(branchId || undefined),
     totalBranchesPromise
   ])
 
-  const clientsServedToday = new Set(
-    clientsServedTodayRaw
-      .map(item => item.clientId)
-      .filter((id): id is string => Boolean(id))
-  ).size
+  let branchBreakdown: Array<{
+    branchId: string
+    branchName: string
+    appointmentsToday: number
+    revenueToday: number
+    openCashSessions: number
+    clientsServedToday: number
+  }> = []
 
-  const revenueToday = paidAppointmentsToday._sum.paidAmount ? Number(paidAppointmentsToday._sum.paidAmount) : 0
-  if (Number.isNaN(revenueToday)) {
-    badRequest('Invalid revenue')
+  if ((u.role === 'OWNER' || u.role === 'ADMIN') && includeBranchBreakdown) {
+    const branches = await prisma.branch.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' }
+    })
+
+    branchBreakdown = await Promise.all(
+      branches.map(async (branch) => {
+        const stats = await summarizeForBranch(branch.id)
+        return {
+          branchId: branch.id,
+          branchName: branch.name,
+          ...stats
+        }
+      })
+    )
   }
 
   return {
-    appointmentsToday,
-    revenueToday,
-    openCashSessions,
-    clientsServedToday,
-    totalBranches
+    ...summary,
+    totalBranches,
+    branchBreakdown
   }
 })

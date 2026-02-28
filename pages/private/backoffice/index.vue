@@ -17,12 +17,22 @@ const { selectedBranchId } = useSelectedBranch()
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
 const isManager = computed(() => me.value?.role === 'MANAGER')
 
+type BranchSummary = {
+  branchId: string
+  branchName: string
+  appointmentsToday: number
+  revenueToday: number
+  openCashSessions: number
+  clientsServedToday: number
+}
+
 type DashboardSummary = {
   appointmentsToday: number
   revenueToday: number
   openCashSessions: number
   clientsServedToday: number
   totalBranches: number
+  branchBreakdown?: BranchSummary[]
 }
 
 const summary = ref<DashboardSummary | null>(null)
@@ -62,6 +72,8 @@ const totalBranchesLabel = computed(() => {
   return numberFormatter.value.format(summary.value.totalBranches)
 })
 
+const branchBreakdown = computed(() => summary.value?.branchBreakdown || [])
+
 async function loadSummary() {
   errorMessage.value = ''
 
@@ -74,7 +86,13 @@ async function loadSummary() {
   isLoading.value = true
   try {
     const query = new URLSearchParams()
-    if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
+
+    if (isManager.value) {
+      if (selectedBranchId.value) query.set('branchId', selectedBranchId.value)
+    } else {
+      query.set('includeBranchBreakdown', 'true')
+    }
+
     const suffix = query.toString() ? `?${query.toString()}` : ''
     summary.value = await $fetch<DashboardSummary>(`/api/dashboard/summary${suffix}`)
   } catch (e: any) {
@@ -150,6 +168,41 @@ const shortcuts = computed(() => {
           <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.totalBranches') }}</div>
           <div class="mt-1 text-2xl font-semibold">{{ totalBranchesLabel }}</div>
           <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.totalBranchesHint') }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="isAdmin">
+      <div>
+        <h2 class="text-lg font-semibold">Resumen por sucursal</h2>
+        <p class="text-sm text-gray-600">Vista rápida por sucursal sin depender del selector.</p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2 xl:grid-cols-3">
+        <div
+          v-for="branch in branchBreakdown"
+          :key="branch.branchId"
+          class="rounded-lg border border-black/10 bg-white p-4 shadow-sm"
+        >
+          <div class="text-sm font-semibold text-gray-900">{{ branch.branchName }}</div>
+          <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <div class="text-gray-500">Turnos hoy</div>
+              <div class="font-semibold">{{ numberFormatter.format(branch.appointmentsToday) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-500">Facturación hoy</div>
+              <div class="font-semibold">{{ currencyFormatter.format(branch.revenueToday) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-500">Sesiones abiertas</div>
+              <div class="font-semibold">{{ numberFormatter.format(branch.openCashSessions) }}</div>
+            </div>
+            <div>
+              <div class="text-gray-500">Clientes hoy</div>
+              <div class="font-semibold">{{ numberFormatter.format(branch.clientsServedToday) }}</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
