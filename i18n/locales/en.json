@@ -129,6 +129,8 @@
           "openCashSessionsHint": "Cash sessions currently open.",
           "clientsServedToday": "Clients served today",
           "clientsServedTodayHint": "Distinct clients with paid appointments today.",
+          "totalBranches": "Total branches",
+          "totalBranchesHint": "Total number of registered branches.",
           "branchRequired": "Select a branch to see the summary."
         },
         "shortcuts": {

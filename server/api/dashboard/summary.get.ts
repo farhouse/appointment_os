@@ -23,7 +23,11 @@ export default defineEventHandler(async (event) => {
 
   const branchFilter = branchId ? { branchId } : {}
 
-  const [appointmentsToday, paidAppointmentsToday, openCashSessions, clientsServedTodayRaw] = await prisma.$transaction([
+  const totalBranchesPromise = u.role === 'MANAGER'
+    ? prisma.userBranch.count({ where: { userId: u.userId } })
+    : prisma.branch.count()
+
+  const [appointmentsToday, paidAppointmentsToday, openCashSessions, clientsServedTodayRaw, totalBranches] = await prisma.$transaction([
     prisma.appointment.count({
       where: {
         ...branchFilter,
@@ -52,7 +56,8 @@ export default defineEventHandler(async (event) => {
         status: 'PAID'
       },
       select: { clientId: true }
-    })
+    }),
+    totalBranchesPromise
   ])
 
   const clientsServedToday = new Set(
@@ -70,6 +75,7 @@ export default defineEventHandler(async (event) => {
     appointmentsToday,
     revenueToday,
     openCashSessions,
-    clientsServedToday
+    clientsServedToday,
+    totalBranches
   }
 })

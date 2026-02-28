@@ -22,6 +22,7 @@ type DashboardSummary = {
   revenueToday: number
   openCashSessions: number
   clientsServedToday: number
+  totalBranches: number
 }
 
 const summary = ref<DashboardSummary | null>(null)
@@ -53,6 +54,12 @@ const clientsServedTodayLabel = computed(() => {
   if (isLoading.value) return t('common.loading')
   if (!summary.value) return '—'
   return numberFormatter.value.format(summary.value.clientsServedToday)
+})
+
+const totalBranchesLabel = computed(() => {
+  if (isLoading.value) return t('common.loading')
+  if (!summary.value) return '—'
+  return numberFormatter.value.format(summary.value.totalBranches)
 })
 
 async function loadSummary() {
@@ -118,7 +125,7 @@ const shortcuts = computed(() => {
         <p class="text-sm text-gray-600">{{ $t('pages.private.manager.sections.overview.subtitle') }}</p>
         <p v-if="errorMessage" class="mt-2 text-sm text-rose-600">{{ errorMessage }}</p>
       </div>
-      <div class="grid grid-cols-1 gap-4 mt-4 md:grid-cols-4">
+      <div class="grid grid-cols-1 gap-4 mt-4" :class="isAdmin ? 'md:grid-cols-5' : 'md:grid-cols-4'">
         <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
           <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.appointmentsToday') }}</div>
           <div class="mt-1 text-2xl font-semibold">{{ appointmentsTodayLabel }}</div>
@@ -138,6 +145,11 @@ const shortcuts = computed(() => {
           <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.clientsServedToday') }}</div>
           <div class="mt-1 text-2xl font-semibold">{{ clientsServedTodayLabel }}</div>
           <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.clientsServedTodayHint') }}</div>
+        </div>
+        <div v-if="isAdmin" class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+          <div class="text-sm text-gray-600">{{ $t('pages.private.manager.stats.totalBranches') }}</div>
+          <div class="mt-1 text-2xl font-semibold">{{ totalBranchesLabel }}</div>
+          <div class="mt-2 text-xs text-gray-500">{{ $t('pages.private.manager.stats.totalBranchesHint') }}</div>
         </div>
       </div>
     </section>

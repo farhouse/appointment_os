@@ -129,6 +129,8 @@
           "openCashSessionsHint": "Cajas abiertas ahora mismo.",
           "clientsServedToday": "Clientes atendidos hoy",
           "clientsServedTodayHint": "Clientes únicos con turnos pagados hoy.",
+          "totalBranches": "Sucursales totales",
+          "totalBranchesHint": "Cantidad total de sucursales registradas.",
           "branchRequired": "Seleccioná una sucursal para ver el resumen."
         },
         "shortcuts": {
