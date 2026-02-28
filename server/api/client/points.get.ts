@@ -1,11 +1,12 @@
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { notFound } from '~/server/utils/errors'
 
 export default defineEventHandler(async (event) => {
   const u = requireRole(event, ['CLIENT'])
 
   const client = await prisma.client.findFirst({ where: { email: u.email || '' } })
-  if (!client) return { balance: 0, entries: [] }
+  if (!client) notFound('Client profile not found')
 
   const [entries, totals] = await prisma.$transaction([
     prisma.loyaltyLedger.findMany({

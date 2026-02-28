@@ -38,7 +38,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: sh -c "npm ci --include=dev && npx prisma generate && npx prisma db push --accept-data-loss && npx nuxi prepare && npm run dev -- --host 0.0.0.0"
+    command: sh -c "npm ci --include=dev && npx prisma generate && npx prisma db push && npx nuxi prepare && npm run dev -- --host 0.0.0.0"
 
   # PROD-like container (requires `npm run build` output inside image)
   app:

@@ -43,7 +43,7 @@ Open-source barber shop management system (MVP).
 
 Open http://localhost:3000
 
-## Docker (optional)
+## Docker (Production)
 
 1.  **Clone the repository:**
     ```bash
@@ -61,14 +61,14 @@ Open http://localhost:3000
 
 3.  **Run with Docker Compose:**
     ```bash
-    docker-compose up --build
+    docker-compose --profile prod up --build
     ```
     This will start the Postgres database and the Nuxt application.
 
 4.  **Seed Database (First Run):**
     Run the seed script to create initial data (Admin user, Branch, Service):
     ```bash
-    docker-compose exec app npx prisma db push
+    docker-compose exec app npx prisma migrate deploy
     docker-compose exec app npx prisma db seed
     ```
     
@@ -78,6 +78,33 @@ Open http://localhost:3000
 
 5.  **Access the App:**
     Open [http://localhost:3000](http://localhost:3000)
+
+## Docker (Development)
+
+For development with hot reload and file watching:
+
+1. **Run with dev profile:**
+   ```bash
+   docker-compose --profile dev up --build
+   ```
+   This starts the dev server with hot reload, Postgres, and syncs the database schema safely.
+
+2. **Database Schema Sync:**
+   The dev container runs `npx prisma db push` without `--accept-data-loss` for safety. If schema changes would cause data loss, the startup will fail to prevent accidental data loss.
+
+3. **Handling Schema Conflicts:**
+   If you encounter a schema sync failure due to potential data loss, you have two options:
+   - Review and adjust your schema changes to avoid data loss.
+   - If destructive reset is necessary, manually run:
+     ```bash
+     docker-compose exec app-dev npx prisma db push --accept-data-loss
+     ```
+     Then restart the dev container.
+
+4. **Seeding (First Run or Reset):**
+   ```bash
+   docker-compose exec app-dev npx prisma db seed
+   ```
 
 ## Development Setup (Local)
 
@@ -162,11 +189,17 @@ curl -i -b cookie.txt \
   'http://localhost:3000/api/calendar/events?start=2026-01-01T00:00:00.000Z&end=2026-01-08T00:00:00.000Z'
 ```
 
-## Tech Stack
+## Sanity Checks
 
-- **Framework:** Nuxt 3 (Vue 3)
-- **Database:** PostgreSQL
-- **ORM:** Prisma
-- **Validation:** Zod
-- **UI:** Tailwind CSS (via Nuxt UI)
-- **Calendar:** FullCalendar
+Automated sanity checks for critical cash/payment paths:
+
+```bash
+npm run sanity
+```
+
+**What it tests:**
+- Opening a cash session
+- Marking an appointment as PAID
+- Preventing duplicate payments
+
+**Expected outcome:** All checks pass with "✓ All sanity checks passed! Test data cleaned up." No test data is left in the database.

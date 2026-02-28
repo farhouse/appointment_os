@@ -43,21 +43,22 @@ Objetivo: quedarnos con un backlog **realista y ejecutable** (sin ruido), para c
 - **Acceptance:** patrón homogéneo de autorización en APIs.
 - **Done commit:** `0884ec5`
 
-### 6) Clarify client endpoints behavior when client profile missing
+### 6) Clarify client endpoints behavior when client profile missing ✅ DONE
 - **Severity:** Medium
 - **Problema:** algunos endpoints devuelven vacío silencioso cuando falta `Client`.
 - **Expected fix:** respuesta consistente (404/estado explícito) según regla de negocio.
 - **Files:** `server/api/client/appointments.get.ts`, `server/api/client/redeem.post.ts` (y similares)
 - **Acceptance:** comportamiento uniforme y predecible.
 
-### 7) Reduce dev data-loss risk in docker profile
+### 7) Reduce dev data-loss risk in docker profile ✅ DONE
 - **Severity:** Medium (Dev-only)
 - **Problema:** `db push --accept-data-loss` es riesgoso para entornos compartidos.
 - **Expected fix:** flujo más seguro (migrate deploy en normal path, flag explícito para reset).
 - **Files:** `docker-compose.yml`, docs dev setup
 - **Acceptance:** levantar dev no implica potencial pérdida accidental por default.
+- **Done commit:** TBD
 
-### 8) Add visual conflict hint in calendar (optional UX hardening)
+### 8) Add visual conflict hint in calendar (optional UX hardening) ✅ DONE
 - **Severity:** Medium
 - **Problema:** usuario no ve conflicto hasta guardar.
 - **Expected fix:** feedback visual si slot potencialmente conflictivo (sin reemplazar validación backend).
@@ -72,15 +73,16 @@ Objetivo: quedarnos con un backlog **realista y ejecutable** (sin ruido), para c
 - **Acceptance:** nomenclatura consistente en español/inglés.
 - **Done commit:** `91637b3`
 
-### 10) Add small automated sanity checks for critical cash/payment paths
+### 10) Add small automated sanity checks for critical cash/payment paths ✅ DONE
 - **Severity:** Medium
 - **Problema:** mucha lógica crítica sin red mínima.
 - **Expected fix:** tests básicos o script smoke para:
   - open cash session
   - mark appointment PAID
   - avoid duplicate payment
-- **Files:** tests/smoke scripts (según stack actual)
+- **Files:** `scripts/sanity.ts`, `package.json`, `README.md`
 - **Acceptance:** suite mínima detecta regresiones de caja/pagos.
+- **Done commit:** (pending)
 
 ---
 
