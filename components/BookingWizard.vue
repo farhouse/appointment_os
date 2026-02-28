@@ -429,12 +429,41 @@ async function submitBooking() {
             {{ $t('common.loading') }}
           </span>
         </div>
-        <select v-model="branchId" class="w-full rounded border px-3 py-2 bg-white" :disabled="loadingBranches">
-          <option value="">{{ $t('booking.selectBranch') }}</option>
-          <option v-for="b in branches" :key="b.id" :value="b.id">
-            {{ b.address ? `${b.name} — ${b.address}` : b.name }}
-          </option>
-        </select>
+        <div class="mt-2" role="radiogroup" :aria-label="$t('booking.branch')">
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              role="radio"
+              :aria-checked="!branchId"
+              :disabled="loadingBranches"
+              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :class="!branchId
+                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
+              @click="branchId = ''"
+            >
+              {{ $t('booking.selectBranch') }}
+            </button>
+            <button
+              v-for="b in branches"
+              :key="b.id"
+              type="button"
+              role="radio"
+              :aria-checked="branchId === b.id"
+              :disabled="loadingBranches"
+              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :class="branchId === b.id
+                ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
+                : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'"
+              @click="branchId = b.id"
+            >
+              {{ b.address ? `${b.name} — ${b.address}` : b.name }}
+            </button>
+          </div>
+          <p v-if="!branches.length && !loadingBranches" class="mt-2 text-xs text-gray-500">
+            {{ $t('booking.selectBranch') }}
+          </p>
+        </div>
 
         <div class="flex items-baseline justify-between gap-3 mt-3">
           <label class="block text-sm font-medium">{{ $t('booking.service') }}</label>
@@ -446,10 +475,41 @@ async function submitBooking() {
             <span v-if="servicePriceLabel" class="text-xs text-gray-600">{{ $t('booking.price') }}: {{ servicePriceLabel }}</span>
           </div>
         </div>
-        <select v-model="serviceId" class="w-full rounded border px-3 py-2 bg-white" :disabled="loadingServices">
-          <option value="">{{ $t('booking.selectService') }}</option>
-          <option v-for="s in services" :key="s.id" :value="s.id">{{ s.name }}</option>
-        </select>
+        <div class="mt-2" role="radiogroup" :aria-label="$t('booking.service')">
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              role="radio"
+              :aria-checked="!serviceId"
+              :disabled="loadingServices"
+              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :class="!serviceId
+                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
+              @click="serviceId = ''"
+            >
+              {{ $t('booking.selectService') }}
+            </button>
+            <button
+              v-for="s in services"
+              :key="s.id"
+              type="button"
+              role="radio"
+              :aria-checked="serviceId === s.id"
+              :disabled="loadingServices"
+              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :class="serviceId === s.id
+                ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
+                : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'"
+              @click="serviceId = s.id"
+            >
+              {{ s.name }}
+            </button>
+          </div>
+          <p v-if="!services.length && !loadingServices" class="mt-2 text-xs text-gray-500">
+            {{ $t('booking.selectService') }}
+          </p>
+        </div>
 
         <div class="flex items-center justify-between gap-3 mb-1 mt-3">
           <label class="block text-sm font-medium">{{ $t('booking.barber') }}</label>
@@ -458,10 +518,42 @@ async function submitBooking() {
             {{ $t('common.loading') }}
           </span>
         </div>
-        <select v-model="barberId" class="w-full rounded border px-3 py-2 bg-white" :disabled="!branchId || loadingBarbers">
-          <option value="">{{ $t('booking.selectBarber') }}</option>
-          <option v-for="b in barbers" :key="b.id" :value="b.id">{{ b.name }}</option>
-        </select>
+        <div class="mt-2" role="radiogroup" :aria-label="$t('booking.barber')">
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              role="radio"
+              :aria-checked="!barberId"
+              :disabled="!branchId || loadingBarbers"
+              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :class="!barberId
+                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'"
+              @click="barberId = ''"
+            >
+              {{ $t('booking.selectBarber') }}
+            </button>
+            <button
+              v-for="b in barbers"
+              :key="b.id"
+              type="button"
+              role="radio"
+              :aria-checked="barberId === b.id"
+              :disabled="!branchId || loadingBarbers"
+              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              :class="barberId === b.id
+                ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
+                : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'
+              "
+              @click="barberId = b.id"
+            >
+              {{ b.name }}
+            </button>
+          </div>
+          <p v-if="branchId && !barbers.length && !loadingBarbers" class="mt-2 text-xs text-gray-500">
+            {{ $t('booking.selectBarber') }}
+          </p>
+        </div>
 
         <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.date') }}</label>
         <div class="flex items-center gap-2">
