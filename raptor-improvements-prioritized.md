@@ -64,7 +64,7 @@ Objetivo: separar ruido de pendientes reales para ejecutar solo trabajo útil.
 - **Done commit:** `4863901`
  - **Estado:** ✅ hecho (commit: TBD)
 
-### 2) Validar sesión de caja abierta en flujo de cobro (UX + backend coherente)
+### 2) Validar sesión de caja abierta en flujo de cobro (UX + backend coherente) ✅ DONE
 - **Severidad:** High
 - **Problema:** modal de cobro puede dejarte intentar pagar y fallar tarde por sesión/caja.
 - **Fix recomendado:** precheck de sesión abierta por branch/cashbox + mensaje claro “Abrí caja primero”.

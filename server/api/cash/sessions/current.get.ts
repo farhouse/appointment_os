@@ -9,11 +9,17 @@ export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const branchId = requireQueryString(event, 'branchId')
   const includeMovements = q.includeMovements === 'true'
+  const cashBoxId = typeof q.cashBoxId === 'string' ? q.cashBoxId : undefined
 
   const session = await prisma.cashSession.findFirst({
     where: {
       branchId,
-      closingTime: null
+      closingTime: null,
+      ...(cashBoxId
+        ? {
+            OR: [{ cashBoxId }, { cashBoxId: null }]
+          }
+        : {})
     },
     include: {
       cashBox: true,

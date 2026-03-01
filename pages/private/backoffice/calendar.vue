@@ -166,6 +166,8 @@ const cashBoxes = ref<{ id: string; name: string }[]>([])
 const paymentMedia = ref<{ id: string; method: string; name: string; active: boolean }[]>([])
 const isPaying = ref(false)
 const payError = ref('')
+const hasOpenCashSession = ref(true)
+const isCheckingCashSession = ref(false)
 
 const payForm = reactive({
   cashBoxId: '',
@@ -202,6 +204,12 @@ const payMediaOptions = computed(() => paymentMedia.value.filter(m => m.method =
 watch(() => payForm.paymentMethod, (method) => {
   const first = paymentMedia.value.find(m => m.active && m.method === method)
   payForm.paymentMediumId = first?.id || ''
+})
+
+watch(() => payForm.cashBoxId, () => {
+  if (payModalOpen.value) {
+    void precheckOpenCashSession()
+  }
 })
 
 function openDetailModal(event: any) {
@@ -251,10 +259,12 @@ function openPayModal() {
   if (!selectedEvent.value) return
   payModalOpen.value = true
   payError.value = ''
+  hasOpenCashSession.value = true
   const totalPrice = Number(selectedEvent.value?.extendedProps?.totalPrice ?? 0)
   payForm.amount = Number.isFinite(totalPrice) ? totalPrice : 0
   if (!cashBoxes.value.length) void loadCashBoxes()
   if (!paymentMedia.value.length) void loadPaymentMedia()
+  void precheckOpenCashSession()
 }
 function closePayModal() {
   payModalOpen.value = false
@@ -263,12 +273,37 @@ function closePayModal() {
   payForm.cashBoxId = ''
   payForm.paymentMethod = 'CASH'
   payForm.paymentMediumId = ''
+  hasOpenCashSession.value = true
+}
+
+async function precheckOpenCashSession() {
+  const branchId = selectedBranchId.value
+  if (!branchId) return true
+  isCheckingCashSession.value = true
+  try {
+    const query = new URLSearchParams({ branchId })
+    if (payForm.cashBoxId) query.set('cashBoxId', payForm.cashBoxId)
+    const session = await $fetch(`/api/cash/sessions/current?${query.toString()}`)
+    const hasSession = Boolean(session)
+    hasOpenCashSession.value = hasSession
+    if (!hasSession) {
+      payError.value = 'Abrí caja primero'
+    }
+    return hasSession
+  } catch {
+    hasOpenCashSession.value = true
+    return true
+  } finally {
+    isCheckingCashSession.value = false
+  }
 }
 
 async function confirmPayment() {
   if (!selectedEvent.value?.id || !payForm.cashBoxId) return
-  isPaying.value = true
   payError.value = ''
+  const hasSession = await precheckOpenCashSession()
+  if (!hasSession) return
+  isPaying.value = true
   try {
     await $fetch(`/api/appointments/${selectedEvent.value.id}/status`, {
       method: 'PATCH',
@@ -560,7 +595,11 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 
         <div class="mt-4 flex justify-end gap-2">
           <UButton variant="outline" @click="closePayModal">{{ $t('common.cancel') }}</UButton>
-          <UButton color="primary" :disabled="!payForm.cashBoxId || !payForm.paymentMediumId || isPaying" @click="confirmPayment">
+          <UButton
+            color="primary"
+            :disabled="!payForm.cashBoxId || !payForm.paymentMediumId || isPaying || isCheckingCashSession || !hasOpenCashSession"
+            @click="confirmPayment"
+          >
             {{ $t('common.confirm') }}
           </UButton>
         </div>
