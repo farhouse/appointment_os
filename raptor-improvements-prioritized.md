@@ -72,6 +72,7 @@ Objetivo: separar ruido de pendientes reales para ejecutar solo trabajo útil.
   - `pages/private/backoffice/calendar.vue`
   - `server/api/cash/sessions/current.get.ts`
   - `server/api/appointments/[id]/status.patch.ts`
+- **Done commit:** `$HASH`
 
 ### 3) Unificar estrategia de horarios/timezone (booking vs calendar)
 - **Severidad:** Medium-High
