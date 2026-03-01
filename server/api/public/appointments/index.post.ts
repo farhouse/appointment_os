@@ -4,7 +4,7 @@ import prisma from '~/server/utils/prisma'
 import { sendBookingConfirmationEmail } from '~/server/utils/mailer'
 import { appointmentSchema } from '~/server/utils/schemas'
 import { readBodyValidated } from '~/server/utils/http'
-import { badRequest } from '~/server/utils/errors'
+import { badRequest, conflict } from '~/server/utils/errors'
 
 import crypto from 'node:crypto'
 
@@ -39,25 +39,42 @@ export default defineEventHandler(async (event) => {
   const confirmToken = crypto.randomUUID()
   const confirmTokenExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24h
 
-  const appointment = await prisma.appointment.create({
-    data: {
-      ...data,
-      status: 'PENDING',
-      confirmToken,
-      confirmTokenExpiresAt,
-      services: {
-        create: services.map(s => ({
-          serviceId: s.id,
-          price: s.price,
-          duration: s.duration
-        }))
+  const appointment = await prisma.$transaction(async (tx) => {
+    if (data.professionalId) {
+      const overlapping = await tx.appointment.findFirst({
+        where: {
+          professionalId: data.professionalId,
+          branchId: data.branchId,
+          status: { notIn: ['CANCELED', 'NO_SHOW'] },
+          startTime: { lt: end },
+          endTime: { gt: start }
+        }
+      })
+      if (overlapping) {
+        conflict('Appointment overlaps with an existing appointment for this professional')
       }
-    },
-    include: {
-      services: { include: { service: true } },
-      client: { select: { email: true, firstName: true, lastName: true } },
-      branch: { select: { name: true } }
     }
+
+    return tx.appointment.create({
+      data: {
+        ...data,
+        status: 'PENDING',
+        confirmToken,
+        confirmTokenExpiresAt,
+        services: {
+          create: services.map(s => ({
+            serviceId: s.id,
+            price: s.price,
+            duration: s.duration
+          }))
+        }
+      },
+      include: {
+        services: { include: { service: true } },
+        client: { select: { email: true, firstName: true, lastName: true } },
+        branch: { select: { name: true } }
+      }
+    })
   })
 
   const confirmationEmail: {
