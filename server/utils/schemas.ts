@@ -58,6 +58,7 @@ export const appointmentSchema = z.object({
   notes: z.string().optional(),
   notifyEmail: z.boolean().optional(),
   notifySms: z.boolean().optional(),
+  status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW']).optional()
 })
 
 export const appointmentUpdateSchema = appointmentSchema.partial().extend({

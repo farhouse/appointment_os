@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   const appointment = await prisma.appointment.create({
     data: {
       ...data,
-      status: 'PENDING',
+      status: data.status || 'PENDING',
       services: {
         create: services.map(s => ({
           serviceId: s.id,

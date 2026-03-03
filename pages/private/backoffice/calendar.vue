@@ -23,6 +23,12 @@ const currentView = ref<'day' | 'week' | 'month'>('day')
 
 const barbers = ref<{ id: string; name: string }[]>([])
 
+const isCreateModalOpen = ref(false)
+
+function refreshCalendar() {
+  if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+}
+
 const calendarConfig = computed(() => ({
   view: currentView.value,
   titleBar: false,
@@ -409,6 +415,14 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
     <div class="bg-white p-4 rounded-lg shadow mt-4 text-gray-900 h-[calc(100vh-220px)] min-h-[600px] flex flex-col">
       <div class="flex flex-wrap items-center gap-2 mb-4">
+        <UButton
+          v-if="selectedBranchId"
+          icon="i-heroicons-plus"
+          color="primary"
+          @click="isCreateModalOpen = true"
+        >
+          Nuevo
+        </UButton>
         <div v-if="isEventsLoading" class="flex items-center gap-2 text-xs text-stone-500">
           <span class="inline-block size-3 rounded-full border-2 border-stone-400 border-t-transparent animate-spin" aria-hidden="true" />
           <span>Cargando turnos…</span>
@@ -605,5 +619,12 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         </div>
       </div>
     </div>
+
+    <AppointmentCreateModal
+      v-if="selectedBranchId"
+      v-model="isCreateModalOpen"
+      :branch-id="selectedBranchId"
+      @success="refreshCalendar"
+    />
   </div>
 </template>
