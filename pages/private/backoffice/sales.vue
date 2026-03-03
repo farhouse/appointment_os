@@ -61,19 +61,21 @@ async function fetchSales() {
 // Fetch dependencies for form
 async function loadFormDependencies() {
   if (!selectedBranchId.value) return
-  try {
-    const [prodData, servData, cashData, payData] = await Promise.all([
-      $fetch(`/api/products?branchId=${selectedBranchId.value}`),
-      $fetch('/api/services'),
-      $fetch(`/api/cashboxes?branchId=${selectedBranchId.value}&activeOnly=true`),
-      $fetch('/api/settings/payment-methods')
-    ])
-    products.value = prodData as any[]
-    services.value = (servData as any[]).filter((s: any) => s.active)
-    cashBoxes.value = cashData as any[]
-    paymentMedia.value = (payData?.media || []).filter((m: any) => m.active)
-  } catch (e) {
-    toast.add({ title: 'Error loading dependencies', color: 'red' })
+
+  const [prodRes, servRes, cashRes, payRes] = await Promise.allSettled([
+    $fetch('/api/products'),
+    $fetch('/api/services'),
+    $fetch(`/api/cashboxes?branchId=${selectedBranchId.value}&activeOnly=true`),
+    $fetch('/api/settings/payment-methods')
+  ])
+
+  products.value = prodRes.status === 'fulfilled' ? (prodRes.value as any[]) : []
+  services.value = servRes.status === 'fulfilled' ? ((servRes.value as any[]).filter((s: any) => s.active)) : []
+  cashBoxes.value = cashRes.status === 'fulfilled' ? (cashRes.value as any[]) : []
+  paymentMedia.value = payRes.status === 'fulfilled' ? (((payRes.value as any)?.media || []).filter((m: any) => m.active)) : []
+
+  if (!products.value.length && !services.value.length) {
+    toast.add({ title: 'No se pudieron cargar productos/servicios', color: 'orange' })
   }
 }
 
@@ -96,8 +98,13 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
-const payMediaOptions = computed(() => 
-  paymentMedia.value.filter(m => m.method === saleForm.paymentMethod)
+const productOptions = computed(() => products.value.map((p: any) => ({ label: p.name, value: p.id })))
+const serviceOptions = computed(() => services.value.map((s: any) => ({ label: s.name, value: s.id })))
+const cashBoxOptions = computed(() => cashBoxes.value.map((c: any) => ({ label: c.name, value: c.id })))
+const payMediaOptions = computed(() =>
+  paymentMedia.value
+    .filter((m: any) => m.method === saleForm.paymentMethod)
+    .map((m: any) => ({ label: m.name, value: m.id }))
 )
 
 watch(() => saleForm.paymentMethod, (method) => {
@@ -256,7 +263,7 @@ async function submitSale() {
 
     <!-- New Sale Modal -->
     <UModal v-model="isNewSaleOpen" :ui="{ width: 'sm:max-w-4xl' }">
-      <UCard>
+      <UCard class="bg-white text-stone-900">
         <template #header>
           <div class="flex justify-between items-center">
             <h3 class="text-lg font-semibold">Nueva Venta</h3>
@@ -276,9 +283,7 @@ async function submitSale() {
                 <USelectMenu
                   v-if="item.type === 'PRODUCT'"
                   v-model="item.productId"
-                  :options="products"
-                  option-attribute="name"
-                  value-attribute="id"
+                  :options="productOptions"
                   searchable
                   placeholder="Buscar producto"
                   @change="onItemChange(item)"
@@ -286,9 +291,7 @@ async function submitSale() {
                 <USelectMenu
                   v-else-if="item.type === 'SERVICE'"
                   v-model="item.serviceId"
-                  :options="services"
-                  option-attribute="name"
-                  value-attribute="id"
+                  :options="serviceOptions"
                   searchable
                   placeholder="Buscar servicio"
                   @change="onItemChange(item)"
@@ -310,14 +313,14 @@ async function submitSale() {
           <!-- Payment -->
           <div class="grid grid-cols-2 gap-4 border-t pt-4">
             <UFormGroup label="Caja">
-              <USelect v-model="saleForm.cashBoxId" :options="cashBoxes" option-attribute="name" value-attribute="id" />
+              <USelect v-model="saleForm.cashBoxId" :options="cashBoxOptions" />
             </UFormGroup>
             <div class="grid grid-cols-2 gap-2">
                <UFormGroup label="Método">
                  <USelect v-model="saleForm.paymentMethod" :options="['CASH', 'CARD', 'TRANSFER', 'OTHER']" />
                </UFormGroup>
                <UFormGroup label="Medio">
-                 <USelect v-model="saleForm.paymentMediumId" :options="payMediaOptions" option-attribute="name" value-attribute="id" />
+                 <USelect v-model="saleForm.paymentMediumId" :options="payMediaOptions" />
                </UFormGroup>
             </div>
           </div>
