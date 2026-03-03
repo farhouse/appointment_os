@@ -5,6 +5,11 @@ import { requireRole } from '~/server/utils/permissions'
 export default defineEventHandler(async (event) => {
   requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
   const employees = await prisma.user.findMany({
+    where: {
+      role: {
+        in: ['OWNER', 'ADMIN', 'MANAGER', 'BARBER']
+      }
+    },
     select: {
       id: true,
       name: true,
