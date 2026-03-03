@@ -274,16 +274,16 @@ async function submitSale() {
           <div class="space-y-2">
             <div v-for="(item, index) in saleForm.items" :key="index" class="flex gap-2 items-start border p-2 rounded">
               <div class="w-32">
-                <USelect v-model="item.type" :options="['PRODUCT', 'SERVICE', 'CONCEPT']" @change="onItemChange(item)" />
+                <USelect v-model="item.type" :items="['PRODUCT', 'SERVICE', 'CONCEPT']" @change="onItemChange(item)" />
               </div>
               
               <div class="flex-1">
                 <USelectMenu
                   v-if="item.type === 'PRODUCT'"
                   v-model="item.productId"
-                  :options="products"
-                  option-attribute="name"
-                  value-attribute="id"
+                  :items="products"
+                  label-key="name"
+                  value-key="id"
                   searchable
                   placeholder="Buscar producto"
                   @change="onItemChange(item)"
@@ -291,9 +291,9 @@ async function submitSale() {
                 <USelectMenu
                   v-else-if="item.type === 'SERVICE'"
                   v-model="item.serviceId"
-                  :options="services"
-                  option-attribute="name"
-                  value-attribute="id"
+                  :items="services"
+                  label-key="name"
+                  value-key="id"
                   searchable
                   placeholder="Buscar servicio"
                   @change="onItemChange(item)"
@@ -315,14 +315,14 @@ async function submitSale() {
           <!-- Payment -->
           <div class="grid grid-cols-2 gap-4 border-t pt-4">
             <UFormGroup label="Caja">
-              <USelect v-model="saleForm.cashBoxId" :options="cashBoxOptions" />
+              <USelect v-model="saleForm.cashBoxId" :items="cashBoxOptions" value-key="value" label-key="label" />
             </UFormGroup>
             <div class="grid grid-cols-2 gap-2">
                <UFormGroup label="Método">
-                 <USelect v-model="saleForm.paymentMethod" :options="['CASH', 'CARD', 'TRANSFER', 'OTHER']" />
+                 <USelect v-model="saleForm.paymentMethod" :items="['CASH', 'CARD', 'TRANSFER', 'OTHER']" />
                </UFormGroup>
                <UFormGroup label="Medio">
-                 <USelect v-model="saleForm.paymentMediumId" :options="payMediaOptions" />
+                 <USelect v-model="saleForm.paymentMediumId" :items="payMediaOptions" value-key="value" label-key="label" />
                </UFormGroup>
             </div>
           </div>
