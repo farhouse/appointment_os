@@ -12,6 +12,9 @@
           <input v-model="password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500" />
         </div>
         <button type="submit" class="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">{{ $t('login.submit') }}</button>
+        <NuxtLink to="/" class="block w-full px-4 py-2 text-center text-stone-700 bg-stone-100 rounded-md hover:bg-stone-200">
+          Volver al inicio
+        </NuxtLink>
         <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
       </form>
     </div>

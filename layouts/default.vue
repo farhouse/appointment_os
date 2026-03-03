@@ -5,7 +5,6 @@
       <h1 class="text-3xl font-bold">{{ $t('app.name') }}</h1>
       <div class="flex items-center gap-2">
         <UButton to="/" variant="ghost">{{ $t('nav.home') }}</UButton>
-        <UButton to="/calendar" variant="ghost">{{ $t('nav.calendar') }}</UButton>
         <select
           v-model="locale"
           class="border border-stone-300 rounded px-2 py-1 text-sm bg-white dark:bg-[#20160f] dark:border-[#4a3426]"
