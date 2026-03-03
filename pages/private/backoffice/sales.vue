@@ -98,6 +98,8 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
+const productOptions = computed(() => products.value.map((p: any) => ({ label: p.name, value: p.id })))
+const serviceOptions = computed(() => services.value.map((s: any) => ({ label: s.name, value: s.id })))
 const cashBoxOptions = computed(() => cashBoxes.value.map((c: any) => ({ label: c.name, value: c.id })))
 const payMediaOptions = computed(() =>
   paymentMedia.value
@@ -278,24 +280,22 @@ async function submitSale() {
               </div>
               
               <div class="flex-1">
-                <USelectMenu
+                <USelect
                   v-if="item.type === 'PRODUCT'"
                   v-model="item.productId"
-                  :items="products"
-                  label-key="name"
-                  value-key="id"
-                  searchable
-                  placeholder="Buscar producto"
+                  :items="productOptions"
+                  value-key="value"
+                  label-key="label"
+                  placeholder="Seleccionar producto"
                   @change="onItemChange(item)"
                 />
-                <USelectMenu
+                <USelect
                   v-else-if="item.type === 'SERVICE'"
                   v-model="item.serviceId"
-                  :items="services"
-                  label-key="name"
-                  value-key="id"
-                  searchable
-                  placeholder="Buscar servicio"
+                  :items="serviceOptions"
+                  value-key="value"
+                  label-key="label"
+                  placeholder="Seleccionar servicio"
                   @change="onItemChange(item)"
                 />
                 <UInput v-else v-model="item.name" placeholder="Concepto / Detalle" />
