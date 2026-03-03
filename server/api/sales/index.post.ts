@@ -14,7 +14,9 @@ const schema = z.object({
   paymentMediumId: z.string().uuid().optional(),
   total: z.number().nonnegative(),
   items: z.array(z.object({
-    productId: z.string().uuid(),
+    productId: z.string().uuid().optional(),
+    serviceId: z.string().uuid().optional(),
+    name: z.string().min(1),
     quantity: z.number().int().positive(),
     price: z.number().nonnegative()
   })).min(1)
@@ -45,7 +47,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // MVP: create Sale + SaleItems. No split payments by design.
-  const sale = await prisma.$transaction(async (tx: typeof prisma) => {
+  const sale = await prisma.$transaction(async (tx) => {
     const created = await tx.sale.create({
       data: {
         branchId: parsed.branchId,
@@ -56,7 +58,9 @@ export default defineEventHandler(async (event) => {
         paymentMediumId: paymentMedium.id,
         items: {
           create: parsed.items.map(i => ({
-            productId: i.productId,
+            productId: i.productId || null,
+            serviceId: i.serviceId || null,
+            name: i.name,
             quantity: i.quantity,
             price: i.price
           }))

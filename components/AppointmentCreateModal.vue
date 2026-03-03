@@ -70,7 +70,7 @@ watch(isOpen, (val) => {
     form.professionalId = ''
     form.serviceIds = []
     form.date = new Date().toISOString().split('T')[0]
-    form.time: '10:00'
+    form.time = '10:00'
     form.status = 'CONFIRMED'
     form.notes = ''
     form.duration = 30

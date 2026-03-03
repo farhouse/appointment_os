@@ -109,6 +109,7 @@ model Service {
   updatedAt   DateTime @updatedAt
 
   appointmentServices AppointmentService[]
+  saleItems           SaleItem[]
 }
 
 model Client {
@@ -258,12 +259,15 @@ model Sale {
 model SaleItem {
   id        String   @id @default(uuid())
   saleId    String
-  productId String
+  productId String?
+  serviceId String?
+  name      String
   quantity  Int
   price     Decimal
   
-  sale    Sale    @relation(fields: [saleId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  sale    Sale     @relation(fields: [saleId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+  service Service? @relation(fields: [serviceId], references: [id])
 }
 
 model LoyaltyLedger {

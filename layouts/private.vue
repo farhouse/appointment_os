@@ -25,6 +25,7 @@ const commonLinks = computed(() => [
 const managerLinks = computed(() => [
   { label: t('nav.dashboard'), to: '/private/backoffice', icon: 'i-heroicons-squares-2x2' },
   { label: t('nav.calendar'), to: '/private/backoffice/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: t('nav.sales'), to: '/private/backoffice/sales', icon: 'i-heroicons-shopping-cart' },
   { label: t('nav.cash'), to: '/private/backoffice/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.clients'), to: '/private/backoffice/clients', icon: 'i-heroicons-user-group' },
   { label: t('nav.products'), to: '/private/backoffice/products', icon: 'i-heroicons-tag' },
@@ -34,6 +35,7 @@ const managerLinks = computed(() => [
 const adminLinks = computed(() => [
   { label: t('nav.dashboard'), to: '/private/backoffice', icon: 'i-heroicons-squares-2x2' },
   { label: t('nav.calendar'), to: '/private/backoffice/calendar', icon: 'i-heroicons-calendar-days' },
+  { label: t('nav.sales'), to: '/private/backoffice/sales', icon: 'i-heroicons-shopping-cart' },
   { label: t('nav.cash'), to: '/private/backoffice/cash', icon: 'i-heroicons-banknotes' },
   { label: t('nav.employees'), to: '/private/backoffice/employees', icon: 'i-heroicons-users' },
   { label: t('nav.clients'), to: '/private/backoffice/clients', icon: 'i-heroicons-user-group' },
