@@ -74,9 +74,7 @@ async function loadFormDependencies() {
   cashBoxes.value = cashRes.status === 'fulfilled' ? (cashRes.value as any[]) : []
   paymentMedia.value = payRes.status === 'fulfilled' ? (((payRes.value as any)?.media || []).filter((m: any) => m.active)) : []
 
-  if (!products.value.length && !services.value.length) {
-    toast.add({ title: 'No se pudieron cargar productos/servicios', color: 'orange' })
-  }
+  // Keep UX silent here; selectors will reflect available data.
 }
 
 watch(selectedBranchId, () => {
@@ -98,8 +96,6 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
-const productOptions = computed(() => products.value.map((p: any) => ({ label: p.name, value: p.id })))
-const serviceOptions = computed(() => services.value.map((s: any) => ({ label: s.name, value: s.id })))
 const cashBoxOptions = computed(() => cashBoxes.value.map((c: any) => ({ label: c.name, value: c.id })))
 const payMediaOptions = computed(() =>
   paymentMedia.value
@@ -283,7 +279,9 @@ async function submitSale() {
                 <USelectMenu
                   v-if="item.type === 'PRODUCT'"
                   v-model="item.productId"
-                  :options="productOptions"
+                  :options="products"
+                  option-attribute="name"
+                  value-attribute="id"
                   searchable
                   placeholder="Buscar producto"
                   @change="onItemChange(item)"
@@ -291,7 +289,9 @@ async function submitSale() {
                 <USelectMenu
                   v-else-if="item.type === 'SERVICE'"
                   v-model="item.serviceId"
-                  :options="serviceOptions"
+                  :options="services"
+                  option-attribute="name"
+                  value-attribute="id"
                   searchable
                   placeholder="Buscar servicio"
                   @change="onItemChange(item)"
