@@ -60,12 +60,14 @@ async function fetchSales() {
 
 // Fetch dependencies for form
 async function loadFormDependencies() {
-  if (!selectedBranchId.value) return
+  const cashboxesReq = selectedBranchId.value
+    ? $fetch(`/api/cashboxes?branchId=${selectedBranchId.value}&activeOnly=true`)
+    : Promise.resolve([])
 
   const [prodRes, servRes, cashRes, payRes] = await Promise.allSettled([
     $fetch('/api/products'),
     $fetch('/api/services'),
-    $fetch(`/api/cashboxes?branchId=${selectedBranchId.value}&activeOnly=true`),
+    cashboxesReq,
     $fetch('/api/settings/payment-methods')
   ])
 
@@ -73,12 +75,11 @@ async function loadFormDependencies() {
   services.value = servRes.status === 'fulfilled' ? ((servRes.value as any[]).filter((s: any) => s.active)) : []
   cashBoxes.value = cashRes.status === 'fulfilled' ? (cashRes.value as any[]) : []
   paymentMedia.value = payRes.status === 'fulfilled' ? (((payRes.value as any)?.media || []).filter((m: any) => m.active)) : []
-
-  // Keep UX silent here; selectors will reflect available data.
 }
 
 watch(selectedBranchId, () => {
   fetchSales()
+  loadFormDependencies()
 })
 
 watch([dateFrom, dateTo], () => {
@@ -89,6 +90,7 @@ onMounted(() => {
   if (selectedBranchId.value) {
     fetchSales()
   }
+  loadFormDependencies()
 })
 
 // Form Logic
@@ -121,8 +123,8 @@ function removeItem(index: number) {
   saleForm.items.splice(index, 1)
 }
 
-function openNewSale() {
-  loadFormDependencies()
+async function openNewSale() {
+  await loadFormDependencies()
   // Reset form
   saleForm.items = []
   addItem()
