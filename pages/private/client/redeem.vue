@@ -40,6 +40,13 @@ function formatDate(value: string) {
   return dateFormatter.format(new Date(value))
 }
 
+function formatReason(entry: LedgerEntry) {
+  if (entry.reason && entry.reason.startsWith('APPOINTMENT:')) {
+    return formatDate(entry.createdAt)
+  }
+  return entry.reason || '—'
+}
+
 async function loadPoints() {
   const data = await $fetch('/api/client/points')
   balance.value = data.balance
@@ -131,7 +138,7 @@ onMounted(() => {
         <div v-else class="mt-3 space-y-3">
           <div v-for="entry in entries" :key="entry.id" class="flex items-center justify-between text-sm">
             <div>
-              <div class="text-stone-800">{{ entry.reason || '—' }}</div>
+              <div class="text-stone-800">{{ formatReason(entry) }}</div>
               <div class="text-xs text-stone-500">{{ formatDate(entry.createdAt) }}</div>
             </div>
             <div :class="entry.points >= 0 ? 'text-emerald-600' : 'text-rose-600'">
