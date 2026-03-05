@@ -6,6 +6,26 @@
 
 Leyenda estado: `todo | doing | blocked | done`
 
+## Focus (Now / Next / Later)
+
+### NOW (próximo batch)
+- Booking / Availability (`busy` real)
+- Calendar UX (modal + mover turno)
+- Barber working hours (base semanal + impacto en disponibilidad)
+- Caja: revisar flujo abrir→cerrar→cobrar
+
+### NEXT
+- Venta asociada a turno (upsell)
+- Client profile editable + cambio de password
+- Cliente: fotos de cortes (máx 3, storage local docker)
+- Barber appointments (filters UI + modal + rango diario)
+
+### LATER
+- News/Offers CMS + audiencia/expiración
+- Rebook rápido
+- Barber finances (más info + totales)
+- Dev env cleanup (`docker-compose.yml` warning)
+
 ## P0 — Bugs / bloqueantes
 - [x] (done) **Loyalty points mismatch**: cálculo migrado a `Service.pointsReward` por turno.
   - Resultado: se reemplazó regla basada en monto (`floor(paidAmount/1000)`) por suma de `pointsReward` de servicios.
