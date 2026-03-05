@@ -107,6 +107,15 @@ function getPaymentMethodLabel(method: string) {
   }
 }
 
+function getMediumDisplayName(name: string) {
+  const upper = (name || '').toUpperCase().trim()
+  if (upper === 'CASH') return 'Efectivo'
+  if (upper === 'CARD' || upper === 'CREDIT' || upper === 'DEBIT') return 'Tarjeta'
+  if (upper === 'TRANSFER' || upper === 'TRANSFERENCIA') return 'Transferencia'
+  if (upper === 'OTHER' || upper === 'OTRO') return 'Otro'
+  return name
+}
+
 const selectedPaymentMethodLabel = computed(() => {
   const medium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
   const method = medium?.method || saleForm.paymentMethod
@@ -348,7 +357,7 @@ async function submitSale() {
                <select v-model="saleForm.paymentMediumId" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
                  <option disabled value="">Seleccionar medio</option>
                  <option v-for="medium in paymentMedia" :key="medium.id" :value="medium.id">
-                   {{ medium.name }}
+                   {{ getMediumDisplayName(medium.name) }}
                  </option>
                </select>
                <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPaymentMethodLabel }}</p>

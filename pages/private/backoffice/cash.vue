@@ -167,10 +167,19 @@ const hasActivePaymentMethods = computed(() => {
   return paymentMethods.value.some(method => method.active)
 })
 
+function getMediumDisplayName(name: string) {
+  const upper = (name || '').toUpperCase().trim()
+  if (upper === 'CASH') return 'Efectivo'
+  if (upper === 'CARD' || upper === 'CREDIT' || upper === 'DEBIT') return 'Tarjeta'
+  if (upper === 'TRANSFER' || upper === 'TRANSFERENCIA') return 'Transferencia'
+  if (upper === 'OTHER' || upper === 'OTRO') return 'Otro'
+  return name
+}
+
 const paymentMediumItems = computed(() => {
   return paymentMedia.value
     .filter(item => item.active)
-    .map(item => ({ label: item.name, value: item.id }))
+    .map(item => ({ label: getMediumDisplayName(item.name), value: item.id }))
 })
 
 const selectedMovementMethodLabel = computed(() => getMethodLabel(movementForm.paymentMethod || 'CASH'))

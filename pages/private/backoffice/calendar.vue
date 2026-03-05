@@ -205,6 +205,15 @@ function overlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
   return aStart < bEnd && aEnd > bStart
 }
 
+function getMediumDisplayName(name: string) {
+  const upper = (name || '').toUpperCase().trim()
+  if (upper === 'CASH') return 'Efectivo'
+  if (upper === 'CARD' || upper === 'CREDIT' || upper === 'DEBIT') return 'Tarjeta'
+  if (upper === 'TRANSFER' || upper === 'TRANSFERENCIA') return 'Transferencia'
+  if (upper === 'OTHER' || upper === 'OTRO') return 'Otro'
+  return name
+}
+
 const payMediaOptions = computed(() => paymentMedia.value)
 
 const selectedPayMethodLabel = computed(() => {
@@ -606,7 +615,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             <label class="block text-sm font-medium text-gray-700">Medio</label>
             <select v-model="payForm.paymentMediumId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
               <option value="" disabled>Seleccioná un medio</option>
-              <option v-for="pm in payMediaOptions" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+              <option v-for="pm in payMediaOptions" :key="pm.id" :value="pm.id">{{ getMediumDisplayName(pm.name) }}</option>
             </select>
             <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPayMethodLabel }}</p>
           </div>
