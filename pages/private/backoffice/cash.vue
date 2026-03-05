@@ -611,42 +611,6 @@ watch(openSessionsSorted, (value) => {
     </div>
 
     <section class="space-y-4">
-      <div>
-        <h2 class="text-lg font-semibold text-stone-900">Uso de Caja del día</h2>
-        <p class="text-sm text-stone-600">Sesión diaria por sucursal con sectores por método de pago.</p>
-      </div>
-
-
-      <div v-if="selectedBranchOpenSessions.length" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div class="text-sm font-semibold text-amber-900">Sesiones abiertas pendientes</div>
-            <div class="text-xs text-amber-800">
-              {{ selectedBranchOpenSessions.length }} caja(s) abierta(s) — revisá y cerrá las pendientes.
-            </div>
-          </div>
-        </div>
-        <div class="mt-3 space-y-2">
-          <div
-            v-for="session in selectedBranchOpenSessions"
-            :key="session.id"
-            class="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-white px-3 py-2"
-          >
-            <div>
-              <div class="text-sm font-medium text-stone-900">{{ session.cashBox?.name || 'Caja' }}</div>
-              <div class="text-xs text-stone-500">
-                Abierta: {{ formatDate(session.openingTime) }}
-              </div>
-              <div class="text-xs text-stone-500">
-                Abrió: {{ session.openedByName || '—' }}
-              </div>
-            </div>
-            <UButton size="xs" variant="outline" @click="() => openCloseModalFor(session.cashBoxId || '')">
-              Cerrar caja
-            </UButton>
-          </div>
-        </div>
-      </div>
 
       <CrudTableShell
         v-if="isAdmin"
