@@ -91,6 +91,18 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/profile.vue` (o un `/private/client/profile.vue`), endpoints.
   - NEXT: decidir qué campos son editables y cómo se valida.
 
+- [ ] (todo) **Cliente / Registro de cortes con fotos (máx 3)**: permitir cargar hasta 3 fotos por cliente para histórico visual de cortes.
+  - Acceptance:
+    - Subida de imagen desde ficha del cliente (backoffice).
+    - Máximo 3 fotos por cliente (si llega al límite, forzar reemplazo/eliminación).
+    - Vista miniatura + eliminar foto.
+    - Persistencia en disco local (storage montado en Docker), con metadata en DB.
+  - Tech notes:
+    - Modelo recomendado: `ClientPhoto` (no 3 columnas fijas en `Client`).
+    - Guardar `path/url`, `createdAt`, `uploadedBy`, opcional `note`.
+    - Exponer archivos desde volumen dedicado (ej. `/uploads/client-photos`).
+  - Files: `prisma/schema.prisma`, migración, `server/api/clients/*`, `pages/private/backoffice/clients.vue` (o detalle cliente), `docker-compose.yml` (volumen).
+
 ## Ideas (opcional)
 - [ ] **Rebook rápido**: botón “Reservar de nuevo” usando último servicio/barbero si existe.
 - [ ] **Turnos**: mostrar próximos + últimos 3 con status y CTA “ver detalle”.
