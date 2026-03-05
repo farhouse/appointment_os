@@ -27,6 +27,14 @@ export async function ensurePaymentMethodConfigs(prisma: PaymentPrismaClient) {
           isSystem: true
         }
       })
+      continue
+    }
+
+    if (systemRow.name !== defaultLabels[method]) {
+      await prisma.paymentMethodConfig.update({
+        where: { id: systemRow.id },
+        data: { name: defaultLabels[method] }
+      })
     }
   }
 }

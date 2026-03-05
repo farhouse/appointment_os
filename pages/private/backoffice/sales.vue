@@ -98,15 +98,19 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
-const selectedPaymentMethodLabel = computed(() => {
-  const medium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
-  const method = medium?.method || saleForm.paymentMethod
+function getPaymentMethodLabel(method: string) {
   switch (method) {
     case 'CARD': return 'Tarjeta'
     case 'TRANSFER': return 'Transferencia'
     case 'OTHER': return 'Otro'
     default: return 'Efectivo'
   }
+}
+
+const selectedPaymentMethodLabel = computed(() => {
+  const medium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
+  const method = medium?.method || saleForm.paymentMethod
+  return getPaymentMethodLabel(method)
 })
 
 watch(() => saleForm.paymentMediumId, (mediumId) => {
@@ -259,7 +263,7 @@ async function submitSale() {
               ${{ sale.total }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ sale.paymentMethod }}
+              {{ getPaymentMethodLabel(sale.paymentMethod) }}
             </td>
           </tr>
           <tr v-if="!sales.length">
