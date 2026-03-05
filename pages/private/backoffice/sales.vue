@@ -99,9 +99,11 @@ const total = computed(() => {
 })
 
 
-watch(() => saleForm.paymentMethod, (method) => {
-  const first = paymentMedia.value.find(m => m.active && m.method === method)
-  saleForm.paymentMediumId = first?.id || ''
+watch(() => saleForm.paymentMediumId, (mediumId) => {
+  const medium = paymentMedia.value.find((m: any) => m.id === mediumId)
+  if (medium?.method) {
+    saleForm.paymentMethod = medium.method
+  }
 })
 
 function addItem() {
@@ -122,8 +124,9 @@ async function openNewSale() {
   // Reset form
   saleForm.items = []
   addItem()
-  saleForm.paymentMethod = 'CASH'
-  saleForm.paymentMediumId = ''
+  const firstMedium = paymentMedia.value.find((m: any) => m.active)
+  saleForm.paymentMediumId = firstMedium?.id || ''
+  saleForm.paymentMethod = firstMedium?.method || 'CASH'
   saleForm.cashBoxId = ''
   saleForm.notes = ''
   isNewSaleOpen.value = true
@@ -171,6 +174,9 @@ async function submitSale() {
     return
   }
 
+  const selectedMedium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
+  const paymentMethod = selectedMedium?.method || saleForm.paymentMethod
+
   const body = {
     branchId: selectedBranchId.value,
     items: saleForm.items.map(i => ({
@@ -181,7 +187,7 @@ async function submitSale() {
       price: i.price
     })),
     total: total.value,
-    paymentMethod: saleForm.paymentMethod,
+    paymentMethod,
     paymentMediumId: saleForm.paymentMediumId
   }
 
@@ -323,19 +329,11 @@ async function submitSale() {
               <option v-for="box in cashBoxes" :key="box.id" :value="box.id">{{ box.name }}</option>
             </select>
           </UFormGroup>
-          <div class="grid grid-cols-2 gap-2">
-             <UFormGroup label="Método">
-               <select v-model="saleForm.paymentMethod" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
-                 <option value="CASH">Efectivo</option>
-                 <option value="CARD">Tarjeta</option>
-                 <option value="TRANSFER">Transferencia</option>
-                 <option value="OTHER">Otro</option>
-               </select>
-             </UFormGroup>
-             <UFormGroup label="Medio">
+          <div>
+             <UFormGroup label="Medio de pago">
                <select v-model="saleForm.paymentMediumId" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
                  <option disabled value="">Seleccionar medio</option>
-                 <option v-for="medium in paymentMedia.filter((m: any) => m.method === saleForm.paymentMethod)" :key="medium.id" :value="medium.id">
+                 <option v-for="medium in paymentMedia" :key="medium.id" :value="medium.id">
                    {{ medium.name }}
                  </option>
                </select>

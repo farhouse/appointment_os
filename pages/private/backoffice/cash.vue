@@ -152,19 +152,6 @@ const movementItems = computed(() => [
   { label: t('manager.cash.withdrawal'), value: 'WITHDRAWAL' }
 ])
 
-const paymentMethodItems = computed(() => {
-  if (paymentMethods.value.length) {
-    return paymentMethods.value
-      .filter(method => method.active)
-      .map(method => ({ label: method.label, value: method.method }))
-  }
-  return [
-    { label: t('manager.cash.methodCash'), value: 'CASH' },
-    { label: t('manager.cash.methodCard'), value: 'CARD' },
-    { label: t('manager.cash.methodTransfer'), value: 'TRANSFER' },
-    { label: t('manager.cash.methodOther'), value: 'OTHER' }
-  ]
-})
 
 const sectorOrder = computed(() => {
   if (paymentMethods.value.length) {
@@ -182,7 +169,7 @@ const hasActivePaymentMethods = computed(() => {
 
 const paymentMediumItems = computed(() => {
   return paymentMedia.value
-    .filter(item => item.active && item.method === movementForm.paymentMethod)
+    .filter(item => item.active)
     .map(item => ({ label: item.name, value: item.id }))
 })
 
@@ -245,9 +232,11 @@ watch(selectedCashBoxId, (value) => {
   openForm.cashBoxId = value
 })
 
-watch(() => movementForm.paymentMethod, (method) => {
-  const first = paymentMedia.value.find(item => item.active && item.method === method)
-  movementForm.paymentMediumId = first?.id
+watch(() => movementForm.paymentMediumId, (mediumId) => {
+  const medium = paymentMedia.value.find(item => item.id === mediumId)
+  if (medium?.method) {
+    movementForm.paymentMethod = medium.method as any
+  }
 })
 
 
@@ -356,9 +345,9 @@ function openCloseModalFor(cashBoxId: string) {
 
 function openMovementModal() {
   movementForm.type = 'DEPOSIT'
-  const activeMethod = paymentMethods.value.find(method => method.active)?.method || 'CASH'
-  movementForm.paymentMethod = activeMethod
-  movementForm.paymentMediumId = paymentMedia.value.find(item => item.active && item.method === activeMethod)?.id
+  const firstMedium = paymentMedia.value.find(item => item.active)
+  movementForm.paymentMediumId = firstMedium?.id
+  movementForm.paymentMethod = (firstMedium?.method as any) || 'CASH'
   movementForm.amount = 0
   movementForm.reason = ''
   movementModal.value = true
@@ -410,6 +399,9 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
     toast.add({ title: t('manager.cash.noActiveMethods'), color: 'error' })
     return
   }
+  const selectedMedium = paymentMedia.value.find(item => item.id === event.data.paymentMediumId)
+  const paymentMethod = (selectedMedium?.method as any) || event.data.paymentMethod
+
   isSaving.value = true
   try {
     await $fetch('/api/cash/movements', {
@@ -418,7 +410,7 @@ async function submitMovement(event: FormSubmitEvent<MovementForm>) {
         sessionId: selectedSession.value.id,
         amount: event.data.amount,
         type: event.data.type,
-        paymentMethod: event.data.paymentMethod,
+        paymentMethod,
         paymentMediumId: event.data.paymentMediumId,
         reason: event.data.reason
       }
@@ -917,9 +909,6 @@ watch(openSessionsSorted, (value) => {
       <UForm ref="movementFormRef" :schema="movementSchema" :state="movementForm" class="space-y-4" @submit="submitMovement">
         <UFormField :label="$t('manager.cash.movementType')" name="type">
           <USelect v-model="movementForm.type" :items="movementItems" value-key="value" />
-        </UFormField>
-        <UFormField :label="$t('manager.cash.movementMethod')" name="paymentMethod">
-          <USelect v-model="movementForm.paymentMethod" :items="paymentMethodItems" value-key="value" />
         </UFormField>
         <UFormField label="Medio" name="paymentMediumId">
           <USelect v-model="movementForm.paymentMediumId" :items="paymentMediumItems" value-key="value" />

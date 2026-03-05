@@ -205,11 +205,13 @@ function overlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
   return aStart < bEnd && aEnd > bStart
 }
 
-const payMediaOptions = computed(() => paymentMedia.value.filter(m => m.method === payForm.paymentMethod))
+const payMediaOptions = computed(() => paymentMedia.value)
 
-watch(() => payForm.paymentMethod, (method) => {
-  const first = paymentMedia.value.find(m => m.active && m.method === method)
-  payForm.paymentMediumId = first?.id || ''
+watch(() => payForm.paymentMediumId, (mediumId) => {
+  const medium = paymentMedia.value.find(m => m.id === mediumId)
+  if (medium?.method) {
+    payForm.paymentMethod = medium.method as any
+  }
 })
 
 watch(() => payForm.cashBoxId, () => {
@@ -270,6 +272,9 @@ function openPayModal() {
   payForm.amount = Number.isFinite(totalPrice) ? totalPrice : 0
   if (!cashBoxes.value.length) void loadCashBoxes()
   if (!paymentMedia.value.length) void loadPaymentMedia()
+  const firstMedium = paymentMedia.value.find((m: any) => m.active)
+  payForm.paymentMediumId = firstMedium?.id || ''
+  payForm.paymentMethod = (firstMedium?.method as any) || 'CASH'
   void precheckOpenCashSession()
 }
 function closePayModal() {
@@ -277,8 +282,9 @@ function closePayModal() {
   payError.value = ''
   payForm.amount = 0
   payForm.cashBoxId = ''
-  payForm.paymentMethod = 'CASH'
-  payForm.paymentMediumId = ''
+  const firstMedium = paymentMedia.value.find((m: any) => m.active)
+  payForm.paymentMediumId = firstMedium?.id || ''
+  payForm.paymentMethod = (firstMedium?.method as any) || 'CASH'
   hasOpenCashSession.value = true
 }
 
@@ -309,6 +315,9 @@ async function confirmPayment() {
   payError.value = ''
   const hasSession = await precheckOpenCashSession()
   if (!hasSession) return
+  const selectedMedium = paymentMedia.value.find((m: any) => m.id === payForm.paymentMediumId)
+  const paymentMethod = (selectedMedium?.method as any) || payForm.paymentMethod
+
   isPaying.value = true
   try {
     await $fetch(`/api/appointments/${selectedEvent.value.id}/status`, {
@@ -316,7 +325,7 @@ async function confirmPayment() {
       body: {
         status: 'PAID',
         cashBoxId: payForm.cashBoxId,
-        paymentMethod: payForm.paymentMethod,
+        paymentMethod,
         paymentMediumId: payForm.paymentMediumId || undefined,
         amount: payForm.amount
       }
@@ -582,15 +591,6 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
               <option v-for="cb in cashBoxes" :key="cb.id" :value="cb.id">
                 {{ cb.name }}
               </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">{{ $t('manager.cash.movementMethod') }}</label>
-            <select v-model="payForm.paymentMethod" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-              <option value="CASH">{{ $t('manager.cash.methodCash') }}</option>
-              <option value="CARD">{{ $t('manager.cash.methodCard') }}</option>
-              <option value="TRANSFER">{{ $t('manager.cash.methodTransfer') }}</option>
-              <option value="OTHER">{{ $t('manager.cash.methodOther') }}</option>
             </select>
           </div>
           <div>
