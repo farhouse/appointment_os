@@ -272,9 +272,9 @@ async function submitSale() {
                 class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
                 @change="onItemChange(item)"
               >
-                <option value="PRODUCT">PRODUCT</option>
-                <option value="SERVICE">SERVICE</option>
-                <option value="CONCEPT">CONCEPT</option>
+                <option value="PRODUCT">Producto</option>
+                <option value="SERVICE">Servicio</option>
+                <option value="CONCEPT">Concepto</option>
               </select>
             </div>
 
@@ -326,10 +326,10 @@ async function submitSale() {
           <div class="grid grid-cols-2 gap-2">
              <UFormGroup label="Método">
                <select v-model="saleForm.paymentMethod" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
-                 <option value="CASH">CASH</option>
-                 <option value="CARD">CARD</option>
-                 <option value="TRANSFER">TRANSFER</option>
-                 <option value="OTHER">OTHER</option>
+                 <option value="CASH">Efectivo</option>
+                 <option value="CARD">Tarjeta</option>
+                 <option value="TRANSFER">Transferencia</option>
+                 <option value="OTHER">Otro</option>
                </select>
              </UFormGroup>
              <UFormGroup label="Medio">
