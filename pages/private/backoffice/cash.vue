@@ -532,13 +532,15 @@ const globalOpenRows = computed(() => {
     const openedAtDate = new Date(session.openingTime)
     const openedAtTs = openedAtDate.getTime()
     const ageHours = Number.isNaN(openedAtTs) ? 0 : (Date.now() - openedAtTs) / (1000 * 60 * 60)
+    const isOlderThan24h = ageHours >= 24
     return {
       id: session.id,
       branch: session.branch?.name || 'Sucursal',
       cashBox: session.cashBox?.name || 'Caja del día',
       openedAt: formatDate(session.openingTime),
       openedAtTs,
-      isOlderThan24h: ageHours >= 24,
+      isOlderThan24h,
+      canClose: !isOlderThan24h || isAdmin.value,
       openedBy: session.openedByName || '—',
       total: formatCurrency(getSessionCurrentBalance(session)),
       cash: formatCurrency(totals.CASH || 0),
@@ -648,7 +650,8 @@ watch(openSessionsSorted, (value) => {
               </span>
             </template>
             <template #actions-cell="{ row }">
-              <UButton size="xs" variant="outline" :to="row.original.closeUrl">Ir a cerrar</UButton>
+              <UButton v-if="row.original.canClose" size="xs" variant="outline" :to="row.original.closeUrl">Ir a cerrar</UButton>
+              <span v-else class="text-xs text-stone-400">Solo admin/owner</span>
             </template>
           </UTable>
           <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
