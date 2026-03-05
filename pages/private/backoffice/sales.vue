@@ -98,8 +98,6 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
-const productOptions = computed(() => products.value.map((p: any) => ({ label: p.name, value: p.id })))
-const serviceOptions = computed(() => services.value.map((s: any) => ({ label: s.name, value: s.id })))
 const cashBoxOptions = computed(() => cashBoxes.value.map((c: any) => ({ label: c.name, value: c.id })))
 const payMediaOptions = computed(() =>
   paymentMedia.value
@@ -276,28 +274,40 @@ async function submitSale() {
           <div class="space-y-2">
             <div v-for="(item, index) in saleForm.items" :key="index" class="flex gap-2 items-start border p-2 rounded">
               <div class="w-32">
-                <USelect v-model="item.type" :items="['PRODUCT', 'SERVICE', 'CONCEPT']" @change="onItemChange(item)" />
+                <select
+                  v-model="item.type"
+                  class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                  @change="onItemChange(item)"
+                >
+                  <option value="PRODUCT">PRODUCT</option>
+                  <option value="SERVICE">SERVICE</option>
+                  <option value="CONCEPT">CONCEPT</option>
+                </select>
               </div>
-              
+
               <div class="flex-1">
-                <USelect
+                <select
                   v-if="item.type === 'PRODUCT'"
                   v-model="item.productId"
-                  :items="productOptions"
-                  value-key="value"
-                  label-key="label"
-                  placeholder="Seleccionar producto"
+                  class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
                   @change="onItemChange(item)"
-                />
-                <USelect
+                >
+                  <option disabled value="">Seleccionar producto</option>
+                  <option v-for="product in products" :key="product.id" :value="product.id">
+                    {{ product.name }}
+                  </option>
+                </select>
+                <select
                   v-else-if="item.type === 'SERVICE'"
                   v-model="item.serviceId"
-                  :items="serviceOptions"
-                  value-key="value"
-                  label-key="label"
-                  placeholder="Seleccionar servicio"
+                  class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
                   @change="onItemChange(item)"
-                />
+                >
+                  <option disabled value="">Seleccionar servicio</option>
+                  <option v-for="service in services" :key="service.id" :value="service.id">
+                    {{ service.name }}
+                  </option>
+                </select>
                 <UInput v-else v-model="item.name" placeholder="Concepto / Detalle" />
               </div>
 
