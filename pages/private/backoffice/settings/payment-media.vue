@@ -18,6 +18,25 @@ const paymentMediumForm = reactive({
   description: ''
 })
 
+function getMethodLabel(method: string) {
+  const labelMap: Record<string, string> = {
+    CASH: $t('manager.cash.methodCash'),
+    CARD: $t('manager.cash.methodCard'),
+    TRANSFER: $t('manager.cash.methodTransfer'),
+    OTHER: $t('manager.cash.methodOther')
+  }
+  return labelMap[method] || method
+}
+
+function getMediumDisplayName(name: string) {
+  const upper = (name || '').toUpperCase().trim()
+  if (upper === 'CASH') return 'Efectivo'
+  if (upper === 'CARD' || upper === 'CREDIT' || upper === 'DEBIT') return 'Tarjeta'
+  if (upper === 'TRANSFER' || upper === 'TRANSFERENCIA') return 'Transferencia'
+  if (upper === 'OTHER' || upper === 'OTRO') return 'Otro'
+  return name
+}
+
 async function loadPaymentMethods() {
   paymentMethodsLoading.value = true
   paymentMethodsError.value = ''
@@ -183,7 +202,7 @@ onMounted(() => {
         <div class="mt-3 space-y-2" v-else>
           <div v-for="item in customPaymentMedia" :key="item.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
             <div>
-              <div class="text-sm font-medium text-gray-900">{{ item.name }} <span class="text-xs text-gray-500">({{ item.method }})</span></div>
+              <div class="text-sm font-medium text-gray-900">{{ getMediumDisplayName(item.name) }} <span class="text-xs text-gray-500">({{ getMethodLabel(item.method) }})</span></div>
               <div class="text-xs text-gray-500">{{ item.description || '—' }}</div>
             </div>
             <UButton size="xs" variant="outline" :loading="paymentMediaSaving" @click="togglePaymentMedium(item)">
