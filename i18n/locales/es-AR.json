@@ -139,6 +139,8 @@
           "calendarDesc": "Ver y confirmar turnos.",
           "cash": "Caja",
           "cashDesc": "Abrir/cerrar caja y movimientos.",
+          "sales": "Ventas",
+          "salesDesc": "Registrar ventas y cobros rápidos.",
           "employees": "Empleados",
           "employeesDesc": "Gestionar barberos y permisos.",
           "products": "Productos",

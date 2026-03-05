@@ -111,6 +111,7 @@ const shortcuts = computed(() => {
   const base = [
     { to: '/private/backoffice/calendar', title: 'pages.private.manager.shortcuts.calendar', desc: 'pages.private.manager.shortcuts.calendarDesc' },
     { to: '/private/backoffice/cash', title: 'pages.private.manager.shortcuts.cash', desc: 'pages.private.manager.shortcuts.cashDesc' },
+    { to: '/private/backoffice/sales', title: 'pages.private.manager.shortcuts.sales', desc: 'pages.private.manager.shortcuts.salesDesc' },
     { to: '/private/backoffice/products?tab=stock', title: 'pages.private.manager.shortcuts.stock', desc: 'pages.private.manager.shortcuts.stockDesc' },
   ]
 
@@ -137,6 +138,21 @@ const shortcuts = computed(() => {
       </div>
     </div>
 
+    <UCard class="border border-black/10 shadow-sm">
+      <template #header>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-gray-500">Acceso rápido</div>
+            <div class="text-base font-semibold">Ventas</div>
+          </div>
+          <span class="text-gray-400">→</span>
+        </div>
+      </template>
+      <p class="text-sm text-gray-600">Registrar ventas, seleccionar medios de pago y ver el historial.</p>
+      <template #footer>
+        <UButton to="/private/backoffice/sales" color="primary" variant="soft">Ir a Ventas</UButton>
+      </template>
+    </UCard>
 
     <section v-if="isAdmin">
       <div>

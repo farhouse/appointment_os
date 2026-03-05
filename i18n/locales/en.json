@@ -138,6 +138,8 @@
           "calendarDesc": "View and confirm appointments.",
           "cash": "Cash",
           "cashDesc": "Open/close cash and movements.",
+          "sales": "Sales",
+          "salesDesc": "Register sales and quick payments.",
           "employees": "Employees",
           "employeesDesc": "Manage barbers and permissions.",
           "products": "Products",
