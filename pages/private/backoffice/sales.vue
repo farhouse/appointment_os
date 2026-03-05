@@ -98,12 +98,6 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
-const cashBoxOptions = computed(() => cashBoxes.value.map((c: any) => ({ label: c.name, value: c.id })))
-const payMediaOptions = computed(() =>
-  paymentMedia.value
-    .filter((m: any) => m.method === saleForm.paymentMethod)
-    .map((m: any) => ({ label: m.name, value: m.id }))
-)
 
 watch(() => saleForm.paymentMethod, (method) => {
   const first = paymentMedia.value.find(m => m.active && m.method === method)
@@ -259,96 +253,107 @@ async function submitSale() {
       </table>
     </div>
 
-    <!-- New Sale Modal -->
-    <UModal v-model="isNewSaleOpen" :ui="{ width: 'sm:max-w-4xl' }">
-      <UCard class="bg-white text-stone-900">
-        <template #header>
-          <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold">Nueva Venta</h3>
-            <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isNewSaleOpen = false" />
-          </div>
-        </template>
+    <!-- New Sale Inline Form -->
+    <UCard v-if="isNewSaleOpen" class="bg-white text-stone-900 mt-6">
+      <template #header>
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-semibold">Nueva Venta</h3>
+          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isNewSaleOpen = false" />
+        </div>
+      </template>
 
-        <div class="space-y-4">
-          <!-- Items -->
-          <div class="space-y-2">
-            <div v-for="(item, index) in saleForm.items" :key="index" class="flex gap-2 items-start border p-2 rounded">
-              <div class="w-32">
-                <select
-                  v-model="item.type"
-                  class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
-                  @change="onItemChange(item)"
-                >
-                  <option value="PRODUCT">PRODUCT</option>
-                  <option value="SERVICE">SERVICE</option>
-                  <option value="CONCEPT">CONCEPT</option>
-                </select>
-              </div>
-
-              <div class="flex-1">
-                <select
-                  v-if="item.type === 'PRODUCT'"
-                  v-model="item.productId"
-                  class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
-                  @change="onItemChange(item)"
-                >
-                  <option disabled value="">Seleccionar producto</option>
-                  <option v-for="product in products" :key="product.id" :value="product.id">
-                    {{ product.name }}
-                  </option>
-                </select>
-                <select
-                  v-else-if="item.type === 'SERVICE'"
-                  v-model="item.serviceId"
-                  class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
-                  @change="onItemChange(item)"
-                >
-                  <option disabled value="">Seleccionar servicio</option>
-                  <option v-for="service in services" :key="service.id" :value="service.id">
-                    {{ service.name }}
-                  </option>
-                </select>
-                <UInput v-else v-model="item.name" placeholder="Concepto / Detalle" />
-              </div>
-
-              <div class="w-20">
-                <UInput type="number" v-model.number="item.quantity" min="1" placeholder="Cant" />
-              </div>
-              <div class="w-24">
-                <UInput type="number" v-model.number="item.price" min="0" step="0.01" placeholder="Precio" />
-              </div>
-              <UButton icon="i-heroicons-trash" color="red" variant="ghost" @click="removeItem(index)" />
+      <div class="space-y-4">
+        <!-- Items -->
+        <div class="space-y-2">
+          <div v-for="(item, index) in saleForm.items" :key="index" class="flex gap-2 items-start border p-2 rounded">
+            <div class="w-32">
+              <select
+                v-model="item.type"
+                class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                @change="onItemChange(item)"
+              >
+                <option value="PRODUCT">PRODUCT</option>
+                <option value="SERVICE">SERVICE</option>
+                <option value="CONCEPT">CONCEPT</option>
+              </select>
             </div>
-            <UButton icon="i-heroicons-plus" variant="soft" block @click="addItem">Agregar Ítem</UButton>
-          </div>
 
-          <!-- Payment -->
-          <div class="grid grid-cols-2 gap-4 border-t pt-4">
-            <UFormGroup label="Caja">
-              <USelect v-model="saleForm.cashBoxId" :items="cashBoxOptions" value-key="value" label-key="label" />
-            </UFormGroup>
-            <div class="grid grid-cols-2 gap-2">
-               <UFormGroup label="Método">
-                 <USelect v-model="saleForm.paymentMethod" :items="['CASH', 'CARD', 'TRANSFER', 'OTHER']" />
-               </UFormGroup>
-               <UFormGroup label="Medio">
-                 <USelect v-model="saleForm.paymentMediumId" :items="payMediaOptions" value-key="value" label-key="label" />
-               </UFormGroup>
+            <div class="flex-1">
+              <select
+                v-if="item.type === 'PRODUCT'"
+                v-model="item.productId"
+                class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                @change="onItemChange(item)"
+              >
+                <option disabled value="">Seleccionar producto</option>
+                <option v-for="product in products" :key="product.id" :value="product.id">
+                  {{ product.name }}
+                </option>
+              </select>
+              <select
+                v-else-if="item.type === 'SERVICE'"
+                v-model="item.serviceId"
+                class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                @change="onItemChange(item)"
+              >
+                <option disabled value="">Seleccionar servicio</option>
+                <option v-for="service in services" :key="service.id" :value="service.id">
+                  {{ service.name }}
+                </option>
+              </select>
+              <UInput v-else v-model="item.name" placeholder="Concepto / Detalle" />
             </div>
-          </div>
 
-          <div class="text-right text-xl font-bold">
-            Total: ${{ total }}
+            <div class="w-20">
+              <UInput type="number" v-model.number="item.quantity" min="1" placeholder="Cant" />
+            </div>
+            <div class="w-24">
+              <UInput type="number" v-model.number="item.price" min="0" step="0.01" placeholder="Precio" />
+            </div>
+            <UButton icon="i-heroicons-trash" color="red" variant="ghost" @click="removeItem(index)" />
+          </div>
+          <UButton icon="i-heroicons-plus" variant="soft" block @click="addItem">Agregar Ítem</UButton>
+        </div>
+
+        <!-- Payment -->
+        <div class="grid grid-cols-2 gap-4 border-t pt-4">
+          <UFormGroup label="Caja">
+            <select v-model="saleForm.cashBoxId" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
+              <option disabled value="">Seleccionar caja</option>
+              <option v-for="box in cashBoxes" :key="box.id" :value="box.id">{{ box.name }}</option>
+            </select>
+          </UFormGroup>
+          <div class="grid grid-cols-2 gap-2">
+             <UFormGroup label="Método">
+               <select v-model="saleForm.paymentMethod" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
+                 <option value="CASH">CASH</option>
+                 <option value="CARD">CARD</option>
+                 <option value="TRANSFER">TRANSFER</option>
+                 <option value="OTHER">OTHER</option>
+               </select>
+             </UFormGroup>
+             <UFormGroup label="Medio">
+               <select v-model="saleForm.paymentMediumId" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
+                 <option disabled value="">Seleccionar medio</option>
+                 <option v-for="medium in paymentMedia.filter((m: any) => m.method === saleForm.paymentMethod)" :key="medium.id" :value="medium.id">
+                   {{ medium.name }}
+                 </option>
+               </select>
+             </UFormGroup>
           </div>
         </div>
 
-        <template #footer>
-          <div class="flex justify-end gap-2">
-            <UButton color="gray" variant="ghost" @click="isNewSaleOpen = false">Cancelar</UButton>
-            <UButton color="primary" @click="submitSale">Registrar Venta</UButton>
-          </div>
-        </template>
-      </UCard>
-    </UModal>
+        <div class="text-right text-xl font-bold">
+          Total: ${{ total }}
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton color="gray" variant="ghost" @click="isNewSaleOpen = false">Cancelar</UButton>
+          <UButton color="primary" @click="submitSale">Registrar Venta</UButton>
+        </div>
+      </template>
+    </UCard>
   </div>
 </template>
