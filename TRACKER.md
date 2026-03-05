@@ -201,6 +201,13 @@ Leyenda estado: `todo | doing | blocked | done`
   - Acceptance: selector incluye Daily; UI maneja volumen (10+ por día).
   - Files: `pages/private/barber/appointments.vue`.
 
+- [ ] (todo) **Barber working hours**: definir y guardar horarios de trabajo por barbero (rol BARBER).
+  - Acceptance:
+    - Configuración semanal por día (inicio/fin + día no laboral).
+    - Visible/editable por ADMIN/OWNER (y opcionalmente por MANAGER según permisos).
+    - Booking/agenda respeta disponibilidad real de ese horario.
+  - Files: `prisma/schema.prisma` (availability model), endpoints de employees/availability, `pages/private/backoffice/employees.vue` (o detalle), lógica de disponibilidad en calendar/booking.
+
 ## P2 — Backoffice
 - [x] (done) **Settings split**: sectores de configuración separados en subpáginas dedicadas.
   - Resultado: hub en `/private/backoffice/settings` con accesos a Sucursales, Medios de pago, Email y Cajas.
