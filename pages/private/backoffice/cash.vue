@@ -71,7 +71,7 @@ const openSessionsSorted = computed(() => {
 })
 const selectedBranchOpenSessions = computed(() => openSessionsSorted.value.filter(s => s.branchId === selectedBranchId.value))
 const globalOpenSessionsSorted = computed(() => {
-  return openSessionsSorted.value.filter(s => s.branchId !== selectedBranchId.value)
+  return openSessionsSorted.value
 })
 
 const isAdmin = computed(() => me.value?.role === 'OWNER' || me.value?.role === 'ADMIN')
@@ -529,11 +529,16 @@ const globalOpenColumns = [
 const globalOpenRows = computed(() => {
   return globalOpenSessionsSorted.value.map((session) => {
     const totals = getTotalsByMethod(session)
+    const openedAtDate = new Date(session.openingTime)
+    const openedAtTs = openedAtDate.getTime()
+    const ageHours = Number.isNaN(openedAtTs) ? 0 : (Date.now() - openedAtTs) / (1000 * 60 * 60)
     return {
       id: session.id,
       branch: session.branch?.name || 'Sucursal',
       cashBox: session.cashBox?.name || 'Caja del día',
       openedAt: formatDate(session.openingTime),
+      openedAtTs,
+      isOlderThan24h: ageHours >= 24,
       openedBy: session.openedByName || '—',
       total: formatCurrency(getSessionCurrentBalance(session)),
       cash: formatCurrency(totals.CASH || 0),
@@ -651,7 +656,7 @@ watch(openSessionsSorted, (value) => {
         @search="globalOpenFilter = $event"
       >
         <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
-          <div>Otras sucursales</div>
+          <div>Todas las sucursales</div>
           <div>{{ $t('admin.common.count', { count: filteredGlobalOpenRows.length }) }}</div>
         </div>
         <div v-if="isLoading" class="p-6">
@@ -664,12 +669,20 @@ watch(openSessionsSorted, (value) => {
             :title="'Sin sesiones abiertas'"
             :description="globalOpenRows.length
               ? 'No hay sesiones que coincidan con el filtro.'
-              : 'No hay sesiones abiertas en otras sucursales.'"
+              : 'No hay sesiones abiertas actualmente.'"
             icon="i-lucide-briefcase"
           />
         </div>
         <div v-else>
+          <div class="px-4 pt-3 text-xs text-stone-500">
+            Aperturas con más de 24h se muestran en <span class="font-semibold text-red-600">rojo</span>.
+          </div>
           <UTable :data="filteredGlobalOpenRows" :columns="globalOpenColumns" :ui="tableUi">
+            <template #openedAt-cell="{ row }">
+              <span :class="row.original.isOlderThan24h ? 'font-medium text-red-600' : ''">
+                {{ row.original.openedAt }}
+              </span>
+            </template>
             <template #actions-cell="{ row }">
               <UButton size="xs" variant="outline" :to="row.original.closeUrl">Ir a cerrar</UButton>
             </template>
