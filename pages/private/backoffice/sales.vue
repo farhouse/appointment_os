@@ -98,6 +98,16 @@ const total = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
+const selectedPaymentMethodLabel = computed(() => {
+  const medium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
+  const method = medium?.method || saleForm.paymentMethod
+  switch (method) {
+    case 'CARD': return 'Tarjeta'
+    case 'TRANSFER': return 'Transferencia'
+    case 'OTHER': return 'Otro'
+    default: return 'Efectivo'
+  }
+})
 
 watch(() => saleForm.paymentMediumId, (mediumId) => {
   const medium = paymentMedia.value.find((m: any) => m.id === mediumId)
@@ -337,6 +347,7 @@ async function submitSale() {
                    {{ medium.name }}
                  </option>
                </select>
+               <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPaymentMethodLabel }}</p>
              </UFormGroup>
           </div>
         </div>

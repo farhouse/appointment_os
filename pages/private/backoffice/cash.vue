@@ -173,6 +173,8 @@ const paymentMediumItems = computed(() => {
     .map(item => ({ label: item.name, value: item.id }))
 })
 
+const selectedMovementMethodLabel = computed(() => getMethodLabel(movementForm.paymentMethod || 'CASH'))
+
 function getMethodLabel(method: string) {
   switch (method) {
     case 'CARD':
@@ -912,6 +914,7 @@ watch(openSessionsSorted, (value) => {
         </UFormField>
         <UFormField label="Medio" name="paymentMediumId">
           <USelect v-model="movementForm.paymentMediumId" :items="paymentMediumItems" value-key="value" />
+          <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedMovementMethodLabel }}</p>
         </UFormField>
         <UFormField :label="$t('manager.cash.movementAmount')" name="amount">
           <UInputNumber v-model="movementForm.amount" :min="0" />

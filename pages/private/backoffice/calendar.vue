@@ -207,6 +207,15 @@ function overlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
 
 const payMediaOptions = computed(() => paymentMedia.value)
 
+const selectedPayMethodLabel = computed(() => {
+  switch (payForm.paymentMethod) {
+    case 'CARD': return t('manager.cash.methodCard')
+    case 'TRANSFER': return t('manager.cash.methodTransfer')
+    case 'OTHER': return t('manager.cash.methodOther')
+    default: return t('manager.cash.methodCash')
+  }
+})
+
 watch(() => payForm.paymentMediumId, (mediumId) => {
   const medium = paymentMedia.value.find(m => m.id === mediumId)
   if (medium?.method) {
@@ -599,6 +608,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
               <option value="" disabled>Seleccioná un medio</option>
               <option v-for="pm in payMediaOptions" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
             </select>
+            <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPayMethodLabel }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.amount') }}</label>
