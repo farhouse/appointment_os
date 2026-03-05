@@ -24,7 +24,6 @@ Leyenda estado: `todo | doing | blocked | done`
 - [ ] (todo) **Booking / Availability**: completar la data `busy` (hoy es MVP stub por día) para que “solo disponibles” sea consistente.
   - NEXT: definir endpoint/consulta que devuelva turnos ocupados por rango (por sucursal + opcional barbero) y usarlo en wizard.
 
-- [ ] (todo) **Permisos / UX**: revisar globalmente el selector de sucursal en layout + páginas (asegurar que nunca se “pise” la selección y que haya estado visual de “aplicando”).
   - NEXT: validar en manager/backoffice/barber/client y en /book.
 
 ## P1 — UX / flujo
@@ -62,7 +61,6 @@ Leyenda estado: `todo | doing | blocked | done`
   - Fix: evitar colisión de `booking.confirm` (string) vs confirm page (objeto) usando `booking.confirmPage.*`.
   - Fix: ruta `/book/done` (conflicto `pages/book.vue` vs `pages/book/*`) moviendo a `pages/book/index.vue`.
 
-- [ ] (todo) **Client landing**: convertir `/private/client` en un dashboard útil.
   - Incluye: noticias/ofertas + resumen de últimos turnos + puntos + “hace cuánto no se corta el pelo”.
   - Acceptance: carga rápida + estados loading + responsive.
   - Files: `pages/private/client/index.vue`, endpoints nuevos.
@@ -80,11 +78,6 @@ Leyenda estado: `todo | doing | blocked | done`
 - [x] (done) **Loading indicators**: agregar indicadores de carga en todas las páginas de CLIENT.
   - Resultado: skeletons visibles en `/private/client` (loading de `me`), `/private/client/appointments`, `/private/client/redeem` y `/private/client/book`.
   - Files: `pages/private/client/*.vue`.
-
-- [ ] (todo) **Redeem**: mostrar solo productos canjeables *y* que el cliente pueda pagar con sus puntos.
-  - Acceptance: no mostrar productos con `pointsCost <= 0` ni los que `pointsCost > balance`.
-  - Files: `pages/private/client/redeem.vue`.
-  - NEXT: ajustar computed `redeemable` para filtrar por balance.
 
 - [ ] (todo) **Client profile**: en perfil privado de cliente mostrar/editar teléfono y datos; permitir cambiar password.
   - Acceptance: editar name/phone/email (si corresponde) + flujo cambiar password.
@@ -105,7 +98,6 @@ Leyenda estado: `todo | doing | blocked | done`
 
 ## Ideas (opcional)
 - [ ] **Rebook rápido**: botón “Reservar de nuevo” usando último servicio/barbero si existe.
-- [ ] **Turnos**: mostrar próximos + últimos 3 con status y CTA “ver detalle”.
 - [ ] **News**: audiencia (todos vs por sucursal) + expiración.
 
 ## P2 — Manager
@@ -172,8 +164,6 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/backoffice/calendar.vue` (modal), `server/api/sales/*` (nuevo), prisma (Sale.appointmentId unique).
   - NEXT: diseñar UI mínima y endpoints create/update sale.
 
-- [ ] (todo) **Servicios (venta)**: definir si “vender servicio” es cobro de un appointment o venta directa.
-  - NEXT: aclarar scope para no duplicar caja/appointments.
 
 ## P2 — Barber
 - [x] (done) **Barber Today calendar**: `/private/barber/today` muestra turnos del barbero logueado.
