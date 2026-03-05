@@ -46,8 +46,40 @@ export default defineEventHandler(async (event) => {
     badRequest('Open cash session required')
   }
 
-  // MVP: create Sale + SaleItems. No split payments by design.
   const sale = await prisma.$transaction(async (tx) => {
+    // Aggregate required stock by product for this sale.
+    const requiredByProduct = parsed.items.reduce<Record<string, number>>((acc, item) => {
+      if (!item.productId) return acc
+      acc[item.productId] = (acc[item.productId] || 0) + item.quantity
+      return acc
+    }, {})
+
+    const productIds = Object.keys(requiredByProduct)
+
+    if (productIds.length) {
+      const branchStocks = await tx.branchStock.findMany({
+        where: {
+          branchId: parsed.branchId,
+          productId: { in: productIds }
+        },
+        select: {
+          productId: true,
+          quantity: true
+        }
+      })
+
+      const stockByProduct = new Map(branchStocks.map(s => [s.productId, s.quantity]))
+
+      for (const productId of productIds) {
+        const required = requiredByProduct[productId]
+        const available = stockByProduct.get(productId) ?? 0
+
+        if (available < required) {
+          badRequest('Insufficient stock for one or more products')
+        }
+      }
+    }
+
     const created = await tx.sale.create({
       data: {
         branchId: parsed.branchId,
@@ -80,6 +112,38 @@ export default defineEventHandler(async (event) => {
         reason: 'SALE'
       }
     })
+
+    if (productIds.length) {
+      await tx.stockMovement.create({
+        data: {
+          branchId: parsed.branchId,
+          type: 'OUT',
+          reference: `SALE:${created.id}`,
+          items: {
+            create: productIds.map((productId) => ({
+              productId,
+              quantity: requiredByProduct[productId]
+            }))
+          }
+        }
+      })
+
+      for (const productId of productIds) {
+        await tx.branchStock.update({
+          where: {
+            branchId_productId: {
+              branchId: parsed.branchId,
+              productId
+            }
+          },
+          data: {
+            quantity: {
+              decrement: requiredByProduct[productId]
+            }
+          }
+        })
+      }
+    }
 
     return created
   })
