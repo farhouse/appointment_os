@@ -2,6 +2,7 @@
 
 > Archivo vivo. Mantenerlo corto y accionable.
 > Convención: cada ítem tiene **prioridad**, **área**, **estado**, y un **NEXT** claro.
+> **Single source of truth:** este es el único archivo de tareas vigente.
 
 Leyenda estado: `todo | doing | blocked | done`
 
