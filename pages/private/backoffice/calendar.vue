@@ -214,6 +214,26 @@ function getMediumDisplayName(name: string) {
   return name
 }
 
+function statusBadgeColor(status: string | undefined) {
+  switch (status) {
+    case 'PENDING': return 'warning'
+    case 'CONFIRMED': return 'info'
+    case 'IN_PROGRESS': return 'primary'
+    case 'FINISHED': return 'success'
+    case 'PAID': return 'success'
+    case 'CANCELED': return 'error'
+    case 'NO_SHOW': return 'error'
+    default: return 'neutral'
+  }
+}
+
+function formatCurrency(value: any) {
+  if (value == null) return '—'
+  const n = typeof value === 'string' ? Number(value) : value
+  if (!Number.isFinite(n)) return String(value)
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
+}
+
 const payMediaOptions = computed(() => paymentMedia.value)
 
 const selectedPayMethodLabel = computed(() => {
@@ -504,17 +524,53 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         </div>
 
         <div class="mt-4 space-y-3 text-sm">
-          <div class="text-gray-700">
-            <span class="font-medium">{{ $t('calendar.status') }}</span>
-            {{ statusLabel(selectedEvent?.extendedProps?.status) }}
+          <!-- Status -->
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-gray-700">{{ $t('calendar.status') }}</span>
+            <UBadge :color="statusBadgeColor(selectedEvent?.extendedProps?.status)">
+              {{ statusLabel(selectedEvent?.extendedProps?.status) }}
+            </UBadge>
           </div>
+
+          <!-- Professional -->
+          <div v-if="selectedEvent?.extendedProps?.professional" class="flex items-center justify-between">
+            <span class="text-gray-500">Profesional</span>
+            <span class="text-gray-900">{{ selectedEvent.extendedProps.professional.name }}</span>
+          </div>
+
+          <!-- Client info -->
+          <div v-if="selectedEvent?.extendedProps?.client" class="rounded bg-gray-50 p-3 space-y-2">
+            <div class="font-medium text-gray-900">Cliente</div>
+            <div class="text-sm">
+              <div>{{ selectedEvent.extendedProps.client.firstName }} {{ selectedEvent.extendedProps.client.lastName }}</div>
+              <div v-if="selectedEvent.extendedProps.client.phone" class="text-gray-500">{{ selectedEvent.extendedProps.client.phone }}</div>
+              <div v-if="selectedEvent.extendedProps.client.email" class="text-gray-500">{{ selectedEvent.extendedProps.client.email }}</div>
+            </div>
+          </div>
+
+          <!-- Services -->
+          <div v-if="selectedEvent?.extendedProps?.services?.length" class="space-y-2">
+            <div class="font-medium text-gray-700">Servicios</div>
+            <div class="rounded border border-gray-200 divide-y divide-gray-200">
+              <div
+                v-for="service in selectedEvent.extendedProps.services"
+                :key="service.id"
+                class="flex justify-between items-center py-2 px-3 text-sm"
+              >
+                <span class="text-gray-900">{{ service.name }}</span>
+                <span class="text-gray-600">{{ formatCurrency(service.price) }}</span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded font-medium">
+              <span>Total</span>
+              <span class="text-lg">{{ formatCurrency(selectedEvent?.extendedProps?.totalPrice) }}</span>
+            </div>
+          </div>
+
+          <!-- Notes -->
           <div v-if="selectedEvent?.extendedProps?.notes" class="text-sm">
-            <div class="font-medium">Notas</div>
-            <div class="text-gray-700 whitespace-pre-wrap">{{ selectedEvent.extendedProps.notes }}</div>
-          </div>
-          <div class="text-sm">
-            <div class="font-medium">Total</div>
-            <div class="text-gray-700">{{ selectedEvent?.extendedProps?.totalPrice ?? 0 }}</div>
+            <div class="font-medium text-gray-700">Notas</div>
+            <div class="text-gray-600 whitespace-pre-wrap">{{ selectedEvent.extendedProps.notes }}</div>
           </div>
         </div>
 
@@ -602,26 +658,49 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         </div>
 
         <div class="mt-4 space-y-4 text-sm">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.cashbox') }}</label>
-            <select v-model="payForm.cashBoxId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-              <option value="" disabled>{{ $t('pages.private.manager.pay.selectCashbox') }}</option>
-              <option v-for="cb in cashBoxes" :key="cb.id" :value="cb.id">
-                {{ cb.name }}
-              </option>
-            </select>
+          <!-- Session warning -->
+          <div v-if="!hasOpenCashSession" class="rounded-lg bg-amber-50 border border-amber-200 p-4">
+            <div class="flex items-start gap-3">
+              <div class="i-lucide-alert-triangle text-amber-500 text-xl mt-0.5" />
+              <div class="flex-1">
+                <div class="font-medium text-amber-800">Caja cerrada</div>
+                <div class="text-sm text-amber-700 mt-1">
+                  No hay una sesión de caja abierta para esta sucursal. Abrí una caja para poder cobrar.
+                </div>
+                <UButton
+                  to="/private/backoffice/cash"
+                  color="warning"
+                  variant="solid"
+                  size="sm"
+                  class="mt-3"
+                >
+                  Ir a Caja
+                </UButton>
+              </div>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Medio</label>
-            <select v-model="payForm.paymentMediumId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
-              <option value="" disabled>Seleccioná un medio</option>
-              <option v-for="pm in payMediaOptions" :key="pm.id" :value="pm.id">{{ getMediumDisplayName(pm.name) }}</option>
-            </select>
-            <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPayMethodLabel }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.amount') }}</label>
-            <input v-model.number="payForm.amount" type="number" min="0" step="0.01" class="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
+          <div v-else>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.cashbox') }}</label>
+              <select v-model="payForm.cashBoxId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
+                <option value="" disabled>{{ $t('pages.private.manager.pay.selectCashbox') }}</option>
+                <option v-for="cb in cashBoxes" :key="cb.id" :value="cb.id">
+                  {{ cb.name }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Medio</label>
+              <select v-model="payForm.paymentMediumId" class="mt-1 w-full rounded border border-gray-300 px-3 py-2">
+                <option value="" disabled>Seleccioná un medio</option>
+                <option v-for="pm in payMediaOptions" :key="pm.id" :value="pm.id">{{ getMediumDisplayName(pm.name) }}</option>
+              </select>
+              <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPayMethodLabel }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">{{ $t('pages.private.manager.pay.amount') }}</label>
+              <input v-model.number="payForm.amount" type="number" min="0" step="0.01" class="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
+            </div>
           </div>
           <div v-if="payError" class="text-xs text-red-600">{{ payError }}</div>
         </div>

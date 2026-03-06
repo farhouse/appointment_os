@@ -74,6 +74,8 @@ function changeDay(deltaDays: number) {
   date.value = formatYmd(dt)
 }
 const busy = ref<BusySlot[]>([])
+const workingHoursStart = ref<string | null>(null)
+const workingHoursEnd = ref<string | null>(null)
 
 const clientFirstName = ref(props.initialClient?.firstName || '')
 const clientLastName = ref(props.initialClient?.lastName || '')
@@ -212,14 +214,21 @@ watch([branchId, barberId, date], async ([bId, brId, d]) => {
   selectedStart.value = null
   selectedEnd.value = null
 
-  if (!bId || !brId || !d) {
+  if (!bId || !d) {
     loadingSlots.value = false
     return
   }
 
   loadingSlots.value = true
   try {
-    busy.value = (await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId)}&date=${encodeURIComponent(d)}`)).busy || []
+    const availability = await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId || '')}&date=${encodeURIComponent(d)}`)
+    busy.value = (availability as any).busy || []
+    workingHoursStart.value = (availability as any).workingHours?.start || null
+    workingHoursEnd.value = (availability as any).workingHours?.end || null
+  } catch {
+    busy.value = []
+    workingHoursStart.value = null
+    workingHoursEnd.value = null
   } finally {
     await nextTick()
     loadingSlots.value = false
@@ -251,9 +260,13 @@ const slotDurationMin = computed(() => selectedService.value?.duration || 30)
 const availableSlots = computed(() => {
   if (!branchId.value || !barberId.value || !selectedService.value) return [] as { start: Date; end: Date; label: string }[]
 
-  // MVP: working hours 09:00–19:00 local.
-  const startDay = new Date(`${date.value}T09:00:00`)
-  const endDay = new Date(`${date.value}T19:00:00`)
+  if (!workingHoursStart.value || !workingHoursEnd.value) return []
+
+  const whStart = workingHoursStart.value
+  const whEnd = workingHoursEnd.value
+
+  const startDay = new Date(`${date.value}T${whStart}:00`)
+  const endDay = new Date(`${date.value}T${whEnd}:00`)
 
   const stepMin = 15
   const dur = slotDurationMin.value

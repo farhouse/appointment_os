@@ -717,15 +717,31 @@ watch(openSessionsSorted, (value) => {
       </div>
 
       <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="text-sm font-medium text-stone-600">{{ $t('manager.cash.cashboxes') }}</div>
-          <USelect
-            v-model="selectedCashBoxId"
-            :items="cashBoxes"
-            value-key="id"
-            label-key="name"
-            :placeholder="$t('manager.cash.selectCashbox')"
-          />
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="text-sm font-medium text-stone-600">{{ $t('manager.cash.cashboxes') }}</div>
+            <USelect
+              v-model="selectedCashBoxId"
+              :items="cashBoxes"
+              value-key="id"
+              label-key="name"
+              :placeholder="$t('manager.cash.selectCashbox')"
+              class="w-40"
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- Session status indicator -->
+            <div v-if="selectedSession" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-700 text-xs font-medium">
+              <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              Sesión activa
+            </div>
+            <div v-else class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              Sin sesión abierta
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mt-3">
           <UButton color="primary" :disabled="!selectedBranchId || !!selectedSession" @click="openOpenModal">
             {{ $t('manager.cash.openSession') }}
           </UButton>
@@ -736,6 +752,10 @@ watch(openSessionsSorted, (value) => {
             {{ $t('manager.cash.movements') }}
           </UButton>
         </div>
+        <!-- Help text -->
+        <p v-if="!selectedSession" class="text-xs text-stone-500 mt-2">
+          Abrí una sesión de caja para poder registrar cobros y movimientos.
+        </p>
       </div>
 
       <div class="rounded-lg border border-stone-200 bg-white shadow-sm">

@@ -51,6 +51,7 @@ const errorMessage = ref('')
 const modalOpen = ref(false)
 const deleteOpen = ref(false)
 const passwordOpen = ref(false)
+const hoursOpen = ref(false)
 const isSaving = ref(false)
 const isDeleting = ref(false)
 const isResetting = ref(false)
@@ -227,6 +228,15 @@ const columns: TableColumn<Employee>[] = [
           onClick: () => openEdit(row.original)
         })
       }),
+      h(UTooltip, { text: 'Horarios' }, {
+        default: () => h(UButton, {
+          size: 'xs',
+          variant: 'outline',
+          icon: 'i-lucide-clock',
+          'aria-label': 'Horarios',
+          onClick: () => openHours(row.original)
+        })
+      }),
       h(UTooltip, { text: t('admin.employees.resetPassword') }, {
         default: () => h(UButton, {
           size: 'xs',
@@ -310,6 +320,11 @@ function openEdit(employee: Employee) {
   formState.branchIds = employee.branches.map(item => item.branch.id)
   formState.password = ''
   modalOpen.value = true
+}
+
+function openHours(employee: Employee) {
+  selected.value = employee
+  hoursOpen.value = true
 }
 
 function requestDelete(employee: Employee) {
@@ -549,6 +564,17 @@ onMounted(() => {
       </UButton>
       <UButton color="error" :loading="isDeleting" @click="confirmDelete">
         {{ $t('admin.common.delete') }}
+      </UButton>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="hoursOpen" :title="`Horarios de ${selected?.name || ''}`" :ui="{ footer: 'justify-end' }">
+    <template #body>
+      <EmployeeWorkingHours v-if="selected?.id" :user-id="selected.id" @saved="loadEmployees" />
+    </template>
+    <template #footer>
+      <UButton color="neutral" variant="outline" @click="hoursOpen = false">
+        {{ $t('common.close') }}
       </UButton>
     </template>
   </UModal>

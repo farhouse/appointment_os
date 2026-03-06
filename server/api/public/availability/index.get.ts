@@ -1,9 +1,7 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, getQuery, createError } from 'h3'
 import prisma from '~/server/utils/prisma'
-import { requireQueryString } from '~/server/utils/http'
 
 function getDayOfWeek(date: Date): number {
-  // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   return date.getDay()
 }
 
@@ -20,43 +18,62 @@ function minutesToTime(minutes: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
-function getWorkingHoursForDate(branchId: string, barberId: string | null, date: Date) {
-  const dayOfWeek = getDayOfWeek(date)
-  const dateStr = date.toISOString().split('T')[0]
+function getSlotRanges(workingStart: number, workingEnd: number, busySlots: { startTime: Date; endTime: Date }[], duration: number): { start: string; end: string }[] {
+  const ranges: { start: number; end: number }[] = []
+  const stepMin = 15
 
-  // Default fallback hours if no working hours configured
-  const defaultStart = 9 * 60 // 09:00
-  const defaultEnd = 19 * 60 // 19:00
+  const busyMinutes = busySlots.map(b => ({
+    start: b.startTime.getHours() * 60 + b.startTime.getMinutes(),
+    end: b.endTime.getHours() * 60 + b.endTime.getMinutes()
+  }))
 
-  return { dayOfWeek, dateStr, defaultStart, defaultEnd }
+  for (let cur = workingStart; cur + duration <= workingEnd; cur += stepMin) {
+    const slotStart = cur
+    const slotEnd = cur + duration
+
+    const isBusy = busyMinutes.some(busy => slotStart < busy.end && slotEnd > busy.start)
+
+    if (!isBusy) {
+      ranges.push({ start: slotStart, end: slotEnd })
+    }
+  }
+
+  return ranges.map(r => ({ start: minutesToTime(r.start), end: minutesToTime(r.end) }))
 }
 
 export default defineEventHandler(async (event) => {
-  const branchId = requireQueryString(event, 'branchId')
-  const barberId = requireQueryString(event, 'barberId')
-  const date = requireQueryString(event, 'date') // YYYY-MM-DD (local)
+  const query = getQuery(event)
+  const branchId = query.branchId as string
+  const barberId = (query.barberId as string) || null
+  const date = query.date as string
+
+  if (!branchId || !date) {
+    throw createError({ statusCode: 400, statusMessage: 'branchId and date are required' })
+  }
 
   const dayStart = new Date(`${date}T00:00:00.000`)
   const dayEnd = new Date(`${date}T23:59:59.999`)
 
+  const appointmentWhere: any = {
+    branchId,
+    startTime: { lt: dayEnd },
+    endTime: { gt: dayStart },
+    status: { in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'] }
+  }
+  if (barberId) {
+    appointmentWhere.professionalId = barberId
+  }
+
   const appts = await prisma.appointment.findMany({
-    where: {
-      branchId,
-      professionalId: barberId,
-      startTime: { lt: dayEnd },
-      endTime: { gt: dayStart },
-      status: { in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'] }
-    },
+    where: appointmentWhere,
     select: { startTime: true, endTime: true, status: true }
   })
 
-  // Get working hours for this date
   const dayOfWeek = dayStart.getDay()
-  let workingStart = 9 * 60 // 09:00 default
-  let workingEnd = 19 * 60  // 19:00 default
+  let workingStart = 9 * 60
+  let workingEnd = 19 * 60
   let isDayOff = false
 
-  // Try to get barber-specific working hours first
   if (barberId) {
     const barberHours = await prisma.barberWorkingHour.findUnique({
       where: {
@@ -73,7 +90,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Fall back to branch hours if barber has no specific hours or no barber selected
   if (!barberId || !isDayOff) {
     const branchHours = await prisma.branchWorkingHour.findUnique({
       where: {
@@ -90,14 +106,23 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  const busyForDisplay = appts.map(a => ({
+    startTime: a.startTime.toISOString(),
+    endTime: a.endTime.toISOString(),
+    status: a.status
+  }))
+
   return {
     branchId,
     barberId,
     date,
-    busy: appts,
+    dayOfWeek,
+    isDayOff,
     workingHours: isDayOff ? null : {
       start: minutesToTime(workingStart),
       end: minutesToTime(workingEnd)
-    }
+    },
+    busy: busyForDisplay,
+    available: isDayOff ? [] : getSlotRanges(workingStart, workingEnd, appts, 30)
   }
 })
