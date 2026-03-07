@@ -189,6 +189,7 @@ Leyenda estado: `todo | doing | blocked | done`
 ## P2 — Barber
 - [x] (done) **Barber Today calendar**: `/private/barber/today` muestra turnos del barbero logueado.
   - Resultado: carga eventos por rango desde `/api/calendar/events` con restricción server-side por BARBER.
+  - QA/Prod: **validado por usuario** (el barbero ve sus propios cortes).
   - Files: `pages/private/barber/today.vue`, `server/api/calendar/events.get.ts`.
   - Ref commits: `ac31e20`, `563f92c`.
 
@@ -213,11 +214,21 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `pages/private/barber/appointments.vue`.
 
 - [ ] (todo) **Barber working hours**: definir y guardar horarios de trabajo por barbero (rol BARBER).
+  - Estado actual: **parcial implementado**.
+  - Resultado actual:
+    - Configuración semanal por día (inicio/fin + día no laboral) disponible desde Backoffice Employees (acción "Horarios").
+    - Persistencia vía endpoints de employees/working-hours.
+    - Availability pública (`/api/public/availability`) ya usa estos horarios (barbero y fallback sucursal).
+  - Pendiente para cerrar:
+    - Visualización en calendar del barbero/manager (franjas disponibles/no disponibles según horario laboral).
+    - QA E2E completo (configuración → impacto en booking/calendario en todos los roles).
   - Acceptance:
     - Configuración semanal por día (inicio/fin + día no laboral).
     - Visible/editable por ADMIN/OWNER (y opcionalmente por MANAGER según permisos).
     - Booking/agenda respeta disponibilidad real de ese horario.
+    - Calendar muestra claramente ventanas laborales vs fuera de horario.
   - Files: `prisma/schema.prisma` (availability model), endpoints de employees/availability, `pages/private/backoffice/employees.vue` (o detalle), lógica de disponibilidad en calendar/booking.
+  - NEXT: implementar overlay/indicador visual de jornada laboral en `pages/private/barber/today.vue` (y validar si aplica también en backoffice calendar).
 
 ## P2 — Backoffice
 - [x] (done) **Settings split**: sectores de configuración separados en subpáginas dedicadas.
@@ -244,3 +255,4 @@ Leyenda estado: `todo | doing | blocked | done`
 ## Notas / decisiones
 - Booking “disponibles” hoy = filtra contra `busy` (PENDING/CONFIRMED/IN_PROGRESS) + filtra pasado.
 - Se corrigió bug de selector de sucursal (múltiples instancias de `useSelectedBranch` re-inicializando desde cookie) moviendo `didInit` a `useState`.
+- QA smoke general en prod reportado por usuario: Login/Logout ✅, Navegación ✅, Agenda ✅, Crear/Editar ✅, estado general estable.

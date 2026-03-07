@@ -1,10 +1,9 @@
 <script setup lang="ts">
 const props = defineProps<{
-  userId: string
+  branchId: string
 }>()
 
 const emit = defineEmits(['saved'])
-
 const toast = useToast()
 
 type WorkingHour = {
@@ -21,16 +20,16 @@ const isLoading = ref(false)
 const isSaving = ref(false)
 
 async function loadWorkingHours() {
-  if (!props.userId) return
+  if (!props.branchId) return
   isLoading.value = true
   try {
-    const data = await $fetch(`/api/employees/working-hours?userId=${props.userId}`)
+    const data = await $fetch(`/api/branches/working-hours?branchId=${props.branchId}`)
     const loaded = (data as any[]) || []
     workingHours.value = Array.from({ length: 7 }, (_, i) => {
       const existing = loaded.find((h: any) => h.dayOfWeek === i)
-      return existing || { dayOfWeek: i, startTime: '09:00', endTime: '19:00', isWorking: true }
+      return existing || { dayOfWeek: i, startTime: '09:00', endTime: '19:00', isWorking: i !== 0 }
     })
-  } catch (e) {
+  } catch {
     workingHours.value = Array.from({ length: 7 }, (_, i) => ({
       dayOfWeek: i,
       startTime: '09:00',
@@ -46,21 +45,20 @@ async function saveAll() {
   if (!workingHours.value.length) return
 
   for (const day of workingHours.value) {
-    if (!day.isWorking) continue
-    const startParts = day.startTime.split(':')
-    const endParts = day.endTime.split(':')
-    const startMins = parseInt(startParts[0]) * 60 + parseInt(startParts[1])
-    const endMins = parseInt(endParts[0]) * 60 + parseInt(endParts[1])
-    if (endMins <= startMins) {
-      toast.add({ title: `Horario inválido en ${dayNames[day.dayOfWeek]}`, color: 'error' })
-      return
+    if (day.isWorking) {
+      const [sh, sm] = day.startTime.split(':').map(Number)
+      const [eh, em] = day.endTime.split(':').map(Number)
+      if ((eh * 60 + em) <= (sh * 60 + sm)) {
+        toast.add({ title: `Horario inválido en ${dayNames[day.dayOfWeek]}`, color: 'error' })
+        return
+      }
     }
   }
 
   isSaving.value = true
   try {
     for (const day of workingHours.value) {
-      await $fetch(`/api/employees/working-hours?userId=${props.userId}${day.isWorking ? '' : `&dayOfWeek=${day.dayOfWeek}`}`, {
+      await $fetch(`/api/branches/working-hours?branchId=${props.branchId}${day.isWorking ? '' : `&dayOfWeek=${day.dayOfWeek}`}`, {
         method: day.isWorking ? 'PATCH' : 'DELETE',
         body: day.isWorking
           ? {
@@ -73,7 +71,7 @@ async function saveAll() {
       })
     }
 
-    toast.add({ title: 'Horarios guardados', color: 'success' })
+    toast.add({ title: 'Horarios de sucursal guardados', color: 'success' })
     emit('saved')
   } catch (e: any) {
     toast.add({ title: e?.data?.statusMessage || 'Error guardando', color: 'error' })
@@ -82,19 +80,19 @@ async function saveAll() {
   }
 }
 
+watch(() => props.branchId, (id) => {
+  if (id) loadWorkingHours()
+}, { immediate: true })
+
 defineExpose({
   saveAll,
   isSaving
 })
-
-watch(() => props.userId, (id) => {
-  if (id) loadWorkingHours()
-}, { immediate: true })
 </script>
 
 <template>
   <div class="space-y-4">
-    <div class="text-sm font-medium text-stone-700">Horarios laborales</div>
+    <div class="text-sm font-medium text-stone-700">Horarios de la sucursal</div>
     <div v-if="isLoading" class="text-sm text-stone-500">Cargando...</div>
     <div v-else class="space-y-2">
       <div
@@ -108,8 +106,9 @@ watch(() => props.userId, (id) => {
           <span class="text-stone-500">a</span>
           <UInput v-model="day.endTime" type="time" class="w-28" />
         </div>
-        <div v-else class="flex-1 text-xs text-stone-400">Día no laborable</div>
+        <div v-else class="flex-1 text-xs text-stone-400">Sucursal cerrada</div>
       </div>
+
     </div>
   </div>
 </template>

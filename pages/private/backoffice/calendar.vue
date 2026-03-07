@@ -24,6 +24,17 @@ const currentView = ref<'day' | 'week' | 'month'>('day')
 const barbers = ref<{ id: string; name: string }[]>([])
 
 const isCreateModalOpen = ref(false)
+const createInitialStart = ref<string | null>(null)
+
+function openCreateModal(start?: Date | string | null) {
+  if (start) {
+    const d = start instanceof Date ? start : new Date(start)
+    createInitialStart.value = Number.isNaN(d.getTime()) ? null : d.toISOString()
+  } else {
+    createInitialStart.value = null
+  }
+  isCreateModalOpen.value = true
+}
 
 function refreshCalendar() {
   if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
@@ -127,6 +138,10 @@ const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 const selectedEvent = ref<any | null>(null)
 const detailModalOpen = ref(false)
 const whatsappTemplate = ref('Hola {{nombre}}, te recordamos tu turno para el {{fecha}}. {{sucursal}}')
+const editableNotes = ref('')
+const editableStart = ref('')
+const isSavingNotes = ref(false)
+const isMovingAppointment = ref(false)
 
 const selectedClientPhone = computed(() => {
   const raw = selectedEvent.value?.extendedProps?.client?.phone
@@ -234,6 +249,25 @@ function formatCurrency(value: any) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 }
 
+function formatDateTime(value?: string | Date | null) {
+  if (!value) return '—'
+  const d = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function toLocalDateTimeInput(value?: string | Date | null) {
+  if (!value) return ''
+  const d = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
+}
+
 const payMediaOptions = computed(() => paymentMedia.value)
 
 const selectedPayMethodLabel = computed(() => {
@@ -260,12 +294,68 @@ watch(() => payForm.cashBoxId, () => {
 
 function openDetailModal(event: any) {
   selectedEvent.value = event
+  editableNotes.value = event?.extendedProps?.notes || ''
+  editableStart.value = toLocalDateTimeInput(event?.start)
   detailModalOpen.value = true
 }
 
 function closeDetailModal() {
   detailModalOpen.value = false
   selectedEvent.value = null
+  editableNotes.value = ''
+  editableStart.value = ''
+}
+
+async function saveNotes() {
+  if (!selectedEvent.value?.id) return
+  isSavingNotes.value = true
+  try {
+    await $fetch(`/api/appointments/${selectedEvent.value.id}/notes`, {
+      method: 'PATCH',
+      body: { notes: editableNotes.value || null }
+    })
+    toast.add({ title: 'Notas actualizadas', color: 'success' })
+    if (calendarView.value) await loadEvents(calendarView.value, selectedBranchId.value)
+    selectedEvent.value = {
+      ...selectedEvent.value,
+      extendedProps: {
+        ...selectedEvent.value.extendedProps,
+        notes: editableNotes.value
+      }
+    }
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || 'No se pudieron guardar las notas', color: 'error' })
+  } finally {
+    isSavingNotes.value = false
+  }
+}
+
+async function moveFromModal() {
+  if (!selectedEvent.value?.id || !editableStart.value) return
+  const newStart = new Date(editableStart.value)
+  const currentStart = new Date(selectedEvent.value.start)
+  const currentEnd = new Date(selectedEvent.value.end)
+  const durationMs = Math.max(15 * 60 * 1000, currentEnd.getTime() - currentStart.getTime())
+  const newEnd = new Date(newStart.getTime() + durationMs)
+
+  isMovingAppointment.value = true
+  try {
+    await $fetch(`/api/appointments/${selectedEvent.value.id}/move`, {
+      method: 'PATCH',
+      body: {
+        startTime: newStart.toISOString(),
+        endTime: newEnd.toISOString(),
+        professionalId: selectedEvent.value?.extendedProps?.professional?.id || undefined
+      }
+    })
+    toast.add({ title: 'Turno reprogramado', color: 'success' })
+    if (calendarView.value) await loadEvents(calendarView.value, selectedBranchId.value)
+    closeDetailModal()
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || 'No se pudo reprogramar', color: 'error' })
+  } finally {
+    isMovingAppointment.value = false
+  }
 }
 
 async function confirmAppointment() {
@@ -402,6 +492,12 @@ function handleEventClick(e: any) {
   openDetailModal(event)
 }
 
+function handleCellClick(payload: any) {
+  const start = payload?.start || payload?.date || payload
+  if (!start) return
+  openCreateModal(start)
+}
+
 function getEventPayload(event: VueCalEvent, schedule?: string) {
   if (!event.start || !event.end) return null
   return {
@@ -466,7 +562,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
           v-if="selectedBranchId"
           icon="i-heroicons-plus"
           color="primary"
-          @click="isCreateModalOpen = true"
+          @click="openCreateModal()"
         >
           Nuevo
         </UButton>
@@ -508,6 +604,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         @ready="handleReady"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
+        @cell-click="handleCellClick"
         @event-dropped="handleEventDropped"
       />
     </div>
@@ -524,7 +621,17 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
         </div>
 
         <div class="mt-4 space-y-3 text-sm">
-          <!-- Status -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded border border-gray-200 p-2">
+              <div class="text-xs text-gray-500">Inicio</div>
+              <div class="font-medium text-gray-900">{{ formatDateTime(selectedEvent?.start) }}</div>
+            </div>
+            <div class="rounded border border-gray-200 p-2">
+              <div class="text-xs text-gray-500">Fin</div>
+              <div class="font-medium text-gray-900">{{ formatDateTime(selectedEvent?.end) }}</div>
+            </div>
+          </div>
+
           <div class="flex items-center justify-between">
             <span class="font-medium text-gray-700">{{ $t('calendar.status') }}</span>
             <UBadge :color="statusBadgeColor(selectedEvent?.extendedProps?.status)">
@@ -532,13 +639,17 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             </UBadge>
           </div>
 
-          <!-- Professional -->
-          <div v-if="selectedEvent?.extendedProps?.professional" class="flex items-center justify-between">
-            <span class="text-gray-500">Profesional</span>
-            <span class="text-gray-900">{{ selectedEvent.extendedProps.professional.name }}</span>
+          <div v-if="selectedEvent?.extendedProps?.professional || selectedEvent?.extendedProps?.branch" class="grid grid-cols-2 gap-3">
+            <div v-if="selectedEvent?.extendedProps?.professional" class="rounded bg-gray-50 p-2">
+              <div class="text-xs text-gray-500">Profesional</div>
+              <div class="font-medium text-gray-900">{{ selectedEvent.extendedProps.professional.name }}</div>
+            </div>
+            <div v-if="selectedEvent?.extendedProps?.branch" class="rounded bg-gray-50 p-2">
+              <div class="text-xs text-gray-500">Sucursal</div>
+              <div class="font-medium text-gray-900">{{ selectedEvent.extendedProps.branch.name }}</div>
+            </div>
           </div>
 
-          <!-- Client info -->
           <div v-if="selectedEvent?.extendedProps?.client" class="rounded bg-gray-50 p-3 space-y-2">
             <div class="font-medium text-gray-900">Cliente</div>
             <div class="text-sm">
@@ -548,7 +659,6 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             </div>
           </div>
 
-          <!-- Services -->
           <div v-if="selectedEvent?.extendedProps?.services?.length" class="space-y-2">
             <div class="font-medium text-gray-700">Servicios</div>
             <div class="rounded border border-gray-200 divide-y divide-gray-200">
@@ -567,10 +677,20 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             </div>
           </div>
 
-          <!-- Notes -->
-          <div v-if="selectedEvent?.extendedProps?.notes" class="text-sm">
+          <div class="rounded border border-gray-200 p-3 space-y-2">
+            <div class="font-medium text-gray-700">Reprogramar</div>
+            <input v-model="editableStart" type="datetime-local" class="w-full rounded border border-gray-300 px-3 py-2" />
+            <div class="flex justify-end">
+              <UButton size="sm" variant="outline" :loading="isMovingAppointment" @click="moveFromModal">Guardar nueva hora</UButton>
+            </div>
+          </div>
+
+          <div class="rounded border border-gray-200 p-3 space-y-2">
             <div class="font-medium text-gray-700">Notas</div>
-            <div class="text-gray-600 whitespace-pre-wrap">{{ selectedEvent.extendedProps.notes }}</div>
+            <UTextarea v-model="editableNotes" :rows="3" />
+            <div class="flex justify-end">
+              <UButton size="sm" variant="outline" :loading="isSavingNotes" @click="saveNotes">Guardar notas</UButton>
+            </div>
           </div>
         </div>
 
@@ -722,6 +842,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
       v-if="selectedBranchId"
       v-model="isCreateModalOpen"
       :branch-id="selectedBranchId"
+      :initial-start="createInitialStart"
       @success="refreshCalendar"
     />
   </div>

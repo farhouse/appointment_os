@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const method = event.method
 
   if (method === 'GET') {
-    const userId = (getQuery(event).userId as string) | undefined
+    const userId = (getQuery(event).userId as string) || undefined
     if (!userId) {
       badRequest('userId query param is required')
     }
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'POST' || method === 'PATCH') {
-    const userId = (getQuery(event).userId as string) | undefined
+    const userId = (getQuery(event).userId as string) || undefined
     if (!userId) {
       badRequest('userId query param is required')
     }
@@ -72,19 +72,17 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'DELETE') {
-    const userId = (getQuery(event).userId as string) | undefined
-    const dayOfWeek = (getQuery(event).dayOfWeek as string) | undefined
+    const userId = (getQuery(event).userId as string) || undefined
+    const dayOfWeek = (getQuery(event).dayOfWeek as string) || undefined
     
     if (!userId || dayOfWeek === undefined) {
       badRequest('userId and dayOfWeek query params are required')
     }
 
-    await prisma.barberWorkingHour.delete({
+    await prisma.barberWorkingHour.deleteMany({
       where: {
-        userId_dayOfWeek: {
-          userId,
-          dayOfWeek: parseInt(dayOfWeek)
-        }
+        userId,
+        dayOfWeek: parseInt(dayOfWeek)
       }
     })
 

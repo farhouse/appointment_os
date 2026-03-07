@@ -74,35 +74,46 @@ export default defineEventHandler(async (event) => {
   let workingEnd = 19 * 60
   let isDayOff = false
 
+  let hasBarberHours = false
   if (barberId) {
-    const barberHours = await prisma.barberWorkingHour.findUnique({
-      where: {
-        userId_dayOfWeek: {
-          userId: barberId,
-          dayOfWeek
+    try {
+      const barberHours = await prisma.barberWorkingHour.findUnique({
+        where: {
+          userId_dayOfWeek: {
+            userId: barberId,
+            dayOfWeek
+          }
         }
+      })
+      if (barberHours) {
+        hasBarberHours = true
+        workingStart = parseTimeToMinutes(barberHours.startTime)
+        workingEnd = parseTimeToMinutes(barberHours.endTime)
+        isDayOff = !barberHours.isWorking
       }
-    })
-    if (barberHours) {
-      workingStart = parseTimeToMinutes(barberHours.startTime)
-      workingEnd = parseTimeToMinutes(barberHours.endTime)
-      isDayOff = !barberHours.isWorking
+    } catch {
+      hasBarberHours = false
     }
   }
 
-  if (!barberId || !isDayOff) {
-    const branchHours = await prisma.branchWorkingHour.findUnique({
-      where: {
-        branchId_dayOfWeek: {
-          branchId,
-          dayOfWeek
+  // Branch schedule is fallback when there is no explicit barber schedule for that weekday.
+  if (!hasBarberHours) {
+    try {
+      const branchHours = await prisma.branchWorkingHour.findUnique({
+        where: {
+          branchId_dayOfWeek: {
+            branchId,
+            dayOfWeek
+          }
         }
+      })
+      if (branchHours) {
+        workingStart = parseTimeToMinutes(branchHours.startTime)
+        workingEnd = parseTimeToMinutes(branchHours.endTime)
+        isDayOff = !branchHours.isWorking
       }
-    })
-    if (branchHours) {
-      workingStart = parseTimeToMinutes(branchHours.startTime)
-      workingEnd = parseTimeToMinutes(branchHours.endTime)
-      isDayOff = !branchHours.isWorking
+    } catch {
+      // Backward compatibility when BranchWorkingHour is not yet migrated.
     }
   }
 

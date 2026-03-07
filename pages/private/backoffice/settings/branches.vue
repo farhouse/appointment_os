@@ -37,10 +37,12 @@ const errorMessage = ref('')
 
 const modalOpen = ref(false)
 const deleteOpen = ref(false)
+const hoursOpen = ref(false)
 const isSaving = ref(false)
 const isDeleting = ref(false)
 const selected = ref<Branch | null>(null)
 const formRef = useTemplateRef('branchForm')
+const hoursRef = ref<any>(null)
 
 const branchSchema = z.object({
   name: z.string().min(1, t('admin.branches.form.nameRequired')),
@@ -195,9 +197,15 @@ function requestDelete(branch: Branch) {
   deleteOpen.value = true
 }
 
+function openHours(branch: Branch) {
+  selected.value = branch
+  hoursOpen.value = true
+}
+
 function getRowItems(row: Row<Branch>): DropdownMenuItem[][] {
   return [
     [
+      { label: 'Horarios', icon: 'i-lucide-clock', onSelect: () => openHours(row.original) },
       { label: t('admin.common.edit'), icon: 'i-lucide-pencil', onSelect: () => openEdit(row.original) },
       { label: t('admin.common.delete'), icon: 'i-lucide-trash', color: 'error', onSelect: () => requestDelete(row.original) }
     ]
@@ -370,6 +378,20 @@ onMounted(() => {
       </UButton>
       <UButton color="error" :loading="isDeleting" @click="confirmDelete">
         {{ $t('admin.common.delete') }}
+      </UButton>
+    </template>
+  </UModal>
+
+  <UModal v-model:open="hoursOpen" :title="`Horarios de ${selected?.name || ''}`" :ui="{ footer: 'justify-end' }">
+    <template #body>
+      <BranchWorkingHours ref="hoursRef" v-if="selected?.id" :branch-id="selected.id" @saved="loadBranches" />
+    </template>
+    <template #footer>
+      <UButton color="neutral" variant="outline" @click="hoursOpen = false">
+        {{ $t('common.close') }}
+      </UButton>
+      <UButton color="primary" :loading="hoursRef?.isSaving?.value || false" @click="hoursRef?.saveAll?.()">
+        {{ $t('admin.common.save') }}
       </UButton>
     </template>
   </UModal>

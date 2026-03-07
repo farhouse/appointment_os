@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const method = event.method
 
   if (method === 'GET') {
-    const branchId = (getQuery(event).branchId as string) | undefined
+    const branchId = (getQuery(event).branchId as string) || undefined
     if (!branchId) {
       badRequest('branchId query param is required')
     }
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'POST' || method === 'PATCH') {
-    const branchId = (getQuery(event).branchId as string) | undefined
+    const branchId = (getQuery(event).branchId as string) || undefined
     if (!branchId) {
       badRequest('branchId query param is required')
     }
@@ -72,19 +72,17 @@ export default defineEventHandler(async (event) => {
   }
 
   if (method === 'DELETE') {
-    const branchId = (getQuery(event).branchId as string) | undefined
-    const dayOfWeek = (getQuery(event).dayOfWeek as string) | undefined
+    const branchId = (getQuery(event).branchId as string) || undefined
+    const dayOfWeek = (getQuery(event).dayOfWeek as string) || undefined
     
     if (!branchId || dayOfWeek === undefined) {
       badRequest('branchId and dayOfWeek query params are required')
     }
 
-    await prisma.branchWorkingHour.delete({
+    await prisma.branchWorkingHour.deleteMany({
       where: {
-        branchId_dayOfWeek: {
-          branchId,
-          dayOfWeek: parseInt(dayOfWeek)
-        }
+        branchId,
+        dayOfWeek: parseInt(dayOfWeek)
       }
     })
 

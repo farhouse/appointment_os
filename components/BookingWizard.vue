@@ -3,7 +3,14 @@ import { useMeState } from '~/composables/useMe'
 
 const { t } = useI18n()
 
-type Branch = { id: string; name: string; address?: string | null; phone?: string | null }
+type Branch = {
+  id: string
+  name: string
+  address?: string | null
+  phone?: string | null
+  isOpenNow?: boolean
+  todayWorkingHours?: { start: string; end: string; isWorking: boolean } | null
+}
 type Service = { id: string; name: string; description?: string | null; price: any; duration: number }
 type Barber = { id: string; name: string; email: string }
 
@@ -54,6 +61,11 @@ function formatYmd(dt: Date) {
   const m = String(dt.getMonth() + 1).padStart(2, '0')
   const d = String(dt.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+function parseTimeToMinutes(time: string) {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
 }
 
 const dateLabel = computed(() => {
@@ -256,6 +268,30 @@ function overlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) {
 }
 
 const slotDurationMin = computed(() => selectedService.value?.duration || 30)
+
+const workingStartMin = computed(() => workingHoursStart.value ? parseTimeToMinutes(workingHoursStart.value) : null)
+const workingEndMin = computed(() => workingHoursEnd.value ? parseTimeToMinutes(workingHoursEnd.value) : null)
+
+const timelineStartHour = computed(() => {
+  if (workingStartMin.value == null) return 9
+  return Math.floor(workingStartMin.value / 60)
+})
+
+const timelineEndHour = computed(() => {
+  if (workingEndMin.value == null) return 19
+  return Math.ceil(workingEndMin.value / 60)
+})
+
+const timelineHours = computed(() => {
+  const start = timelineStartHour.value
+  const end = Math.max(start + 1, timelineEndHour.value)
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+})
+
+const timelineTotalMinutes = computed(() => {
+  if (workingStartMin.value == null || workingEndMin.value == null) return 10 * 60
+  return Math.max(60, workingEndMin.value - workingStartMin.value)
+})
 
 const availableSlots = computed(() => {
   if (!branchId.value || !barberId.value || !selectedService.value) return [] as { start: Date; end: Date; label: string }[]
@@ -465,6 +501,18 @@ async function submitBooking() {
               >
                 {{ b.address }}
               </div>
+              <div
+                v-if="b.todayWorkingHours"
+                class="text-[11px] mt-1"
+                :class="branchId === b.id ? 'text-white/80' : (b.isOpenNow ? 'text-emerald-700' : 'text-gray-500')"
+              >
+                <template v-if="b.todayWorkingHours.isWorking">
+                  {{ b.isOpenNow ? 'Abierta ahora' : 'Hoy' }} · {{ b.todayWorkingHours.start }} - {{ b.todayWorkingHours.end }}
+                </template>
+                <template v-else>
+                  Cerrada hoy
+                </template>
+              </div>
             </button>
           </div>
           <p v-if="!branches.length && !loadingBranches" class="mt-2 text-xs text-gray-500">
@@ -667,15 +715,15 @@ async function submitBooking() {
         <div v-else class="mt-4">
           <div class="scrollbar-nice relative rounded-lg border border-gray-200 bg-white overflow-y-auto" style="height: 520px;">
             <!-- Time rail -->
-            <div class="absolute inset-0 grid" :style="{ gridTemplateRows: 'repeat(10, 1fr)' }">
-              <div v-for="h in 10" :key="h" class="border-t border-gray-100"></div>
+            <div class="absolute inset-0 grid" :style="{ gridTemplateRows: `repeat(${Math.max(1, timelineHours.length - 1)}, 1fr)` }">
+              <div v-for="h in Math.max(1, timelineHours.length - 1)" :key="h" class="border-t border-gray-100"></div>
             </div>
 
             <!-- Labels -->
             <div class="absolute left-0 top-0 bottom-0 w-14 border-r border-gray-100 bg-gray-50">
-              <div v-for="h in 11" :key="h" class="relative" :style="{ height: (520/10) + 'px' }">
+              <div v-for="hour in timelineHours" :key="hour" class="relative" :style="{ height: (520 / Math.max(1, timelineHours.length - 1)) + 'px' }">
                 <div class="absolute -top-2 left-2 text-[10px] text-gray-600">
-                  {{ String(8 + h).padStart(2, '0') }}:00
+                  {{ String(hour).padStart(2, '0') }}:00
                 </div>
               </div>
             </div>
@@ -690,10 +738,11 @@ async function submitBooking() {
                 :title="`${s.label} (${slotDurationMin} min)`"
                 :class="selectedStart === s.start.toISOString() ? '' : 'border-gray-300 hover:border-gray-400 bg-white'"
                 :style="(() => {
-                  const dayStart = new Date(`${date}T09:00:00`)
-                  const minutes = (s.start.getTime() - dayStart.getTime()) / 60000
-                  const pxPerMin = 520 / (10 * 60)
-                  const top = Math.max(0, minutes * pxPerMin)
+                  const baseMinutes = workingStartMin ?? 9 * 60
+                  const slotMinutes = s.start.getHours() * 60 + s.start.getMinutes()
+                  const minutesFromStart = slotMinutes - baseMinutes
+                  const pxPerMin = 520 / timelineTotalMinutes
+                  const top = Math.max(0, minutesFromStart * pxPerMin)
                   const height = Math.max(18, slotDurationMin * pxPerMin)
                   const isSelected = selectedStart === s.start.toISOString()
                   return {

@@ -58,6 +58,7 @@ const isResetting = ref(false)
 const selected = ref<Employee | null>(null)
 const employeeFormRef = ref<any>(null)
 const passwordFormRef = ref<any>(null)
+const hoursRef = ref<any>(null)
 const isEditing = computed(() => !!selected.value?.id)
 
 const employeeBaseSchema = z.object({
@@ -570,11 +571,14 @@ onMounted(() => {
 
   <UModal v-model:open="hoursOpen" :title="`Horarios de ${selected?.name || ''}`" :ui="{ footer: 'justify-end' }">
     <template #body>
-      <EmployeeWorkingHours v-if="selected?.id" :user-id="selected.id" @saved="loadEmployees" />
+      <EmployeeWorkingHours ref="hoursRef" v-if="selected?.id" :user-id="selected.id" @saved="loadEmployees" />
     </template>
     <template #footer>
       <UButton color="neutral" variant="outline" @click="hoursOpen = false">
         {{ $t('common.close') }}
+      </UButton>
+      <UButton color="primary" :loading="hoursRef?.isSaving?.value || false" @click="hoursRef?.saveAll?.()">
+        {{ $t('admin.common.save') }}
       </UButton>
     </template>
   </UModal>
