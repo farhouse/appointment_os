@@ -11,6 +11,14 @@ const moveSchema = z.object({
   professionalId: z.string().uuid().optional()
 })
 
+const MOVE_BLOCK_MINUTES = 10
+
+function snapToBlock(date: Date, blockMinutes = MOVE_BLOCK_MINUTES): Date {
+  const ms = blockMinutes * 60 * 1000
+  const snapped = Math.round(date.getTime() / ms) * ms
+  return new Date(snapped)
+}
+
 export default defineEventHandler(async (event) => {
   const u = getAuthUser(event)
   const id = requireParam(event, 'id')
@@ -24,14 +32,19 @@ export default defineEventHandler(async (event) => {
   // Managers/admins/owners only.
   requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
-  const start = new Date(validation.startTime)
-  const end = new Date(validation.endTime)
-  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+  const rawStart = new Date(validation.startTime)
+  const rawEnd = new Date(validation.endTime)
+  if (!Number.isFinite(rawStart.getTime()) || !Number.isFinite(rawEnd.getTime())) {
     badRequest('Invalid startTime/endTime')
   }
-  if (end <= start) {
+
+  const durationMs = rawEnd.getTime() - rawStart.getTime()
+  if (durationMs <= 0) {
     badRequest('endTime must be after startTime')
   }
+
+  const start = snapToBlock(rawStart)
+  const end = new Date(start.getTime() + durationMs)
 
   // Fetch current appointment to get branchId and current professionalId
   const currentAppointment = await prisma.appointment.findUnique({
@@ -64,7 +77,11 @@ export default defineEventHandler(async (event) => {
 
   const appointment = await prisma.appointment.update({
     where: { id },
-    data: validation
+    data: {
+      startTime: start,
+      endTime: end,
+      ...(validation.professionalId ? { professionalId: validation.professionalId } : {})
+    }
   })
   return appointment
 })

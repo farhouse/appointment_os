@@ -256,10 +256,18 @@ function formatDateTime(value?: string | Date | null) {
   return d.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
+const MOVE_BLOCK_MINUTES = 10
+
+function snapDateToBlock(date: Date, blockMinutes = MOVE_BLOCK_MINUTES) {
+  const ms = blockMinutes * 60 * 1000
+  return new Date(Math.round(date.getTime() / ms) * ms)
+}
+
 function toLocalDateTimeInput(value?: string | Date | null) {
   if (!value) return ''
-  const d = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
+  const raw = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(raw.getTime())) return ''
+  const d = snapDateToBlock(raw)
   const yyyy = d.getFullYear()
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const dd = String(d.getDate()).padStart(2, '0')
@@ -332,7 +340,7 @@ async function saveNotes() {
 
 async function moveFromModal() {
   if (!selectedEvent.value?.id || !editableStart.value) return
-  const newStart = new Date(editableStart.value)
+  const newStart = snapDateToBlock(new Date(editableStart.value))
   const currentStart = new Date(selectedEvent.value.start)
   const currentEnd = new Date(selectedEvent.value.end)
   const durationMs = Math.max(15 * 60 * 1000, currentEnd.getTime() - currentStart.getTime())
@@ -500,9 +508,15 @@ function handleCellClick(payload: any) {
 
 function getEventPayload(event: VueCalEvent, schedule?: string) {
   if (!event.start || !event.end) return null
+  const originalStart = new Date(event.start)
+  const originalEnd = new Date(event.end)
+  const durationMs = originalEnd.getTime() - originalStart.getTime()
+  const snappedStart = snapDateToBlock(originalStart)
+  const snappedEnd = new Date(snappedStart.getTime() + durationMs)
+
   return {
-    startTime: new Date(event.start).toISOString(),
-    endTime: new Date(event.end).toISOString(),
+    startTime: snappedStart.toISOString(),
+    endTime: snappedEnd.toISOString(),
     ...(schedule ? { professionalId: schedule } : {})
   }
 }
@@ -679,7 +693,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 
           <div class="rounded border border-gray-200 p-3 space-y-2">
             <div class="font-medium text-gray-700">Reprogramar</div>
-            <input v-model="editableStart" type="datetime-local" class="w-full rounded border border-gray-300 px-3 py-2" />
+            <input v-model="editableStart" type="datetime-local" step="600" class="w-full rounded border border-gray-300 px-3 py-2" />
             <div class="flex justify-end">
               <UButton size="sm" variant="outline" :loading="isMovingAppointment" @click="moveFromModal">Guardar nueva hora</UButton>
             </div>
