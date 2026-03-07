@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { z } from 'zod'
-
 const props = defineProps<{
   modelValue: boolean
   branchId: string
+  initialStart?: string | null
 }>()
 
 const emit = defineEmits(['update:modelValue', 'success'])
@@ -21,6 +20,21 @@ const clients = ref<any[]>([])
 const services = ref<any[]>([])
 const barbers = ref<any[]>([])
 const loading = ref(false)
+
+const clientItems = computed(() => clients.value.map((c: any) => ({
+  id: c.id,
+  label: [c.firstName, c.lastName].filter(Boolean).join(' ').trim() || c.email || c.phone || 'Cliente'
+})))
+
+const professionalItems = computed(() => barbers.value.map((b: any) => ({
+  id: b.id,
+  label: b.name || b.email || 'Profesional'
+})))
+
+const serviceItems = computed(() => services.value.map((s: any) => ({
+  id: s.id,
+  label: s.name
+})))
 
 // Form
 const form = reactive({
@@ -69,8 +83,16 @@ watch(isOpen, (val) => {
     form.clientId = ''
     form.professionalId = ''
     form.serviceIds = []
-    form.date = new Date().toISOString().split('T')[0]
-    form.time = '10:00'
+
+    const preset = props.initialStart ? new Date(props.initialStart) : null
+    if (preset && !Number.isNaN(preset.getTime())) {
+      form.date = preset.toISOString().split('T')[0]
+      form.time = `${String(preset.getHours()).padStart(2, '0')}:${String(preset.getMinutes()).padStart(2, '0')}`
+    } else {
+      form.date = new Date().toISOString().split('T')[0]
+      form.time = '10:00'
+    }
+
     form.status = 'CONFIRMED'
     form.notes = ''
     form.duration = 30
@@ -145,17 +167,8 @@ async function submit() {
 </script>
 
 <template>
-  <UModal v-model="isOpen">
-    <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100' }">
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-semibold leading-6 text-gray-900">
-            Nuevo Turno
-          </h3>
-          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" class="-my-1" @click="isOpen = false" />
-        </div>
-      </template>
-
+  <UModal v-model:open="isOpen" :title="'Nuevo Turno'" :ui="{ width: 'sm:max-w-2xl' }">
+    <template #body>
       <div class="space-y-4">
         <!-- Client Selection -->
         <div v-if="!isQuickAddClient">
@@ -163,27 +176,14 @@ async function submit() {
             <div class="flex gap-2">
               <USelectMenu
                 v-model="form.clientId"
-                :options="clients"
-                option-attribute="firstName"
-                value-attribute="id"
+                :items="clientItems"
+                value-key="id"
+                label-key="label"
                 searchable
                 searchable-placeholder="Buscar cliente..."
                 placeholder="Seleccionar cliente"
                 class="flex-1"
-              >
-                <template #option="{ option }">
-                  <span class="truncate">{{ option.firstName }} {{ option.lastName }}</span>
-                  <span v-if="option.email || option.phone" class="text-xs text-gray-500 ml-1">
-                    ({{ option.email || option.phone }})
-                  </span>
-                </template>
-                <template #label>
-                  <span v-if="form.clientId">
-                    {{ clients.find(c => c.id === form.clientId)?.firstName }} {{ clients.find(c => c.id === form.clientId)?.lastName }}
-                  </span>
-                  <span v-else class="text-gray-500">Seleccionar cliente</span>
-                </template>
-              </USelectMenu>
+              />
               <UButton icon="i-heroicons-plus" color="gray" variant="solid" @click="isQuickAddClient = true" />
             </div>
           </UFormGroup>
@@ -208,9 +208,9 @@ async function submit() {
         <UFormGroup label="Barbero / Profesional" required>
           <USelectMenu
             v-model="form.professionalId"
-            :options="barbers"
-            option-attribute="name"
-            value-attribute="id"
+            :items="professionalItems"
+            value-key="id"
+            label-key="label"
             placeholder="Seleccionar profesional"
           />
         </UFormGroup>
@@ -219,9 +219,9 @@ async function submit() {
         <UFormGroup label="Servicios" required>
           <USelectMenu
             v-model="form.serviceIds"
-            :options="services"
-            option-attribute="name"
-            value-attribute="id"
+            :items="serviceItems"
+            value-key="id"
+            label-key="label"
             multiple
             placeholder="Seleccionar servicios"
           />
@@ -253,13 +253,13 @@ async function submit() {
         </UFormGroup>
 
       </div>
+    </template>
 
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <UButton color="gray" variant="ghost" @click="isOpen = false">Cancelar</UButton>
-          <UButton color="primary" @click="submit" :loading="loading">Crear Turno</UButton>
-        </div>
-      </template>
-    </UCard>
+    <template #footer>
+      <div class="flex justify-end gap-2 w-full">
+        <UButton color="neutral" variant="outline" @click="isOpen = false">Cancelar</UButton>
+        <UButton color="primary" @click="submit" :loading="loading">Crear Turno</UButton>
+      </div>
+    </template>
   </UModal>
 </template>
