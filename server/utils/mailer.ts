@@ -1,5 +1,6 @@
 import { serverMisconfigured } from '~/server/utils/errors'
 import { renderBookingConfirmationEmail } from '~/server/lib/email/bookingConfirmation'
+import prisma from '~/server/utils/prisma'
 
 type MailProvider = 'resend'
 
@@ -71,6 +72,33 @@ export async function sendMail(params: {
   }
 }
 
+const EMAIL_TEMPLATE_NAME = 'email_appointment_html'
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function applyEmailTemplate(template: string, params: BookingConfirmationEmailParams): string {
+  const replacements: Record<string, string> = {
+    name: escapeHtml(params.clientName),
+    date: escapeHtml(params.appointmentDateTime),
+    branch: escapeHtml(params.branchName),
+    services: escapeHtml(params.servicesSummary),
+    confirm_url: escapeHtml(params.confirmUrl),
+    expires_at: escapeHtml(params.expiresAtText)
+  }
+
+  return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, rawKey: string) => {
+    const key = rawKey.toLowerCase()
+    return replacements[key] ?? ''
+  })
+}
+
 export async function sendBookingConfirmationEmail(
   params: BookingConfirmationEmailParams
 ): Promise<MailSendResult> {
@@ -83,10 +111,19 @@ export async function sendBookingConfirmationEmail(
     expiresAtText: params.expiresAtText
   })
 
+  const dbTemplate = await prisma.notificationTemplate.findUnique({
+    where: { name: EMAIL_TEMPLATE_NAME },
+    select: { body: true }
+  })
+
+  const html = dbTemplate?.body
+    ? applyEmailTemplate(dbTemplate.body, params)
+    : rendered.html
+
   return sendMail({
     to: params.to,
     subject: rendered.subject,
-    html: rendered.html,
+    html,
     text: rendered.text
   })
 }

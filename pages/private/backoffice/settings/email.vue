@@ -28,6 +28,11 @@ const emailTestLoading = ref(false)
 const emailTestMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const emailTestTarget = ref('')
 
+const emailTemplate = ref('')
+const emailTemplateLoading = ref(false)
+const emailTemplateSaving = ref(false)
+const emailTemplateMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
+
 const whatsappTemplate = ref('')
 const whatsappTemplateLoading = ref(false)
 const whatsappTemplateSaving = ref(false)
@@ -69,8 +74,72 @@ async function loadWhatsappTemplate() {
     }
   }
 
+async function loadEmailStatus() {
+  emailStatusLoading.value = true
+  emailStatusError.value = ''
+  try {
+    emailStatus.value = await $fetch('/api/settings/email')
+  } catch (e: any) {
+    emailStatus.value = null
+    emailStatusError.value = e?.data?.statusMessage || 'No se pudo cargar la configuración de email.'
+  } finally {
+    emailStatusLoading.value = false
+  }
+}
+
+async function sendTestEmail() {
+  if (!emailTestTarget.value.trim()) return
+  emailTestLoading.value = true
+  emailTestMessage.value = null
+  try {
+    const response = await $fetch('/api/settings/email-test', {
+      method: 'POST',
+      body: { to: emailTestTarget.value.trim() }
+    })
+    if ((response as any)?.ok) {
+      emailTestMessage.value = { type: 'success', text: 'Email de prueba enviado.' }
+    } else {
+      emailTestMessage.value = { type: 'error', text: (response as any)?.error || 'No se pudo enviar el email de prueba.' }
+    }
+  } catch (e: any) {
+    emailTestMessage.value = { type: 'error', text: e?.data?.statusMessage || 'No se pudo enviar el email de prueba.' }
+  } finally {
+    emailTestLoading.value = false
+  }
+}
+
+async function loadEmailTemplate() {
+  emailTemplateLoading.value = true
+  emailTemplateMessage.value = null
+  try {
+    const response = await $fetch('/api/settings/email-template')
+    emailTemplate.value = (response as any)?.template || ''
+  } catch (e: any) {
+    emailTemplateMessage.value = { type: 'error', text: e?.data?.statusMessage || 'No se pudo cargar el template HTML de email.' }
+  } finally {
+    emailTemplateLoading.value = false
+  }
+}
+
+async function saveEmailTemplate() {
+  if (!emailTemplate.value.trim()) return
+  emailTemplateSaving.value = true
+  emailTemplateMessage.value = null
+  try {
+    await $fetch('/api/settings/email-template', {
+      method: 'PATCH',
+      body: { template: emailTemplate.value }
+    })
+    emailTemplateMessage.value = { type: 'success', text: 'Template HTML de email guardado.' }
+  } catch (e: any) {
+    emailTemplateMessage.value = { type: 'error', text: e?.data?.statusMessage || 'No se pudo guardar el template HTML de email.' }
+  } finally {
+    emailTemplateSaving.value = false
+  }
+}
+
 onMounted(() => {
-  void Promise.all([loadEmailStatus(), loadWhatsappTemplate()])
+  void Promise.all([loadEmailStatus(), loadEmailTemplate(), loadWhatsappTemplate()])
 })
 </script>
 
@@ -121,6 +190,24 @@ onMounted(() => {
       </div>
 
       <div class="mt-4 border-t border-gray-200 pt-4 space-y-4">
+        <div>
+          <div class="text-sm font-semibold text-gray-900">Template HTML de Email</div>
+          <div class="text-xs text-gray-500">Placeholders disponibles: <span v-pre>{{name}}, {{date}}, {{branch}}, {{services}}, {{confirm_url}}, {{expires_at}}</span></div>
+          <textarea
+            v-model="emailTemplate"
+            class="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm min-h-[180px] font-mono"
+            :disabled="emailTemplateLoading"
+          />
+          <div class="mt-2 flex justify-end">
+            <UButton color="primary" :loading="emailTemplateSaving" :disabled="!emailTemplate.trim()" @click="saveEmailTemplate">
+              Guardar template HTML
+            </UButton>
+          </div>
+          <div v-if="emailTemplateMessage" class="mt-2 text-xs" :class="emailTemplateMessage.type === 'success' ? 'text-green-700' : 'text-red-600'">
+            {{ emailTemplateMessage.text }}
+          </div>
+        </div>
+
         <div>
           <div class="text-sm font-semibold text-gray-900">{{ $t('pages.settings.email.whatsappTemplateTitle') }}</div>
           <div class="text-xs text-gray-500">{{ $t('pages.settings.email.whatsappPlaceholders', placeholderVars) }}</div>
