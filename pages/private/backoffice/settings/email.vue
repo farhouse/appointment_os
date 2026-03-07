@@ -44,6 +44,25 @@ const placeholderVars = computed(() => ({
   branch: `{{${$t('placeholder.branch')}}} `
 }))
 
+const emailTemplatePreview = computed(() => {
+  const source = (emailTemplate.value || '').trim()
+  if (!source) return '<p style="font-family:Arial,sans-serif;color:#666;padding:12px;">Sin contenido para previsualizar.</p>'
+
+  const sampleValues: Record<string, string> = {
+    name: 'Juan Pérez',
+    date: new Date().toLocaleString('es-AR', { dateStyle: 'full', timeStyle: 'short' }),
+    branch: 'Sucursal Centro',
+    services: 'Corte + Barba',
+    confirm_url: 'https://app.barberos.com/book/confirm/demo',
+    expires_at: 'hoy 23:59'
+  }
+
+  return source.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, rawKey: string) => {
+    const key = rawKey.toLowerCase()
+    return sampleValues[key] ?? `{{${rawKey}}}`
+  })
+})
+
 async function loadWhatsappTemplate() {
     whatsappTemplateLoading.value = true
     whatsappTemplateMessage.value = null
@@ -205,6 +224,18 @@ onMounted(() => {
           </div>
           <div v-if="emailTemplateMessage" class="mt-2 text-xs" :class="emailTemplateMessage.type === 'success' ? 'text-green-700' : 'text-red-600'">
             {{ emailTemplateMessage.text }}
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs font-medium text-gray-600">Previsualización</div>
+            <div class="mt-2 rounded border border-gray-300 overflow-hidden bg-white">
+              <iframe
+                class="w-full h-[380px]"
+                :srcdoc="emailTemplatePreview"
+                sandbox="allow-same-origin"
+                title="Email template preview"
+              />
+            </div>
           </div>
         </div>
 
