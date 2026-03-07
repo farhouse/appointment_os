@@ -42,10 +42,11 @@ Leyenda estado: `todo | doing | blocked | done`
   - Files: `layouts/private.vue`, `composables/useSelectedBranch.ts`.
   - Ref commits: `3680ce4`, `1d3bdc9`, `4d5e7cf`, `7b17c9c`, `563f92c`.
 
-- [ ] (todo) **Booking / Availability**: completar la data `busy` (hoy es MVP stub por día) para que “solo disponibles” sea consistente.
-  - NEXT: definir endpoint/consulta que devuelva turnos ocupados por rango (por sucursal + opcional barbero) y usarlo en wizard.
-
-  - NEXT: validar en manager/backoffice/barber/client y en /book.
+- [x] (done) **Booking / Availability**: data `busy` real por rango para que “solo disponibles” sea consistente.
+  - Resultado: `/api/public/availability` consulta turnos reales `PENDING/CONFIRMED/IN_PROGRESS` por sucursal + opcional barbero, y calcula `available` evitando solapes.
+  - Incluye: fallback de horario (barbero por día de semana → sucursal si no hay horario explícito).
+  - Files: `server/api/public/availability/index.get.ts`, `components/BookingWizard.vue`.
+  - Ref commits: `e2ff603`, `49bb0f2`.
 
 ## P1 — UX / flujo
 - [x] (done) **Booking / Branch select**: en el dropdown de sucursal se muestra también la dirección para desambiguar.
