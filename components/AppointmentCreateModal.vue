@@ -15,26 +15,77 @@ const isOpen = computed({
   set: (val) => emit('update:modelValue', val)
 })
 
+type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'FINISHED' | 'PAID' | 'CANCELED' | 'NO_SHOW'
+
+type Client = {
+  id: string
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+  phone?: string | null
+}
+
+type Service = {
+  id: string
+  name?: string | null
+  duration?: number | null
+  active?: boolean | null
+}
+
+type Professional = {
+  id: string
+  name?: string | null
+  email?: string | null
+}
+
+type SelectItem = {
+  id: string
+  label: string
+}
+
 // Data
-const clients = ref<any[]>([])
-const services = ref<any[]>([])
-const barbers = ref<any[]>([])
+const clients = ref<Client[]>([])
+const services = ref<Service[]>([])
+const barbers = ref<Professional[]>([])
 const loading = ref(false)
 
-const clientItems = computed(() => clients.value.map((c: any) => ({
-  id: c.id,
-  label: [c.firstName, c.lastName].filter(Boolean).join(' ').trim() || c.email || c.phone || 'Cliente'
-})))
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : []
+}
 
-const professionalItems = computed(() => barbers.value.map((b: any) => ({
-  id: b.id,
-  label: b.name || b.email || 'Profesional'
-})))
+function normalizeClientItems(rows: Client[]): SelectItem[] {
+  return rows
+    .filter((c) => typeof c?.id === 'string' && c.id.length > 0)
+    .map((c) => {
+      const fullName = [c.firstName, c.lastName].filter(Boolean).join(' ').trim()
+      return {
+        id: c.id,
+        label: fullName || c.email || c.phone || `Cliente ${c.id.slice(0, 6)}`
+      }
+    })
+}
 
-const serviceItems = computed(() => services.value.map((s: any) => ({
-  id: s.id,
-  label: s.name
-})))
+function normalizeProfessionalItems(rows: Professional[]): SelectItem[] {
+  return rows
+    .filter((p) => typeof p?.id === 'string' && p.id.length > 0)
+    .map((p) => ({
+      id: p.id,
+      label: p.name || p.email || `Profesional ${p.id.slice(0, 6)}`
+    }))
+}
+
+function normalizeServiceItems(rows: Service[]): SelectItem[] {
+  return rows
+    .filter((s) => typeof s?.id === 'string' && s.id.length > 0)
+    .map((s) => ({
+      id: s.id,
+      label: s.name || `Servicio ${s.id.slice(0, 6)}`
+    }))
+}
+
+const clientItems = computed(() => normalizeClientItems(clients.value))
+const professionalItems = computed(() => normalizeProfessionalItems(barbers.value))
+const serviceItems = computed(() => normalizeServiceItems(services.value))
 
 // Form
 const form = reactive({
@@ -44,7 +95,7 @@ const form = reactive({
   date: new Date().toISOString().split('T')[0],
   time: '10:00',
   duration: 30, // Default duration
-  status: 'CONFIRMED' as 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'FINISHED' | 'PAID' | 'CANCELED' | 'NO_SHOW',
+  status: 'CONFIRMED' as AppointmentStatus,
   notes: ''
 })
 
@@ -66,9 +117,10 @@ async function fetchData() {
       $fetch('/api/services'),
       $fetch(`/api/public/barbers?branchId=${props.branchId}`)
     ])
-    clients.value = clientsData as any[]
-    services.value = (servicesData as any[]).filter((s: any) => s.active)
-    barbers.value = barbersData as any[]
+
+    clients.value = asArray<Client>(clientsData)
+    services.value = asArray<Service>(servicesData).filter((s) => s?.active !== false)
+    barbers.value = asArray<Professional>(barbersData)
   } catch (e) {
     toast.add({ title: 'Error loading data', color: 'red' })
   } finally {
@@ -102,8 +154,8 @@ watch(isOpen, (val) => {
 
 // Watch services to update duration
 watch(() => form.serviceIds, (ids) => {
-  const selectedServices = services.value.filter(s => ids.includes(s.id))
-  const totalDuration = selectedServices.reduce((acc, s) => acc + s.duration, 0)
+  const selectedServices = services.value.filter((s) => ids.includes(s.id))
+  const totalDuration = selectedServices.reduce((acc, s) => acc + (Number(s.duration) || 0), 0)
   if (totalDuration > 0) {
     form.duration = totalDuration
   }
@@ -113,12 +165,14 @@ watch(() => form.serviceIds, (ids) => {
 async function createClient() {
   if (!newClient.firstName) return
   try {
-    const created = await $fetch('/api/clients', {
+    const created = await $fetch<Client>('/api/clients', {
       method: 'POST',
       body: newClient
     })
-    clients.value.push(created) // Optimistic update
-    form.clientId = (created as any).id
+    if (created?.id) {
+      clients.value.push(created) // Optimistic update
+      form.clientId = created.id
+    }
     isQuickAddClient.value = false
     toast.add({ title: 'Cliente creado', color: 'green' })
     // Reset new client form
