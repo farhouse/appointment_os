@@ -168,6 +168,12 @@ const productOptions = computed(() => {
   }))
 })
 
+const totalGeneralPreview = computed(() => {
+  const servicePrice = Number(selectedEvent.value?.extendedProps?.servicePrice ?? 0)
+  const saleDraft = localSaleItems.value.reduce((acc, item) => acc + (Number(item.price) * Number(item.quantity)), 0)
+  return servicePrice + saleDraft
+})
+
 function initSaleItems(event: any) {
   const items = event?.extendedProps?.sale?.items || []
   localSaleItems.value = items.map((i: any) => ({
@@ -510,7 +516,7 @@ function openPayModal() {
   payModalOpen.value = true
   payError.value = ''
   hasOpenCashSession.value = true
-  const totalPrice = Number(selectedEvent.value?.extendedProps?.totalPrice ?? 0)
+  const totalPrice = Number(totalGeneralPreview.value ?? 0)
   payForm.amount = Number.isFinite(totalPrice) ? totalPrice : 0
   if (!cashBoxes.value.length) void loadCashBoxes()
   if (!paymentMedia.value.length) void loadPaymentMedia()
@@ -860,7 +866,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 
           <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded font-medium">
             <span>Total General</span>
-            <span class="text-lg">{{ formatCurrency(selectedEvent?.extendedProps?.totalPrice) }}</span>
+            <span class="text-lg">{{ formatCurrency(totalGeneralPreview) }}</span>
           </div>
 
           <div class="rounded border border-gray-200 p-3 space-y-2">
