@@ -147,7 +147,7 @@ const isMovingAppointment = ref(false)
 const products = ref<any[]>([])
 const localSaleItems = ref<{ productId: string; name: string; quantity: number; price: number }[]>([])
 const isSavingSale = ref(false)
-const selectedProductId = ref('')
+const selectedProduct = ref<{ id: string; label: string; price: number; name: string } | null>(null)
 const selectedQuantity = ref(1)
 
 async function loadProducts() {
@@ -179,11 +179,10 @@ function initSaleItems(event: any) {
 }
 
 function addSaleItem() {
-  if (!selectedProductId.value || selectedQuantity.value < 1) return
-  const product = productOptions.value.find(p => p.id === selectedProductId.value)
-  if (!product) return
+  if (!selectedProduct.value || selectedQuantity.value < 1) return
+  const product = selectedProduct.value
 
-  const existing = localSaleItems.value.find(i => i.productId === selectedProductId.value)
+  const existing = localSaleItems.value.find(i => i.productId === product.id)
   if (existing) {
     existing.quantity += selectedQuantity.value
   } else {
@@ -194,7 +193,7 @@ function addSaleItem() {
       price: product.price
     })
   }
-  selectedProductId.value = ''
+  selectedProduct.value = null
   selectedQuantity.value = 1
 }
 
@@ -825,12 +824,11 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                <div class="flex-1">
                  <label class="text-xs text-gray-500">Producto</label>
                  <USelectMenu 
-                    v-model="selectedProductId" 
+                    v-model="selectedProduct" 
                     :options="productOptions" 
                     placeholder="Buscar..." 
-                    searchable 
-                    value-key="id"
-                    label-key="label"
+                    searchable
+                    option-attribute="label"
                     size="sm"
                  />
                </div>
@@ -838,7 +836,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                  <label class="text-xs text-gray-500">Cant.</label>
                  <UInput v-model="selectedQuantity" type="number" min="1" size="sm" />
                </div>
-               <UButton icon="i-heroicons-plus" size="sm" color="gray" variant="solid" @click="addSaleItem" :disabled="!selectedProductId" />
+               <UButton icon="i-heroicons-plus" size="sm" color="gray" variant="solid" @click="addSaleItem" :disabled="!selectedProduct" />
             </div>
 
             <div v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" class="flex justify-end pt-2">
