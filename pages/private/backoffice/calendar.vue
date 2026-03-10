@@ -753,7 +753,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <UCard>
+            <UCard class="bg-white">
               <template #header>
                 <div class="text-xs text-gray-500">{{ $t('calendar.status') }}</div>
               </template>
@@ -762,7 +762,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
               </UBadge>
             </UCard>
 
-            <UCard>
+            <UCard class="bg-white">
               <template #header>
                 <div class="text-xs text-gray-500">Profesional</div>
               </template>
@@ -771,7 +771,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
               </div>
             </UCard>
 
-            <UCard>
+            <UCard class="bg-white">
               <template #header>
                 <div class="text-xs text-gray-500">Sucursal</div>
               </template>
