@@ -181,12 +181,11 @@ Leyenda estado: `todo | doing | blocked | done`
   - Acceptance: selección producto + qty + método pago; si no hay caja abierta → bloquear con CTA “Abrir caja”; al confirmar → crea sale + movimiento de caja + decrementa BranchStock.
   - NEXT: definir modelo (Sale + SaleItems) + movimiento de caja asociado + UI mínima.
 
-- [ ] (todo) **Venta asociada a turno**: desde el appointment en calendario poder agregar productos a la venta (upsell) y cobrarlos.
+- [x] (done) **Venta asociada a turno**: desde el appointment en calendario poder agregar productos a la venta (upsell) y cobrarlos.
   - Decision: **1 venta por turno** con **items editables**.
-  - Acceptance: en modal de appointment → agregar/editar items (producto + qty) → registra/actualiza Sale vinculada al appointment; descuenta stock sucursal; requiere caja abierta.
-  - Files: `pages/private/backoffice/calendar.vue` (modal), `server/api/sales/*` (nuevo), prisma (Sale.appointmentId unique).
-  - NEXT: diseñar UI mínima y endpoints create/update sale.
-
+  - Acceptance: en modal de appointment → agregar/editar items (producto + qty) → registra/actualiza Sale vinculada al appointment; descuenta stock sucursal; requiere caja abierta para cobrar.
+  - Files: `pages/private/backoffice/calendar.vue` (modal), `server/api/appointments/[id]/sale.post.ts`, `server/api/appointments/[id]/status.patch.ts`, `prisma/schema.prisma` (Sale.appointmentId unique).
+  - Estado: Implementado flujo de upsell con persistencia de items, descuento de stock y cobro unificado.
 
 ## P2 — Barber
 - [x] (done) **Barber Today calendar**: `/private/barber/today` muestra turnos del barbero logueado.

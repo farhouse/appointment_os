@@ -143,6 +143,110 @@ const editableStart = ref('')
 const isSavingNotes = ref(false)
 const isMovingAppointment = ref(false)
 
+// Sale / Upsell Logic
+const products = ref<any[]>([])
+const localSaleItems = ref<{ productId: string; name: string; quantity: number; price: number }[]>([])
+const isSavingSale = ref(false)
+const selectedProductId = ref('')
+const selectedQuantity = ref(1)
+
+async function loadProducts() {
+  if (products.value.length) return
+  try {
+    products.value = await $fetch('/api/products')
+  } catch {
+    products.value = []
+  }
+}
+
+const productOptions = computed(() => {
+  return products.value.map(p => ({
+    id: p.id,
+    label: `${p.name} - ${formatCurrency(p.price)}`,
+    price: Number(p.price),
+    name: p.name
+  }))
+})
+
+function initSaleItems(event: any) {
+  const items = event?.extendedProps?.sale?.items || []
+  localSaleItems.value = items.map((i: any) => ({
+    productId: i.productId,
+    name: i.name,
+    quantity: i.quantity,
+    price: Number(i.price)
+  }))
+}
+
+function addSaleItem() {
+  if (!selectedProductId.value || selectedQuantity.value < 1) return
+  const product = productOptions.value.find(p => p.id === selectedProductId.value)
+  if (!product) return
+
+  const existing = localSaleItems.value.find(i => i.productId === selectedProductId.value)
+  if (existing) {
+    existing.quantity += selectedQuantity.value
+  } else {
+    localSaleItems.value.push({
+      productId: product.id,
+      name: product.name,
+      quantity: selectedQuantity.value,
+      price: product.price
+    })
+  }
+  selectedProductId.value = ''
+  selectedQuantity.value = 1
+}
+
+function removeSaleItem(index: number) {
+  localSaleItems.value.splice(index, 1)
+}
+
+async function saveSale() {
+  if (!selectedEvent.value?.id) return
+  isSavingSale.value = true
+  try {
+    const sale = await $fetch(`/api/appointments/${selectedEvent.value.id}/sale`, {
+      method: 'POST',
+      body: {
+        items: localSaleItems.value.map(i => ({
+          productId: i.productId,
+          quantity: i.quantity
+        }))
+      }
+    })
+    
+    // Update local event data
+    if (calendarView.value) await loadEvents(calendarView.value, selectedBranchId.value)
+    
+    // Update selectedEvent prop to reflect changes immediately in UI if possible, 
+    // but easier to close modal or let the refresh handle it.
+    // We'll update the selectedEvent ref manually to avoid modal flicker
+    if (sale) {
+       selectedEvent.value.extendedProps.sale = sale
+       // Recalc totals
+       const servicePrice = selectedEvent.value.extendedProps.servicePrice || 0
+       const salePrice = Number(sale.total)
+       selectedEvent.value.extendedProps.salePrice = salePrice
+       selectedEvent.value.extendedProps.totalPrice = servicePrice + salePrice
+       // Re-init items
+       initSaleItems(selectedEvent.value)
+    } else {
+       // Sale deleted (empty items)
+       selectedEvent.value.extendedProps.sale = null
+       selectedEvent.value.extendedProps.salePrice = 0
+       selectedEvent.value.extendedProps.totalPrice = selectedEvent.value.extendedProps.servicePrice
+       localSaleItems.value = []
+    }
+
+    toast.add({ title: 'Venta actualizada', color: 'success' })
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || 'Error guardando venta', color: 'error' })
+  } finally {
+    isSavingSale.value = false
+  }
+}
+
 const selectedClientPhone = computed(() => {
   const raw = selectedEvent.value?.extendedProps?.client?.phone
   if (!raw) return ''
@@ -305,6 +409,8 @@ function openDetailModal(event: any) {
   editableNotes.value = event?.extendedProps?.notes || ''
   editableStart.value = toLocalDateTimeInput(event?.start)
   detailModalOpen.value = true
+  initSaleItems(event)
+  if (!products.value.length) loadProducts()
 }
 
 function closeDetailModal() {
@@ -685,10 +791,64 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                 <span class="text-gray-600">{{ formatCurrency(service.price) }}</span>
               </div>
             </div>
-            <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded font-medium">
-              <span>Total</span>
-              <span class="text-lg">{{ formatCurrency(selectedEvent?.extendedProps?.totalPrice) }}</span>
+          </div>
+
+          <!-- Products / Sale -->
+          <div class="rounded border border-gray-200 p-3 space-y-2">
+            <div class="flex justify-between items-center">
+              <div class="font-medium text-gray-700">Productos / Venta</div>
+              <UBadge v-if="selectedEvent?.extendedProps?.sale?.paymentMethod" color="green" variant="subtle">Pagado</UBadge>
             </div>
+            
+            <div v-if="localSaleItems.length" class="space-y-2">
+               <div v-for="(item, idx) in localSaleItems" :key="idx" class="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                 <div class="flex-1">
+                   <div class="font-medium">{{ item.name }}</div>
+                   <div class="text-xs text-gray-500">{{ item.quantity }} x {{ formatCurrency(item.price) }}</div>
+                 </div>
+                 <div class="flex items-center gap-2">
+                   <div class="font-medium">{{ formatCurrency(item.quantity * item.price) }}</div>
+                   <UButton 
+                     v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" 
+                     icon="i-heroicons-trash" 
+                     size="2xs" 
+                     color="red" 
+                     variant="ghost" 
+                     @click="removeSaleItem(idx)" 
+                   />
+                 </div>
+               </div>
+            </div>
+            <div v-else class="text-sm text-gray-500 italic">No hay productos agregados.</div>
+            
+            <div v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" class="flex items-end gap-2 pt-2 border-t border-gray-100">
+               <div class="flex-1">
+                 <label class="text-xs text-gray-500">Producto</label>
+                 <USelectMenu 
+                    v-model="selectedProductId" 
+                    :options="productOptions" 
+                    placeholder="Buscar..." 
+                    searchable 
+                    value-key="id"
+                    label-key="label"
+                    size="sm"
+                 />
+               </div>
+               <div class="w-20">
+                 <label class="text-xs text-gray-500">Cant.</label>
+                 <UInput v-model="selectedQuantity" type="number" min="1" size="sm" />
+               </div>
+               <UButton icon="i-heroicons-plus" size="sm" color="gray" variant="solid" @click="addSaleItem" :disabled="!selectedProductId" />
+            </div>
+
+            <div v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" class="flex justify-end pt-2">
+               <UButton size="sm" :loading="isSavingSale" @click="saveSale" variant="ghost">Guardar Venta</UButton>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded font-medium">
+            <span>Total General</span>
+            <span class="text-lg">{{ formatCurrency(selectedEvent?.extendedProps?.totalPrice) }}</span>
           </div>
 
           <div class="rounded border border-gray-200 p-3 space-y-2">

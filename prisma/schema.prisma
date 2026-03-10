@@ -147,6 +147,9 @@ model Appointment {
   confirmToken   String?  @unique
   confirmTokenExpiresAt DateTime?
 
+  // Upsell / Associated Sale
+  sale Sale?
+
   // Payment details
   paidAt        DateTime?
   paidById      String?
@@ -246,12 +249,16 @@ model Sale {
   clientId      String?
   userId        String?       // Seller
   total         Decimal
-  paymentMethod PaymentMethod
+  paymentMethod PaymentMethod?
   paymentMediumId String?
   createdAt     DateTime      @default(now())
   
   branch Branch @relation(fields: [branchId], references: [id])
   client Client? @relation(fields: [clientId], references: [id])
+  
+  appointmentId String? @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  
   user   User?   @relation(fields: [userId], references: [id])
   paymentMedium PaymentMethodConfig? @relation("SalePaymentMedium", fields: [paymentMediumId], references: [id])
   items  SaleItem[]

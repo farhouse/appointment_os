@@ -51,13 +51,19 @@ export default defineEventHandler(async (event) => {
           price: true,
           service: { select: { id: true, name: true } }
         }
+      },
+      sale: {
+        include: { items: true }
       }
     }
   })
 
   // Format for VueCal/FullCalendar-like events.
   return appointments.map(apt => {
-    const totalPrice = apt.services.reduce((sum, service) => sum + Number(service.price), 0)
+    const servicePrice = apt.services.reduce((sum, service) => sum + Number(service.price), 0)
+    const salePrice = Number(apt.sale?.total || 0)
+    const totalPrice = servicePrice + salePrice
+    
     return {
       id: apt.id,
       title: `${apt.client.firstName} ${apt.client.lastName || ''} - ${apt.services.map(s => s.service.name).join(', ')}`,
@@ -69,6 +75,9 @@ export default defineEventHandler(async (event) => {
         status: apt.status,
         notes: apt.notes,
         totalPrice,
+        servicePrice,
+        salePrice,
+        sale: apt.sale,
         client: {
           id: apt.client.id,
           firstName: apt.client.firstName,
