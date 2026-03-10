@@ -731,8 +731,8 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 
     <!-- Detail modal (event click) -->
     <div v-if="detailModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closeDetailModal">
-      <div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
-        <div class="flex items-start justify-between gap-4">
+      <div class="w-full max-w-5xl rounded-lg bg-white p-4 shadow-lg max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-start justify-between gap-4 shrink-0">
           <div class="min-w-0">
             <div class="text-lg font-semibold truncate">{{ $t('calendar.eventAlert') }}</div>
             <div class="text-sm text-gray-600 mt-1">{{ selectedEvent?.title }}</div>
@@ -740,7 +740,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
           <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closeDetailModal">✕</button>
         </div>
 
-        <div class="mt-4 space-y-3 text-sm">
+        <div class="mt-4 space-y-3 text-sm overflow-y-auto pr-1">
           <div class="grid grid-cols-2 gap-3">
             <div class="rounded border border-gray-200 p-2">
               <div class="text-xs text-gray-500">Inicio</div>
