@@ -271,6 +271,12 @@
     "duration": "Duración",
     "pickFirst": "Primero elegí sucursal, servicio y barbero.",
     "noSlots": "No hay horarios disponibles para esta fecha.",
+    "noSlotsHint": "Probá con otro día o quitá el filtro de barbero para ver más opciones.",
+    "noSlotsCta": {
+      "title": "¿Querés probar otra opción?",
+      "nextDay": "Probar día siguiente",
+      "anyBarber": "Ver con cualquier barbero"
+    },
     "preview": "Vista",
     "busy": "Ocupado",
     "selected": "Seleccionado",

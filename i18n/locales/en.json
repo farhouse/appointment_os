@@ -270,6 +270,12 @@
     "duration": "Duration",
     "pickFirst": "First choose branch, service and barber.",
     "noSlots": "No available times for this date.",
+    "noSlotsHint": "Try another day or remove the barber filter to see more options.",
+    "noSlotsCta": {
+      "title": "Want to try another option?",
+      "nextDay": "Try next day",
+      "anyBarber": "See any barber"
+    },
     "preview": "Preview",
     "busy": "Busy",
     "selected": "Selected",

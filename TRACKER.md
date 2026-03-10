@@ -70,8 +70,9 @@ Leyenda estado: `todo | doing | blocked | done`
   - Resultado: flujo de booking termina en pantalla de finalización.
 
 - [x] (done) **Booking UX**: vista tipo día/timeline implementada en booking para reemplazar slots sueltos.
-- [ ] (todo) **Booking**: cuando no hay disponibilidad, mostrar mensaje/CTA claro (cambiar día / elegir otro barbero / etc.).
-  - NEXT: definir copy y estados.
+- [x] (done) **Booking**: cuando no hay disponibilidad, mostrar mensaje/CTA claro (cambiar día / elegir otro barbero / etc.).
+  - Resultado: estado vacío de horarios ahora muestra guidance + CTA directos (probar día siguiente / ver con cualquier barbero).
+  - Files: `components/BookingWizard.vue`, `i18n/locales/{es-AR,en}.json`.
 
 ## P2 — Cliente (private)
 - [x] (done) **Client / Upcoming shows past**: tabs y filtros de `/private/client/appointments` corregidos.

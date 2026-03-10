@@ -85,6 +85,10 @@ function changeDay(deltaDays: number) {
 
   date.value = formatYmd(dt)
 }
+
+function clearBarberFilter() {
+  barberId.value = ''
+}
 const busy = ref<BusySlot[]>([])
 const workingHoursStart = ref<string | null>(null)
 const workingHoursEnd = ref<string | null>(null)
@@ -703,12 +707,30 @@ async function submitBooking() {
           />
         </div>
 
-        <div v-else-if="availableSlots.length === 0" class="mt-4">
+        <div v-else-if="availableSlots.length === 0" class="mt-4 space-y-3">
           <CrudState
             :title="$t('booking.noSlots')"
-            :description="$t('booking.noSlots')"
+            :description="$t('booking.noSlotsHint')"
             icon="i-lucide-calendar-x"
           />
+
+          <div class="rounded-lg border border-black/10 bg-gray-50 p-3">
+            <p class="text-sm font-medium text-gray-800">{{ $t('booking.noSlotsCta.title') }}</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <UButton size="sm" variant="soft" icon="i-lucide-arrow-right" @click="changeDay(1)">
+                {{ $t('booking.noSlotsCta.nextDay') }}
+              </UButton>
+              <UButton
+                size="sm"
+                variant="outline"
+                icon="i-lucide-scissors"
+                :disabled="!barberId"
+                @click="clearBarberFilter"
+              >
+                {{ $t('booking.noSlotsCta.anyBarber') }}
+              </UButton>
+            </div>
+          </div>
         </div>
 
         <!-- Day timeline (calendar-like) -->
