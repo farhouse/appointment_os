@@ -752,22 +752,33 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             </div>
           </div>
 
-          <div class="flex items-center justify-between">
-            <span class="font-medium text-gray-700">{{ $t('calendar.status') }}</span>
-            <UBadge :color="statusBadgeColor(selectedEvent?.extendedProps?.status)">
-              {{ statusLabel(selectedEvent?.extendedProps?.status) }}
-            </UBadge>
-          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <UCard>
+              <template #header>
+                <div class="text-xs text-gray-500">{{ $t('calendar.status') }}</div>
+              </template>
+              <UBadge :color="statusBadgeColor(selectedEvent?.extendedProps?.status)">
+                {{ statusLabel(selectedEvent?.extendedProps?.status) }}
+              </UBadge>
+            </UCard>
 
-          <div v-if="selectedEvent?.extendedProps?.professional || selectedEvent?.extendedProps?.branch" class="grid grid-cols-2 gap-3">
-            <div v-if="selectedEvent?.extendedProps?.professional" class="rounded bg-gray-50 p-2">
-              <div class="text-xs text-gray-500">Profesional</div>
-              <div class="font-medium text-gray-900">{{ selectedEvent.extendedProps.professional.name }}</div>
-            </div>
-            <div v-if="selectedEvent?.extendedProps?.branch" class="rounded bg-gray-50 p-2">
-              <div class="text-xs text-gray-500">Sucursal</div>
-              <div class="font-medium text-gray-900">{{ selectedEvent.extendedProps.branch.name }}</div>
-            </div>
+            <UCard>
+              <template #header>
+                <div class="text-xs text-gray-500">Profesional</div>
+              </template>
+              <div class="font-medium text-gray-900">
+                {{ selectedEvent?.extendedProps?.professional?.name || '—' }}
+              </div>
+            </UCard>
+
+            <UCard>
+              <template #header>
+                <div class="text-xs text-gray-500">Sucursal</div>
+              </template>
+              <div class="font-medium text-gray-900">
+                {{ selectedEvent?.extendedProps?.branch?.name || '—' }}
+              </div>
+            </UCard>
           </div>
 
           <div v-if="selectedEvent?.extendedProps?.client" class="rounded bg-gray-50 p-3 space-y-2">
@@ -862,7 +873,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 
           <div class="rounded border border-gray-200 p-3 space-y-2">
             <div class="font-medium text-gray-700">Notas</div>
-            <UTextarea v-model="editableNotes" :rows="3" />
+            <UTextarea v-model="editableNotes" :rows="6" class="w-full" autoresize />
             <div class="flex justify-end">
               <UButton size="sm" variant="outline" :loading="isSavingNotes" @click="saveNotes">Guardar notas</UButton>
             </div>
