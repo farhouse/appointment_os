@@ -832,6 +832,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                     placeholder="Buscar..." 
                     searchable
                     size="sm"
+                    class="w-full"
                  />
                </div>
                <div class="w-20">
