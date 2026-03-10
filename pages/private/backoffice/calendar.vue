@@ -147,7 +147,7 @@ const isMovingAppointment = ref(false)
 const products = ref<any[]>([])
 const localSaleItems = ref<{ productId: string; name: string; quantity: number; price: number }[]>([])
 const isSavingSale = ref(false)
-const selectedProduct = ref<{ id: string; label: string; price: number; name: string } | null>(null)
+const selectedProductId = ref('')
 const selectedQuantity = ref(1)
 
 async function loadProducts() {
@@ -179,8 +179,9 @@ function initSaleItems(event: any) {
 }
 
 function addSaleItem() {
-  if (!selectedProduct.value || selectedQuantity.value < 1) return
-  const product = selectedProduct.value
+  if (!selectedProductId.value || selectedQuantity.value < 1) return
+  const product = productOptions.value.find(p => p.id === selectedProductId.value)
+  if (!product) return
 
   const existing = localSaleItems.value.find(i => i.productId === product.id)
   if (existing) {
@@ -193,7 +194,7 @@ function addSaleItem() {
       price: product.price
     })
   }
-  selectedProduct.value = null
+  selectedProductId.value = ''
   selectedQuantity.value = 1
 }
 
@@ -824,11 +825,12 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                <div class="flex-1">
                  <label class="text-xs text-gray-500">Producto</label>
                  <USelectMenu 
-                    v-model="selectedProduct" 
-                    :options="productOptions" 
+                    v-model="selectedProductId" 
+                    :items="productOptions" 
+                    value-key="id"
+                    label-key="label"
                     placeholder="Buscar..." 
                     searchable
-                    option-attribute="label"
                     size="sm"
                  />
                </div>
@@ -836,7 +838,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                  <label class="text-xs text-gray-500">Cant.</label>
                  <UInput v-model="selectedQuantity" type="number" min="1" size="sm" />
                </div>
-               <UButton icon="i-heroicons-plus" size="sm" color="gray" variant="solid" @click="addSaleItem" :disabled="!selectedProduct" />
+               <UButton icon="i-heroicons-plus" size="sm" color="gray" variant="solid" @click="addSaleItem" :disabled="!selectedProductId" />
             </div>
 
             <div v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" class="flex justify-end pt-2">
