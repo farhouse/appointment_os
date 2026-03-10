@@ -9,10 +9,10 @@ Leyenda estado: `todo | doing | blocked | done`
 ## Focus (Now / Next / Later)
 
 ### NOW (próximo batch)
-- Booking / Availability (`busy` real)
-- Calendar UX (modal + mover turno)
-- Barber working hours (base semanal + impacto en disponibilidad)
-- Caja: revisar flujo abrir→cerrar→cobrar
+- [x] (done) Booking / Availability (`busy` real)
+- [x] (done) Calendar UX (modal + mover turno)
+- [x] (done) Barber working hours (base semanal + impacto en disponibilidad)
+- [x] (done) Caja: revisar flujo abrir→cerrar→cobrar
 
 ### NEXT
 - Venta asociada a turno (upsell)
