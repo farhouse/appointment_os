@@ -29,7 +29,12 @@ const createInitialStart = ref<string | null>(null)
 function openCreateModal(start?: Date | string | null) {
   if (start) {
     const d = start instanceof Date ? start : new Date(start)
-    createInitialStart.value = Number.isNaN(d.getTime()) ? null : d.toISOString()
+    if (Number.isNaN(d.getTime())) {
+      createInitialStart.value = null
+    } else {
+      const snapped = snapDateToBlock(d, 10)
+      createInitialStart.value = snapped.toISOString()
+    }
   } else {
     createInitialStart.value = null
   }
