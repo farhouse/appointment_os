@@ -13,8 +13,9 @@
   - Fase 2: alias API (`/workers` compatible con `/barbers`).
   - Fase 3: renombre interno progresivo (modelo/campos).
 
-- [ ] (todo) **Client profile editable + cambio de password**
-  - Campos mínimos: nombre, teléfono, email + flujo de password.
+- [x] (done) **Client profile editable + cambio de password**
+  - Resultado: `/private/profile` ahora permite editar nombre/email/teléfono y cambiar contraseña con validaciones básicas.
+  - Files: `pages/private/profile.vue`, `server/api/me.patch.ts`, `server/api/me/password.post.ts`.
 
 - [ ] (todo) **Cliente: fotos de cortes (máx 3)**
   - Upload + preview + delete + storage local docker + metadata en DB.
