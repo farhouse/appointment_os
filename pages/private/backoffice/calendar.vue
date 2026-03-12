@@ -1046,16 +1046,19 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 </template>
 
 <style scoped>
-/* Better visual separation per resource column (day/week schedules). */
-.calendar-with-resources :deep(.vuecal__schedules .vuecal__schedule) {
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+/* Resource separators (more visible): applies to schedule headings + cells. */
+.calendar-with-resources :deep(.vuecal__schedule),
+.calendar-with-resources :deep(.vuecal__schedule-heading) {
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.16);
 }
 
-.calendar-with-resources :deep(.vuecal__schedules .vuecal__schedule:nth-child(odd)) {
-  background: rgba(0, 0, 0, 0.015);
+.calendar-with-resources :deep(.vuecal__schedule:nth-child(odd)),
+.calendar-with-resources :deep(.vuecal__schedule-heading:nth-child(odd)) {
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
-.calendar-with-resources :deep(.vuecal__schedules .vuecal__schedule:last-child) {
-  border-right: none;
+.calendar-with-resources :deep(.vuecal__schedule:last-child),
+.calendar-with-resources :deep(.vuecal__schedule-heading:last-child) {
+  box-shadow: none;
 }
 </style>
