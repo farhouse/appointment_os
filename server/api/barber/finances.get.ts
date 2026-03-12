@@ -22,6 +22,9 @@ export default defineEventHandler(async (event) => {
   const end = addWeeks(startOfWeek(now, { weekStartsOn: 1 }), 1) // next Monday
   const start = addWeeks(end, -weeks)
 
+  const barber = await prisma.user.findUnique({ where: { id: u.userId }, select: { commissionRate: true } })
+  const commissionRate = Number(barber?.commissionRate || 0)
+
   const appts = await prisma.appointment.findMany({
     where: {
       professionalId: u.userId,
@@ -31,23 +34,36 @@ export default defineEventHandler(async (event) => {
     },
     select: {
       id: true,
-      startTime: true
+      startTime: true,
+      services: {
+        select: {
+          price: true
+        }
+      }
     }
   })
 
-  const buckets = new Map<string, { weekStart: string; countPaidAppointments: number }>()
+  const buckets = new Map<string, { weekStart: string; countPaidAppointments: number; serviceAmount: number; estimatedCommission: number }>()
 
   for (let i = 0; i < weeks; i++) {
     const ws = addWeeks(start, i)
     const key = formatISO(ws, { representation: 'date' })
-    buckets.set(key, { weekStart: key, countPaidAppointments: 0 })
+    buckets.set(key, { weekStart: key, countPaidAppointments: 0, serviceAmount: 0, estimatedCommission: 0 })
   }
+
+  let totalServiceAmount = 0
 
   for (const a of appts) {
     const ws = startOfWeek(a.startTime, { weekStartsOn: 1 })
     const key = formatISO(ws, { representation: 'date' })
     const b = buckets.get(key)
-    if (b) b.countPaidAppointments += 1
+    const serviceAmount = (a.services || []).reduce((acc, s) => acc + Number(s.price || 0), 0)
+    totalServiceAmount += serviceAmount
+    if (b) {
+      b.countPaidAppointments += 1
+      b.serviceAmount += serviceAmount
+      b.estimatedCommission += (serviceAmount * commissionRate) / 100
+    }
   }
 
   return {
@@ -57,7 +73,10 @@ export default defineEventHandler(async (event) => {
       weeks
     },
     totals: {
-      countPaidAppointments: appts.length
+      countPaidAppointments: appts.length,
+      commissionRate,
+      serviceAmount: totalServiceAmount,
+      estimatedCommission: (totalServiceAmount * commissionRate) / 100,
     },
     weeks: Array.from(buckets.values())
   }

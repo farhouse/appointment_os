@@ -32,7 +32,9 @@
   - Requiere sucursal + caja abierta + descuento de stock + movimiento de caja.
 
 ## BARBER APP (pendientes)
-- [ ] (todo) **Barber finances** (totales + comisión fija por barbero)
+- [x] (done) **Barber finances** (totales + comisión fija por barbero)
+  - Resultado: panel muestra turnos pagados, total de servicios y comisión estimada (según `User.commissionRate`) con desglose semanal.
+  - Files: `server/api/barber/finances.get.ts`, `pages/private/barber/finances.vue`.
 - [ ] (todo) **Barber appointments**: filtros UI + modal + rango diario
 - [ ] (todo) **Barber working hours**: cerrar visualización en calendar + QA E2E
 
