@@ -11,7 +11,7 @@
 
 - [ ] (doing) **Generalización de dominio: Barber → Worker**
   - ✅ Fase 1 (copy/UI/i18n): aplicado en textos visibles (labels, headings, booking copy, empleados, landing).
-  - ⏭️ Fase 2: alias API (`/workers` compatible con `/barbers`).
+  - ✅ Fase 2 (alias API): nuevo endpoint `/api/public/workers` compatible con `/api/public/barbers`.
   - ⏭️ Fase 3: renombre interno progresivo (modelo/campos).
 
 - [x] (done) **Client profile editable + cambio de password**
