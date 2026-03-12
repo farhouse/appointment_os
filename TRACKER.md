@@ -21,8 +21,9 @@
   - Upload + preview + delete + storage local docker + metadata en DB.
 
 ## MANAGER / CALENDAR / CASH (pendientes)
-- [ ] (todo) **Calendar resources separators**
-  - Zebra suave por columna/resource + divisores visuales.
+- [x] (done) **Calendar resources separators**
+  - Resultado: zebra suave por columna/resource + divisores visuales en calendario de backoffice.
+  - Files: `pages/private/backoffice/calendar.vue`.
 
 - [ ] (todo) **Caja: revisar flujo abrir→cerrar→cobrar**
   - Definir regla cuando caja está cerrada y llega cobro.

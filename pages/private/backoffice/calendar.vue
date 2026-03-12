@@ -731,7 +731,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
       <VueCalClient
         :key="calendarKey"
         :config="calendarConfig"
-        class="flex-1 min-h-0"
+        class="flex-1 min-h-0 calendar-with-resources"
         @ready="handleReady"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
@@ -1044,3 +1044,18 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
     />
   </div>
 </template>
+
+<style scoped>
+/* Better visual separation per resource column (day/week schedules). */
+.calendar-with-resources :deep(.vuecal__schedules .vuecal__schedule) {
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.calendar-with-resources :deep(.vuecal__schedules .vuecal__schedule:nth-child(odd)) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.calendar-with-resources :deep(.vuecal__schedules .vuecal__schedule:last-child) {
+  border-right: none;
+}
+</style>
