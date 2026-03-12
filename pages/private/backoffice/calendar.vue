@@ -147,6 +147,25 @@ const editableNotes = ref('')
 const editableStart = ref('')
 const isSavingNotes = ref(false)
 const isMovingAppointment = ref(false)
+const isBlock = computed(() => selectedEvent.value?.extendedProps?.type === 'BLOCK')
+const isDeletingBlock = ref(false)
+
+async function deleteBlock() {
+  if (!selectedEvent.value?.extendedProps?.id) return
+  if (!confirm('¿Seguro querés eliminar este bloqueo?')) return
+  
+  isDeletingBlock.value = true
+  try {
+    await $fetch(`/api/time-blocks/${selectedEvent.value.extendedProps.id}`, { method: 'DELETE' })
+    toast.add({ title: 'Bloqueo eliminado', color: 'success' })
+    if (calendarView.value) await loadEvents(calendarView.value, selectedBranchId.value)
+    closeDetailModal()
+  } catch (e: any) {
+    toast.add({ title: e?.data?.statusMessage || 'Error eliminando bloqueo', color: 'error' })
+  } finally {
+    isDeletingBlock.value = false
+  }
+}
 
 // Sale / Upsell Logic
 const products = ref<any[]>([])
@@ -751,7 +770,46 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
           <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closeDetailModal">✕</button>
         </div>
 
-        <div class="mt-4 space-y-3 text-sm overflow-y-auto pr-1">
+        <div v-if="isBlock" class="mt-4 space-y-3 text-sm overflow-y-auto pr-1 flex-1">
+             <div class="bg-red-50 text-red-700 p-3 rounded-lg border border-red-100 mb-4">
+                <h3 class="font-medium flex items-center gap-2">
+                  <span class="i-heroicons-lock-closed w-5 h-5"></span>
+                  Bloqueo de Agenda
+                </h3>
+                <p class="text-sm mt-1">Este horario está bloqueado y no permite turnos.</p>
+             </div>
+
+             <div class="grid grid-cols-2 gap-3">
+               <div class="rounded border border-gray-200 p-2">
+                 <div class="text-xs text-gray-500">Inicio</div>
+                 <div class="font-medium text-gray-900">{{ formatDateTime(selectedEvent?.start) }}</div>
+               </div>
+               <div class="rounded border border-gray-200 p-2">
+                 <div class="text-xs text-gray-500">Fin</div>
+                 <div class="font-medium text-gray-900">{{ formatDateTime(selectedEvent?.end) }}</div>
+               </div>
+             </div>
+
+             <UCard class="bg-white mt-3">
+               <template #header>
+                 <div class="text-xs text-gray-500">Profesional / Alcance</div>
+               </template>
+               <div class="font-medium text-gray-900">
+                 {{ selectedEvent?.extendedProps?.professional?.name || 'Toda la Sucursal (Bloqueo General)' }}
+               </div>
+             </UCard>
+
+             <UCard class="bg-white mt-3">
+               <template #header>
+                 <div class="text-xs text-gray-500">Motivo</div>
+               </template>
+               <div class="font-medium text-gray-900">
+                 {{ selectedEvent?.extendedProps?.reason || 'Sin motivo especificado' }}
+               </div>
+             </UCard>
+        </div>
+
+        <div v-else class="mt-4 space-y-3 text-sm overflow-y-auto pr-1">
           <div class="grid grid-cols-2 gap-3">
             <div class="rounded border border-gray-200 p-2">
               <div class="text-xs text-gray-500">Inicio</div>
@@ -891,7 +949,12 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
           </div>
         </div>
 
-        <div class="mt-4 flex justify-end gap-2 flex-wrap">
+        <div v-if="isBlock" class="mt-4 flex justify-end gap-2 flex-wrap">
+          <UButton variant="outline" @click="closeDetailModal">{{ $t('common.close') }}</UButton>
+          <UButton color="red" :loading="isDeletingBlock" @click="deleteBlock">Liberar Horario</UButton>
+        </div>
+
+        <div v-else class="mt-4 flex justify-end gap-2 flex-wrap">
           <UButton
             v-if="whatsappHref"
             :to="whatsappHref"
@@ -1060,5 +1123,21 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 .calendar-with-resources :deep(.vuecal__schedule:last-child),
 .calendar-with-resources :deep(.vuecal__schedule-heading:last-child) {
   box-shadow: none;
+}
+
+:deep(.vuecal__event.block-event) {
+  background-color: repeating-linear-gradient(
+    45deg,
+    #f3f4f6,
+    #f3f4f6 10px,
+    #e5e7eb 10px,
+    #e5e7eb 20px
+  );
+  border-left: 3px solid #6b7280;
+  color: #374151;
+  font-style: italic;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

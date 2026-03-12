@@ -69,6 +69,30 @@ export default defineEventHandler(async (event) => {
     select: { startTime: true, endTime: true, status: true }
   })
 
+  const blockWhere: any = {
+    branchId,
+    startTime: { lt: dayEnd },
+    endTime: { gt: dayStart }
+  }
+  
+  if (barberId) {
+    blockWhere.OR = [
+      { professionalId: barberId },
+      { professionalId: null }
+    ]
+  }
+
+  const blocks = await prisma.timeBlock.findMany({
+    where: blockWhere,
+    select: { startTime: true, endTime: true, reason: true } // Select reason if needed for debug
+  })
+
+  // Combine busy slots
+  const combinedBusy = [
+    ...appts.map(a => ({ startTime: a.startTime, endTime: a.endTime })),
+    ...blocks.map(b => ({ startTime: b.startTime, endTime: b.endTime }))
+  ]
+
   const dayOfWeek = dayStart.getDay()
   let workingStart = 9 * 60
   let workingEnd = 19 * 60
@@ -117,11 +141,19 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const busyForDisplay = appts.map(a => ({
-    startTime: a.startTime.toISOString(),
-    endTime: a.endTime.toISOString(),
-    status: a.status
-  }))
+  const busyForDisplay = [
+    ...appts.map(a => ({
+      startTime: a.startTime.toISOString(),
+      endTime: a.endTime.toISOString(),
+      status: a.status
+    })),
+    ...blocks.map(b => ({
+      startTime: b.startTime.toISOString(),
+      endTime: b.endTime.toISOString(),
+      status: 'BLOCKED',
+      reason: b.reason
+    }))
+  ]
 
   return {
     branchId,
@@ -134,6 +166,6 @@ export default defineEventHandler(async (event) => {
       end: minutesToTime(workingEnd)
     },
     busy: busyForDisplay,
-    available: isDayOff ? [] : getSlotRanges(workingStart, workingEnd, appts, 30)
+    available: isDayOff ? [] : getSlotRanges(workingStart, workingEnd, combinedBusy, 30)
   }
 })

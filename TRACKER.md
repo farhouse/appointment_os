@@ -33,11 +33,13 @@
 - [ ] (todo) **Módulo de Venta (venta directa fuera del turno)**
   - Requiere sucursal + caja abierta + descuento de stock + movimiento de caja.
 
-- [ ] (todo) **Bloqueo de franjas horarias por falta de staff**
+- [x] (done) **Bloqueo de franjas horarias por falta de staff**
   - Alcance cerrado: bloqueo directo desde calendario (sin flujo de aprobación).
   - Roles: WORKER + MANAGER + ADMIN.
   - Tipos: día completo o franja horaria (ej. comida/descanso), con motivo opcional.
   - Debe impactar en agenda interna y booking público (no ofrecer slots bloqueados).
+  - Resultado: Modelo TimeBlock, CRUD API, integración en calendarios (backoffice + worker) y disponibilidad pública.
+  - Files: `prisma/schema.prisma`, `server/api/time-blocks/*`, `server/api/calendar/events.get.ts`, `server/api/public/availability/index.get.ts`, `components/AppointmentCreateModal.vue`, `pages/private/backoffice/calendar.vue`, `pages/private/worker/today.vue`.
 
 ## BARBER APP (pendientes)
 - [x] (done) **Barber finances** (totales + comisión fija por barbero)

@@ -68,6 +68,7 @@ model Branch {
   cashBoxes     CashBox[]
   cashSessions  CashSession[]
   workingHours  BranchWorkingHour[]
+  timeBlocks    TimeBlock[]
 }
 
 model User {
@@ -89,6 +90,9 @@ model User {
   sales         Sale[]
   auditLogs     AuditLog[]
   workingHours  BarberWorkingHour[]
+  
+  timeBlocks        TimeBlock[] @relation("ProfessionalTimeBlocks")
+  createdTimeBlocks TimeBlock[] @relation("CreatedTimeBlocks")
 }
 
 model UserBranch {
@@ -453,6 +457,27 @@ model BarberWorkingHour {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dayOfWeek])
+}
+
+model TimeBlock {
+  id             String   @id @default(uuid())
+  branchId       String
+  professionalId String?
+  startTime      DateTime
+  endTime        DateTime
+  allDay         Boolean  @default(false)
+  reason         String?
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  branch       Branch   @relation(fields: [branchId], references: [id])
+  professional User?    @relation("ProfessionalTimeBlocks", fields: [professionalId], references: [id])
+  createdBy    User     @relation("CreatedTimeBlocks", fields: [createdById], references: [id])
+
+  @@index([branchId])
+  @@index([professionalId])
+  @@index([startTime, endTime])
 }
 
 model LandingConfig {

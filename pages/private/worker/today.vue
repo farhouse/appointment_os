@@ -22,10 +22,30 @@ const selectedEvent = ref<any | null>(null)
 const editingNotes = ref('')
 const savingNotes = ref(false)
 const notesError = ref('')
+const isDeletingBlock = ref(false)
+const isBlock = computed(() => selectedEvent.value?.extendedProps?.type === 'BLOCK')
 
 const recentHistory = ref<any[]>([])
 const historyLoading = ref(false)
 const historyError = ref('')
+
+const isCreateModalOpen = ref(false)
+const createInitialStart = ref<string | null>(null)
+
+function refreshCalendar() {
+  if (calendarView.value) void loadEvents(calendarView.value, selectedBranchId.value)
+}
+
+function handleCellClick(payload: any) {
+  const start = payload?.start || payload?.date || payload
+  if (!start) return
+  if (start instanceof Date && !Number.isNaN(start.getTime())) {
+    createInitialStart.value = start.toISOString()
+  } else {
+    createInitialStart.value = null
+  }
+  isCreateModalOpen.value = true
+}
 
 const calendarConfig = computed(() => ({
   view: currentView.value,
@@ -82,6 +102,12 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
 
 const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
+function formatDateTime(d: Date | string) {
+  if (!d) return ''
+  const date = new Date(d)
+  return date.toLocaleString(locale.value === 'es-AR' ? 'es-AR' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })
+}
+
 function handleReady({ view }: { view: VueCalView }) {
   calendarView.value = view
   calendarApiView.value = view
@@ -114,6 +140,23 @@ async function loadRecentHistory() {
     historyError.value = e?.data?.statusMessage || 'No se pudo cargar'
   } finally {
     historyLoading.value = false
+  }
+}
+
+async function deleteBlock() {
+  if (!selectedEvent.value?.extendedProps?.id) return
+  if (!confirm('¿Eliminar este bloqueo?')) return
+  
+  isDeletingBlock.value = true
+  notesError.value = ''
+  try {
+    await $fetch(`/api/time-blocks/${selectedEvent.value.extendedProps.id}`, { method: 'DELETE' })
+    refreshCalendar()
+    selectedEvent.value = null
+  } catch (e: any) {
+    notesError.value = e?.data?.statusMessage || 'No se pudo eliminar'
+  } finally {
+    isDeletingBlock.value = false
   }
 }
 
@@ -202,8 +245,17 @@ async function saveNotes() {
         @ready="handleReady"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
+        @cell-click="handleCellClick"
       />
     </div>
+
+    <AppointmentCreateModal
+      v-if="selectedBranchId"
+      v-model="isCreateModalOpen"
+      :branch-id="selectedBranchId"
+      :initial-start="createInitialStart"
+      @success="refreshCalendar"
+    />
 
     <!-- Simple modal for event details -->
     <div v-if="selectedEvent" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="selectedEvent = null">
@@ -219,7 +271,23 @@ async function saveNotes() {
           <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="selectedEvent = null">✕</button>
         </div>
 
-        <div class="mt-4 space-y-3 text-sm">
+        <div v-if="isBlock" class="mt-4 space-y-3 text-sm">
+           <div class="bg-gray-50 p-3 rounded border border-gray-100">
+              <div class="font-medium text-gray-900 flex items-center gap-2">
+                 <span class="i-heroicons-lock-closed w-4 h-4"></span>
+                 Bloqueo de horario
+              </div>
+              <div class="text-gray-700 mt-1 text-xs">
+                 {{ formatDateTime(selectedEvent.start) }} - {{ formatDateTime(selectedEvent.end) }}
+              </div>
+           </div>
+           <div>
+              <div class="font-medium text-gray-900">Motivo</div>
+              <div class="text-gray-700">{{ selectedEvent.extendedProps?.reason || 'Sin motivo' }}</div>
+           </div>
+        </div>
+
+        <div v-else class="mt-4 space-y-3 text-sm">
           <div>
             <div class="font-medium">Cliente</div>
             <div class="text-gray-700">
@@ -273,7 +341,10 @@ async function saveNotes() {
 
         <div class="mt-4 flex flex-wrap justify-end gap-2">
           <UButton variant="outline" @click="selectedEvent = null">Cerrar</UButton>
-          <UButton color="primary" :disabled="savingNotes" @click="saveNotes">
+          <UButton v-if="isBlock" color="red" :loading="isDeletingBlock" @click="deleteBlock">
+             Eliminar Bloqueo
+          </UButton>
+          <UButton v-else color="primary" :disabled="savingNotes" @click="saveNotes">
             {{ savingNotes ? 'Guardando…' : 'Guardar notas' }}
           </UButton>
         </div>
@@ -281,3 +352,21 @@ async function saveNotes() {
     </div>
   </div>
 </template>
+
+<style scoped>
+:deep(.vuecal__event.block-event) {
+  background-color: repeating-linear-gradient(
+    45deg,
+    #f3f4f6,
+    #f3f4f6 10px,
+    #e5e7eb 10px,
+    #e5e7eb 20px
+  );
+  border-left: 3px solid #6b7280;
+  color: #374151;
+  font-style: italic;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

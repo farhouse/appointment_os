@@ -48,6 +48,14 @@ const clients = ref<Client[]>([])
 const services = ref<Service[]>([])
 const workers = ref<Professional[]>([])
 const loading = ref(false)
+const mode = ref<'APPOINTMENT' | 'BLOCK'>('APPOINTMENT')
+const me = useMeState()
+
+const blockForm = reactive({
+  reason: '',
+  allDay: false,
+  endTime: ''
+})
 
 function asArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? value as T[] : []
@@ -84,7 +92,19 @@ function normalizeServiceItems(rows: Service[]): SelectItem[] {
 }
 
 const clientItems = computed(() => normalizeClientItems(clients.value))
-const professionalItems = computed(() => normalizeProfessionalItems(workers.value))
+const canCreateBranchBlock = computed(() => {
+  return ['OWNER', 'ADMIN', 'MANAGER'].includes(me.value?.role || '')
+})
+
+const professionalItems = computed(() => {
+  const items = normalizeProfessionalItems(workers.value)
+  if (mode.value === 'BLOCK' && canCreateBranchBlock.value) {
+    items.unshift({ id: 'BRANCH', label: 'Toda la Sucursal (todos)' })
+  }
+  return items
+})
+
+const canSelectProfessional = computed(() => canCreateBranchBlock.value)
 const serviceItems = computed(() => normalizeServiceItems(services.value))
 
 // Form
@@ -130,6 +150,11 @@ async function fetchData() {
 
 watch(isOpen, (val) => {
   if (val) {
+    mode.value = 'APPOINTMENT'
+    blockForm.allDay = false
+    blockForm.reason = ''
+    blockForm.endTime = ''
+
     fetchData()
     // Reset form
     form.clientId = ''
@@ -140,9 +165,13 @@ watch(isOpen, (val) => {
     if (preset && !Number.isNaN(preset.getTime())) {
       form.date = preset.toISOString().split('T')[0]
       form.time = `${String(preset.getHours()).padStart(2, '0')}:${String(preset.getMinutes()).padStart(2, '0')}`
+      
+      const end = new Date(preset.getTime() + 60 * 60 * 1000)
+      blockForm.endTime = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`
     } else {
       form.date = new Date().toISOString().split('T')[0]
       form.time = '10:00'
+      blockForm.endTime = '11:00'
     }
 
     form.status = 'CONFIRMED'
@@ -186,6 +215,58 @@ async function createClient() {
 }
 
 async function submit() {
+  if (mode.value === 'BLOCK') {
+    if (!form.professionalId || !form.date) {
+      toast.add({ title: 'Completá los campos obligatorios', color: 'orange' })
+      return
+    }
+
+    if (!blockForm.allDay && (!form.time || !blockForm.endTime)) {
+      toast.add({ title: 'Completá las horas', color: 'orange' })
+      return
+    }
+
+    // Construct times
+    let startDateTime: Date
+    let endDateTime: Date
+
+    if (blockForm.allDay) {
+      startDateTime = new Date(`${form.date}T00:00:00`)
+      endDateTime = new Date(`${form.date}T23:59:59.999`)
+    } else {
+      startDateTime = new Date(`${form.date}T${form.time}:00`)
+      endDateTime = new Date(`${form.date}T${blockForm.endTime}:00`)
+    }
+
+    if (endDateTime <= startDateTime) {
+      toast.add({ title: 'La hora de fin debe ser posterior a la de inicio', color: 'orange' })
+      return
+    }
+
+    loading.value = true
+    try {
+      await $fetch('/api/time-blocks', {
+        method: 'POST',
+        body: {
+          branchId: props.branchId,
+          professionalId: form.professionalId === 'BRANCH' ? null : form.professionalId,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          allDay: blockForm.allDay,
+          reason: blockForm.reason
+        }
+      })
+      toast.add({ title: 'Bloqueo creado', color: 'green' })
+      isOpen.value = false
+      emit('success')
+    } catch (e: any) {
+      toast.add({ title: e?.data?.statusMessage || 'Error creando bloqueo', color: 'red' })
+    } finally {
+      loading.value = false
+    }
+    return
+  }
+
   if (!form.clientId || !form.serviceIds.length || !form.date || !form.time) {
     toast.add({ title: 'Completá los campos obligatorios', color: 'orange' })
     return
@@ -221,9 +302,48 @@ async function submit() {
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" :title="'Nuevo Turno'" :ui="{ width: 'sm:max-w-2xl' }">
+  <UModal v-model:open="isOpen" :title="mode === 'BLOCK' ? 'Nuevo Bloqueo' : 'Nuevo Turno'" :ui="{ width: 'sm:max-w-2xl' }">
     <template #body>
-      <div class="space-y-4">
+      <div class="flex gap-4 border-b border-gray-200 mb-4 pb-2">
+        <button type="button" class="pb-1 px-2" :class="mode === 'APPOINTMENT' ? 'font-bold border-b-2 border-primary-500 text-primary-600' : 'text-gray-500'" @click="mode = 'APPOINTMENT'">Turno</button>
+        <button type="button" class="pb-1 px-2" :class="mode === 'BLOCK' ? 'font-bold border-b-2 border-primary-500 text-primary-600' : 'text-gray-500'" @click="mode = 'BLOCK'">Bloqueo</button>
+      </div>
+
+      <div v-if="mode === 'BLOCK'" class="space-y-4">
+        <UFormGroup label="Profesional / Alcance" required>
+          <USelectMenu
+            v-model="form.professionalId"
+            :items="professionalItems"
+            value-key="id"
+            label-key="label"
+            :disabled="!canSelectProfessional"
+            placeholder="Seleccionar profesional o sucursal"
+          />
+        </UFormGroup>
+
+        <UFormGroup label="Fecha" required>
+          <UInput type="date" v-model="form.date" />
+        </UFormGroup>
+
+        <div class="flex items-center gap-2">
+          <UCheckbox v-model="blockForm.allDay" label="Todo el día" />
+        </div>
+
+        <div v-if="!blockForm.allDay" class="grid grid-cols-2 gap-4">
+          <UFormGroup label="Desde" required>
+            <UInput type="time" v-model="form.time" />
+          </UFormGroup>
+          <UFormGroup label="Hasta" required>
+            <UInput type="time" v-model="blockForm.endTime" />
+          </UFormGroup>
+        </div>
+
+        <UFormGroup label="Motivo (opcional)">
+          <UInput v-model="blockForm.reason" placeholder="Ej: Almuerzo, Médico, etc." />
+        </UFormGroup>
+      </div>
+
+      <div v-else class="space-y-4">
         <!-- Client Selection -->
         <div v-if="!isQuickAddClient">
           <UFormGroup label="Cliente" required>
@@ -265,6 +385,7 @@ async function submit() {
             :items="professionalItems"
             value-key="id"
             label-key="label"
+            :disabled="!canSelectProfessional"
             placeholder="Seleccionar profesional"
           />
         </UFormGroup>

@@ -34,33 +34,60 @@ export default defineEventHandler(async (event) => {
   if (professionalId) whereClause.professionalId = professionalId
   if (u.role === 'BARBER') whereClause.professionalId = u.userId
 
-  const appointments = await prisma.appointment.findMany({
-    where: whereClause,
-    include: {
-      client: {
-        select: { id: true, firstName: true, lastName: true, phone: true, email: true }
-      },
-      professional: {
-        select: { id: true, name: true }
-      },
-      branch: {
-        select: { id: true, name: true }
-      },
-      services: {
-        select: {
-          price: true,
-          service: { select: { id: true, name: true } }
+  const [appointments, blocks] = await Promise.all([
+    prisma.appointment.findMany({
+      where: whereClause,
+      include: {
+        client: {
+          select: { id: true, firstName: true, lastName: true, phone: true, email: true }
+        },
+        professional: {
+          select: { id: true, name: true }
+        },
+        branch: {
+          select: { id: true, name: true }
+        },
+        services: {
+          select: {
+            price: true,
+            service: { select: { id: true, name: true } }
+          }
+        },
+        sale: {
+          include: { items: true }
         }
-      },
-      sale: {
-        include: { items: true }
       }
-    }
-  })
+    }),
+    prisma.timeBlock.findMany({
+      where: whereClause, // Reuse same where logic? Mostly yes.
+      include: {
+        professional: { select: { id: true, name: true } },
+        branch: { select: { id: true, name: true } }
+      }
+    })
+  ])
+
+  const mappedBlocks = blocks.map(block => ({
+    id: block.id,
+    title: block.reason || 'Bloqueado',
+    start: block.startTime,
+    end: block.endTime,
+    ...(block.professionalId ? { schedule: block.professionalId } : {}),
+    extendedProps: {
+      type: 'BLOCK',
+      id: block.id,
+      reason: block.reason,
+      allDay: block.allDay,
+      professional: block.professional,
+      branch: block.branch
+    },
+    class: 'block-event',
+    classNames: ['block-event']
+  }))
 
   // Format for VueCal/FullCalendar-like events.
-  return appointments.map(apt => {
-    const servicePrice = apt.services.reduce((sum, service) => sum + Number(service.price), 0)
+  const mappedAppointments = appointments.map(apt => {
+    const servicePrice = apt.services.reduce((sum, s) => sum + Number(s.price), 0)
     const salePrice = Number(apt.sale?.total || 0)
     const totalPrice = servicePrice + salePrice
     
@@ -72,6 +99,7 @@ export default defineEventHandler(async (event) => {
       // VueCal schedules (columns): use the professional id as schedule id.
       ...(apt.professionalId ? { schedule: apt.professionalId } : {}),
       extendedProps: {
+        type: 'APPOINTMENT',
         status: apt.status,
         notes: apt.notes,
         totalPrice,
@@ -98,4 +126,6 @@ export default defineEventHandler(async (event) => {
       classNames: [`status-${apt.status.toLowerCase()}`]
     }
   })
+
+  return [...mappedAppointments, ...mappedBlocks]
 })
