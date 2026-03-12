@@ -34,9 +34,10 @@
   - Requiere sucursal + caja abierta + descuento de stock + movimiento de caja.
 
 - [ ] (todo) **Bloqueo de franjas horarias por falta de staff**
-  - Permitir bloquear horarios por sucursal y/o worker cuando falte personal.
+  - Alcance cerrado: bloqueo directo desde calendario (sin flujo de aprobación).
+  - Roles: WORKER + MANAGER + ADMIN.
+  - Tipos: día completo o franja horaria (ej. comida/descanso), con motivo opcional.
   - Debe impactar en agenda interna y booking público (no ofrecer slots bloqueados).
-  - Incluir auto-gestión de agenda por workers: solicitud/bloqueo de días + bloqueos de descanso/comida.
 
 ## BARBER APP (pendientes)
 - [x] (done) **Barber finances** (totales + comisión fija por barbero)
