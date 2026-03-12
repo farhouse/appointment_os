@@ -25,6 +25,7 @@ type Employee = {
   email: string
   role: 'OWNER' | 'ADMIN' | 'MANAGER' | 'BARBER' | 'CLIENT'
   active: boolean
+  commissionRate?: number | string
   createdAt: string
   updatedAt: string
   branches: { branch: BranchInfo }[]
@@ -66,6 +67,7 @@ const employeeBaseSchema = z.object({
   email: z.string().email(t('admin.employees.form.emailInvalid')),
   role: z.enum(['OWNER', 'ADMIN', 'MANAGER', 'BARBER', 'CLIENT']),
   active: z.boolean(),
+  commissionRate: z.number().min(0).max(100).optional(),
   branchIds: z.array(z.string()).optional(),
   // Allow empty string in form state (edit mode hides password field but state may contain '').
   password: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(6).optional())
@@ -93,6 +95,7 @@ const formState = reactive<Partial<EmployeeForm>>({
   email: '',
   role: 'BARBER',
   active: true,
+  commissionRate: 0,
   branchIds: [],
   password: ''
 })
@@ -281,7 +284,11 @@ async function loadEmployees() {
   isLoading.value = true
   errorMessage.value = ''
   try {
-    employees.value = await $fetch('/api/employees')
+    const data = await $fetch('/api/employees')
+    employees.value = (data as any[]).map((e) => ({
+      ...e,
+      commissionRate: Number(e.commissionRate || 0)
+    }))
   } catch (e: any) {
     employees.value = []
     errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
@@ -302,6 +309,7 @@ function resetForm() {
   formState.email = ''
   formState.role = 'BARBER'
   formState.active = true
+  formState.commissionRate = 0
   formState.branchIds = []
   formState.password = ''
 }
@@ -318,6 +326,7 @@ function openEdit(employee: Employee) {
   formState.email = employee.email
   formState.role = employee.role
   formState.active = employee.active
+  formState.commissionRate = Number(employee.commissionRate || 0)
   formState.branchIds = employee.branches.map(item => item.branch.id)
   formState.password = ''
   modalOpen.value = true
@@ -509,6 +518,9 @@ onMounted(() => {
         </UFormField>
         <UFormField :label="$t('admin.employees.form.role')" name="role">
           <USelect v-model="formState.role" :items="roleItems" value-key="value" />
+        </UFormField>
+        <UFormField label="Comisión (%)" name="commissionRate" help="Solo aplica para personal de tipo BARBER/WORKER.">
+          <UInput v-model.number="formState.commissionRate" type="number" min="0" max="100" step="0.01" />
         </UFormField>
         <UFormField :label="$t('admin.employees.form.branches')" name="branchIds">
           <USelect v-model="formState.branchIds" :items="branchItems" value-key="value" multiple />

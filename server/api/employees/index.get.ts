@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
       email: true,
       role: true,
       active: true,
+      commissionRate: true,
       createdAt: true,
       updatedAt: true,
       branches: {

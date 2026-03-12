@@ -20,6 +20,7 @@ export const employeeSchema = z.object({
   role: z.enum(['OWNER', 'ADMIN', 'MANAGER', 'BARBER', 'CLIENT']),
   password: z.string().min(6).optional(), // Optional for updates if logic handles it
   active: z.boolean().optional(),
+  commissionRate: z.number().min(0).max(100).optional(),
   branchIds: z.array(z.string()).optional()
 })
 
