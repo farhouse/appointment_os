@@ -911,13 +911,7 @@ watch(openSessionsSorted, (value) => {
   <UModal
     v-model:open="openingModal"
     :title="$t('manager.cash.openSession')"
-    :ui="{
-      width: 'sm:max-w-2xl',
-      content: 'bg-stone-50 text-stone-900',
-      header: 'bg-stone-50 text-stone-900 border-b border-stone-200',
-      body: 'bg-stone-50 text-stone-900',
-      footer: 'justify-end bg-stone-50 border-t border-stone-200'
-    }"
+    :ui="{ width: 'sm:max-w-2xl', footer: 'justify-end' }"
   >
     <template #body>
       <div class="space-y-4">
@@ -950,13 +944,7 @@ watch(openSessionsSorted, (value) => {
   <UModal
     v-model:open="closingModal"
     :title="$t('manager.cash.closeSession')"
-    :ui="{
-      width: 'sm:max-w-3xl',
-      content: 'bg-stone-50 text-stone-900',
-      header: 'bg-stone-50 text-stone-900 border-b border-stone-200',
-      body: 'bg-stone-50 text-stone-900',
-      footer: 'justify-end bg-stone-50 border-t border-stone-200'
-    }"
+    :ui="{ width: 'sm:max-w-3xl', footer: 'justify-end' }"
   >
     <template #body>
       <div class="space-y-4">
@@ -1011,12 +999,7 @@ watch(openSessionsSorted, (value) => {
   <UModal
     v-model:open="movementModal"
     :title="$t('manager.cash.movements')"
-    :ui="{
-      content: 'bg-stone-50 text-stone-900',
-      header: 'bg-stone-50 text-stone-900 border-b border-stone-200',
-      body: 'bg-stone-50 text-stone-900',
-      footer: 'justify-end bg-stone-50 border-t border-stone-200'
-    }"
+    :ui="{ footer: 'justify-end' }"
   >
     <template #body>
       <UForm ref="movementFormRef" :schema="movementSchema" :state="movementForm" class="space-y-4" @submit="submitMovement">
