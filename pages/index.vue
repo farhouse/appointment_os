@@ -1,6 +1,9 @@
 <template>
   <div class="py-14">
     <div class="max-w-6xl mx-auto px-4">
+      <div v-if="landingHtml" class="prose max-w-none" v-html="landingHtml" />
+
+      <template v-else>
       <!-- Section 1: brand + "see the barbershop" -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div>
@@ -42,6 +45,7 @@
           </div>
         </div>
       </div>
+      </template>
     </div>
   </div>
 </template>
@@ -54,6 +58,9 @@ const { t } = useI18n()
 
 await loadMe()
 
+const { data: landingConfig } = await useFetch<{ html: string }>('/api/public/landing')
+
+const landingHtml = computed(() => (landingConfig.value?.html || '').trim())
 const ctaHref = computed(() => (me.value ? '/private' : '/login'))
 const ctaLabel = computed(() => (me.value ? t('landing.dashboard') : t('landing.login')))
 </script>

@@ -27,6 +27,11 @@ const items = computed<SettingsNavItem[]>(() => [
     label: t('pages.private.managerSettingsNav.cashboxes'),
     description: t('pages.private.managerSettingsNav.cashboxesDesc'),
     to: '/private/backoffice/settings/cashboxes'
+  },
+  {
+    label: 'Landing',
+    description: 'HTML de la home pública',
+    to: '/private/backoffice/settings/landing'
   }
 ])
 

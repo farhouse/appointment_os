@@ -4,9 +4,10 @@
 > Leyenda: `todo | doing | blocked | done`
 
 ## NEXT (prioridad alta)
-- [ ] (todo) **Landing configurable desde Settings (MVP)**
-  - Alcance: hero (título/subtítulo), CTA principal, beneficios, imagen.
-  - Entrega: panel en Settings + persistencia DB + consumo en home pública con fallback.
+- [x] (done) **Landing configurable desde Settings (MVP)**
+  - Resultado: Settings ahora incluye sección Landing con editor HTML + preview y persistencia en DB (`LandingConfig`).
+  - Home pública consume `/api/public/landing` y renderiza HTML configurado con fallback a landing anterior si está vacío.
+  - Files: `pages/private/backoffice/settings/landing.vue`, `server/api/settings/landing.*`, `server/api/public/landing.get.ts`, `pages/index.vue`, `prisma/schema.prisma`.
 
 - [ ] (todo) **Generalización de dominio: Barber → Worker**
   - Fase 1: copy/UI/i18n (sin romper nada).

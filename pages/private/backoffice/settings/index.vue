@@ -27,6 +27,11 @@ const cards = computed(() => [
     title: t('pages.private.managerSettingsNav.cashboxes'),
     description: t('pages.private.managerSettingsNav.cashboxesDesc'),
     to: '/private/backoffice/settings/cashboxes'
+  },
+  {
+    title: 'Landing',
+    description: 'HTML de la home pública',
+    to: '/private/backoffice/settings/landing'
   }
 ])
 </script>

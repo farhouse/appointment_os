@@ -454,3 +454,10 @@ model BarberWorkingHour {
 
   @@unique([userId, dayOfWeek])
 }
+
+model LandingConfig {
+  id        String   @id @default("default")
+  html      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
