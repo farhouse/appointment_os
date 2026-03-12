@@ -33,6 +33,10 @@
 - [ ] (todo) **Módulo de Venta (venta directa fuera del turno)**
   - Requiere sucursal + caja abierta + descuento de stock + movimiento de caja.
 
+- [ ] (todo) **Bloqueo de franjas horarias por falta de staff**
+  - Permitir bloquear horarios por sucursal y/o worker cuando falte personal.
+  - Debe impactar en agenda interna y booking público (no ofrecer slots bloqueados).
+
 ## BARBER APP (pendientes)
 - [x] (done) **Barber finances** (totales + comisión fija por barbero)
   - Resultado: panel muestra turnos pagados, total de servicios y comisión estimada (según `User.commissionRate`) con desglose semanal.
