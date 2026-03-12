@@ -949,17 +949,22 @@ watch(openSessionsSorted, (value) => {
     <template #body>
       <div class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div class="rounded-lg border border-stone-200 bg-stone-50 p-3">
+          <div class="rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
             <div class="text-xs text-stone-500">Esperado</div>
             <div class="text-lg font-semibold text-stone-900">{{ formatCurrency(closeExpectedTotal) }}</div>
           </div>
-          <div class="rounded-lg border border-stone-200 bg-stone-50 p-3">
+          <div class="rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
             <div class="text-xs text-stone-500">Contado</div>
             <div class="text-lg font-semibold text-stone-900">{{ formatCurrency(closeCountedTotal) }}</div>
           </div>
-          <div class="rounded-lg p-3" :class="closeDifference === 0 ? 'border border-emerald-200 bg-emerald-50' : 'border border-amber-200 bg-amber-50'">
-            <div class="text-xs" :class="closeDifference === 0 ? 'text-emerald-700' : 'text-amber-700'">Diferencia</div>
-            <div class="text-lg font-semibold" :class="closeDifference === 0 ? 'text-emerald-800' : 'text-amber-800'">{{ formatCurrency(closeDifference) }}</div>
+          <div class="rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <div class="text-xs text-stone-500">Diferencia</div>
+              <UBadge :color="closeDifference === 0 ? 'success' : 'warning'" variant="soft" size="sm">
+                {{ closeDifference === 0 ? 'OK' : 'Revisar' }}
+              </UBadge>
+            </div>
+            <div class="text-lg font-semibold" :class="closeDifference === 0 ? 'text-emerald-700' : 'text-amber-700'">{{ formatCurrency(closeDifference) }}</div>
           </div>
         </div>
 
