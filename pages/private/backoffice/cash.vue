@@ -908,7 +908,7 @@ watch(openSessionsSorted, (value) => {
 
   </div>
 
-  <UModal v-model:open="openingModal" :title="$t('manager.cash.openSession')" :ui="{ width: 'sm:max-w-2xl', footer: 'justify-end' }">
+  <UModal v-model:open="openingModal" :title="$t('manager.cash.openSession')" :ui="{ width: 'sm:max-w-2xl', footer: 'justify-end', overlay: 'bg-amber-100/70 backdrop-blur-[1px]' }">
     <template #body>
       <div class="space-y-4">
         <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
@@ -937,7 +937,7 @@ watch(openSessionsSorted, (value) => {
     </template>
   </UModal>
 
-  <UModal v-model:open="closingModal" :title="$t('manager.cash.closeSession')" :ui="{ width: 'sm:max-w-3xl', footer: 'justify-end' }">
+  <UModal v-model:open="closingModal" :title="$t('manager.cash.closeSession')" :ui="{ width: 'sm:max-w-3xl', footer: 'justify-end', overlay: 'bg-amber-100/70 backdrop-blur-[1px]' }">
     <template #body>
       <div class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -988,7 +988,7 @@ watch(openSessionsSorted, (value) => {
     </template>
   </UModal>
 
-  <UModal v-model:open="movementModal" :title="$t('manager.cash.movements')" :ui="{ footer: 'justify-end' }">
+  <UModal v-model:open="movementModal" :title="$t('manager.cash.movements')" :ui="{ footer: 'justify-end', overlay: 'bg-amber-100/70 backdrop-blur-[1px]' }">
     <template #body>
       <UForm ref="movementFormRef" :schema="movementSchema" :state="movementForm" class="space-y-4" @submit="submitMovement">
         <UFormField :label="$t('manager.cash.movementType')" name="type">
