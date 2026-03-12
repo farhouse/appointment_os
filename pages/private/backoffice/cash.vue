@@ -184,6 +184,31 @@ const paymentMediumItems = computed(() => {
 
 const selectedMovementMethodLabel = computed(() => getMethodLabel(movementForm.paymentMethod || 'CASH'))
 
+const closeExpectedByMethod = computed(() => {
+  const session = selectedSession.value
+  const totals = getTotalsByMethod(session)
+  return {
+    CASH: Number(totals.CASH || 0),
+    CARD: Number(totals.CARD || 0),
+    TRANSFER: Number(totals.TRANSFER || 0),
+    OTHER: Number(totals.OTHER || 0),
+  }
+})
+
+const closeCountedByMethod = computed(() => ({
+  CASH: Number(closeForm.countedCash || 0),
+  CARD: Number(closeForm.countedCard || 0),
+  TRANSFER: Number(closeForm.countedTransfer || 0),
+  OTHER: Number(closeForm.countedOther || 0),
+}))
+
+const closeExpectedTotal = computed(() => Number(getSessionCurrentBalance(selectedSession.value) || 0))
+const closeCountedTotal = computed(() => {
+  const c = closeCountedByMethod.value
+  return c.CASH + c.CARD + c.TRANSFER + c.OTHER
+})
+const closeDifference = computed(() => closeCountedTotal.value - closeExpectedTotal.value)
+
 function getMethodLabel(method: string) {
   switch (method) {
     case 'CARD':
@@ -883,19 +908,26 @@ watch(openSessionsSorted, (value) => {
 
   </div>
 
-  <UModal v-model:open="openingModal" :title="$t('manager.cash.openSession')" :ui="{ footer: 'justify-end' }">
+  <UModal v-model:open="openingModal" :title="$t('manager.cash.openSession')" :ui="{ width: 'sm:max-w-2xl', footer: 'justify-end' }">
     <template #body>
-      <UForm ref="openFormRef" :schema="openSchema" :state="openForm" class="space-y-4" @submit="submitOpen">
-        <UFormField :label="$t('manager.cash.cashboxes')" name="cashBoxId">
-          <USelect v-model="openForm.cashBoxId" :items="cashBoxes" value-key="id" label-key="name" />
-        </UFormField>
-        <UFormField label="Monto efectivo de apertura" name="openingAmount">
-          <UInputNumber v-model="openForm.openingAmount" :min="0" />
-        </UFormField>
-        <div class="hidden">
-          <UButton type="submit" />
+      <div class="space-y-4">
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+          Abrí la caja con un monto inicial claro para que el cierre sea más preciso.
         </div>
-      </UForm>
+        <UForm ref="openFormRef" :schema="openSchema" :state="openForm" class="space-y-4" @submit="submitOpen">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <UFormField :label="$t('manager.cash.cashboxes')" name="cashBoxId">
+              <USelect v-model="openForm.cashBoxId" :items="cashBoxes" value-key="id" label-key="name" />
+            </UFormField>
+            <UFormField label="Monto efectivo de apertura" name="openingAmount">
+              <UInputNumber v-model="openForm.openingAmount" :min="0" />
+            </UFormField>
+          </div>
+          <div class="hidden">
+            <UButton type="submit" />
+          </div>
+        </UForm>
+      </div>
     </template>
     <template #footer>
       <UButton color="neutral" variant="outline" @click="openingModal = false">{{ $t('common.cancel') }}</UButton>
@@ -905,25 +937,48 @@ watch(openSessionsSorted, (value) => {
     </template>
   </UModal>
 
-  <UModal v-model:open="closingModal" :title="$t('manager.cash.closeSession')" :ui="{ footer: 'justify-end' }">
+  <UModal v-model:open="closingModal" :title="$t('manager.cash.closeSession')" :ui="{ width: 'sm:max-w-3xl', footer: 'justify-end' }">
     <template #body>
-      <UForm ref="closeFormRef" :schema="closeSchema" :state="closeForm" class="space-y-4" @submit="submitClose">
-        <UFormField :label="$t('manager.cash.closingAmount')" name="countedCash">
-          <UInputNumber v-model="closeForm.countedCash" :min="0" />
-        </UFormField>
-        <UFormField :label="$t('manager.cash.closingCard')" name="countedCard">
-          <UInputNumber v-model="closeForm.countedCard" :min="0" />
-        </UFormField>
-        <UFormField :label="$t('manager.cash.closingTransfer')" name="countedTransfer">
-          <UInputNumber v-model="closeForm.countedTransfer" :min="0" />
-        </UFormField>
-        <UFormField :label="$t('manager.cash.closingOther')" name="countedOther">
-          <UInputNumber v-model="closeForm.countedOther" :min="0" />
-        </UFormField>
-        <div class="hidden">
-          <UButton type="submit" />
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="rounded-lg border border-stone-200 bg-stone-50 p-3">
+            <div class="text-xs text-stone-500">Esperado</div>
+            <div class="text-lg font-semibold text-stone-900">{{ formatCurrency(closeExpectedTotal) }}</div>
+          </div>
+          <div class="rounded-lg border border-stone-200 bg-stone-50 p-3">
+            <div class="text-xs text-stone-500">Contado</div>
+            <div class="text-lg font-semibold text-stone-900">{{ formatCurrency(closeCountedTotal) }}</div>
+          </div>
+          <div class="rounded-lg p-3" :class="closeDifference === 0 ? 'border border-emerald-200 bg-emerald-50' : 'border border-amber-200 bg-amber-50'">
+            <div class="text-xs" :class="closeDifference === 0 ? 'text-emerald-700' : 'text-amber-700'">Diferencia</div>
+            <div class="text-lg font-semibold" :class="closeDifference === 0 ? 'text-emerald-800' : 'text-amber-800'">{{ formatCurrency(closeDifference) }}</div>
+          </div>
         </div>
-      </UForm>
+
+        <UForm ref="closeFormRef" :schema="closeSchema" :state="closeForm" class="space-y-4" @submit="submitClose">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <UFormField :label="$t('manager.cash.closingAmount')" name="countedCash">
+              <UInputNumber v-model="closeForm.countedCash" :min="0" />
+              <p class="mt-1 text-xs text-gray-500">Esperado: {{ formatCurrency(closeExpectedByMethod.CASH) }}</p>
+            </UFormField>
+            <UFormField :label="$t('manager.cash.closingCard')" name="countedCard">
+              <UInputNumber v-model="closeForm.countedCard" :min="0" />
+              <p class="mt-1 text-xs text-gray-500">Esperado: {{ formatCurrency(closeExpectedByMethod.CARD) }}</p>
+            </UFormField>
+            <UFormField :label="$t('manager.cash.closingTransfer')" name="countedTransfer">
+              <UInputNumber v-model="closeForm.countedTransfer" :min="0" />
+              <p class="mt-1 text-xs text-gray-500">Esperado: {{ formatCurrency(closeExpectedByMethod.TRANSFER) }}</p>
+            </UFormField>
+            <UFormField :label="$t('manager.cash.closingOther')" name="countedOther">
+              <UInputNumber v-model="closeForm.countedOther" :min="0" />
+              <p class="mt-1 text-xs text-gray-500">Esperado: {{ formatCurrency(closeExpectedByMethod.OTHER) }}</p>
+            </UFormField>
+          </div>
+          <div class="hidden">
+            <UButton type="submit" />
+          </div>
+        </UForm>
+      </div>
     </template>
     <template #footer>
       <UButton color="neutral" variant="outline" @click="closingModal = false">{{ $t('common.cancel') }}</UButton>
