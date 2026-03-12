@@ -19,6 +19,8 @@ Leyenda estado: `todo | doing | blocked | done`
 - Client profile editable + cambio de password
 - Cliente: fotos de cortes (máx 3, storage local docker)
 - Barber appointments (filters UI + modal + rango diario)
+- Landing configurable desde Settings (sección CMS/home)
+- Renombrar “Barber” → “Worker” (dominio más genérico multi-rubro)
 
 ### LATER
 - News/Offers CMS + audiencia/expiración
@@ -230,6 +232,29 @@ Leyenda estado: `todo | doing | blocked | done`
     - Calendar muestra claramente ventanas laborales vs fuera de horario.
   - Files: `prisma/schema.prisma` (availability model), endpoints de employees/availability, `pages/private/backoffice/employees.vue` (o detalle), lógica de disponibilidad en calendar/booking.
   - NEXT: implementar overlay/indicador visual de jornada laboral en `pages/private/barber/today.vue` (y validar si aplica también en backoffice calendar).
+
+## P1 — Producto / Multi-rubro
+- [ ] (todo) **Landing configurable**: permitir editar de forma simple la home pública desde Settings (sección “Landing”).
+  - Objetivo: poder cambiar hero/copy/CTAs/imagen(s) sin tocar código.
+  - Alcance inicial (MVP): título, subtítulo, botón principal, sección beneficios, visibilidad por sucursal (opcional).
+  - Acceptance:
+    - UI de Settings con preview básico.
+    - Persistencia en DB (`SiteContent` o `LandingConfig`).
+    - Home pública consume configuración con fallback seguro.
+  - NEXT: definir schema + endpoint GET/PUT + panel mínimo en `/private/backoffice/settings`.
+
+- [ ] (todo) **Generalización de dominio: Barber → Worker**
+  - Objetivo: producto reusable para barberías, uñas, estética y otros servicios por appointment.
+  - Estrategia recomendada: migración progresiva por capas (evitar “big bang”).
+  - Fase 1 (copy/UI): labels e i18n (`Barber`→`Worker`/`Profesional`).
+  - Fase 2 (API/paths): alias compatibles (`/barbers` y `/workers`) sin romper clientes actuales.
+  - Fase 3 (modelo): renombre de entidades/campos internos sólo cuando haya cobertura de tests/migraciones.
+  - Acceptance:
+    - UI sin términos “barber” visibles al usuario final.
+    - Backward compatibility en endpoints existentes durante transición.
+    - Checklist de migración y deprecación documentado.
+  - Riesgo: cambio transversal alto (roles, rutas, seeds, permisos, calendarios).
+  - NEXT: abrir RFC corto con mapa de impactos y orden de rollout.
 
 ## P2 — Backoffice
 - [x] (done) **Settings split**: sectores de configuración separados en subpáginas dedicadas.
