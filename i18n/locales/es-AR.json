@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Worker OS",
+    "name": "AM OS",
     "private": "Privado"
   },
   "nav": {
@@ -37,9 +37,9 @@
   },
   "landing": {
     "brandEyebrow": "Centro de servicios",
-    "brandName": "Emi Worker Club",
+    "brandName": "Emi Barber Club",
     "brandSubtitle": "Cortes clásicos y modernos. Reservá tu turno en segundos.",
-    "photoAlt": "Interior de Emi Worker Club",
+    "photoAlt": "Interior de Emi Barber Club",
     "cta": {
       "book": "Sacar turno",
       "viewCalendar": "Ver calendario"

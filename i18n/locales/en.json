@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Worker OS",
+    "name": "AM OS",
     "private": "Private"
   },
   "nav": {
@@ -36,9 +36,9 @@
   },
   "landing": {
     "brandEyebrow": "Service studio",
-    "brandName": "Emi Worker Club",
+    "brandName": "Emi Barber Club",
     "brandSubtitle": "Classic and modern cuts. Book your appointment in seconds.",
-    "photoAlt": "Emi Worker Club interior",
+    "photoAlt": "Emi Barber Club interior",
     "cta": {
       "book": "Book appointment",
       "viewCalendar": "View calendar"
