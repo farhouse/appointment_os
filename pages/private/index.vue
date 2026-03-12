@@ -17,7 +17,7 @@ const role: Role | undefined = me?.role
 if (role === 'OWNER' || role === 'ADMIN' || role === 'MANAGER') {
   await navigateTo('/private/backoffice')
 } else if (role === 'BARBER') {
-  await navigateTo('/private/barber')
+  await navigateTo('/private/worker')
 } else if (role === 'CLIENT') {
   await navigateTo('/private/client')
 }

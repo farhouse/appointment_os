@@ -13,7 +13,7 @@ const role = computed<Role | undefined>(() => me.value?.role)
 const isAdmin = computed(() => role.value === 'OWNER' || role.value === 'ADMIN')
 const isOwner = computed(() => role.value === 'OWNER')
 const isManager = computed(() => role.value === 'MANAGER')
-const isBarber = computed(() => role.value === 'BARBER')
+const isWorker = computed(() => role.value === 'BARBER')
 const isClient = computed(() => role.value === 'CLIENT')
 
 const { t } = useI18n()
@@ -45,10 +45,10 @@ const adminLinks = computed(() => [
   { label: t('nav.settings'), to: '/private/backoffice/settings', icon: 'i-heroicons-cog-6-tooth' },
 ])
 
-const barberLinks = computed(() => [
-  { label: t('nav.today'), to: '/private/barber/today', icon: 'i-heroicons-calendar' },
-  { label: t('nav.finances'), to: '/private/barber/finances', icon: 'i-heroicons-chart-bar' },
-  { label: t('nav.appointments'), to: '/private/barber/appointments', icon: 'i-heroicons-clipboard-document-list' },
+const workerLinks = computed(() => [
+  { label: t('nav.today'), to: '/private/worker/today', icon: 'i-heroicons-calendar' },
+  { label: t('nav.finances'), to: '/private/worker/finances', icon: 'i-heroicons-chart-bar' },
+  { label: t('nav.appointments'), to: '/private/worker/appointments', icon: 'i-heroicons-clipboard-document-list' },
 ])
 
 const clientLinks = computed(() => [
@@ -121,9 +121,9 @@ function localePrefix(code: string) {
             <UNavigationMenu class="mt-2" orientation="vertical" :items="managerLinks" />
           </div>
 
-          <div v-if="isBarber">
+          <div v-if="isWorker">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide dark:text-gray-400">{{ $t('nav.barber') }}</div>
-            <UNavigationMenu class="mt-2" orientation="vertical" :items="barberLinks" />
+            <UNavigationMenu class="mt-2" orientation="vertical" :items="workerLinks" />
           </div>
 
           <div v-if="isClient">

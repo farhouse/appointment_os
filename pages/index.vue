@@ -4,7 +4,7 @@
       <div v-if="landingHtml" class="prose max-w-none" v-html="landingHtml" />
 
       <template v-else>
-      <!-- Section 1: brand + "see the barbershop" -->
+      <!-- Section 1: brand + "see the studio" -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div>
           <p class="text-sm font-semibold tracking-wide uppercase text-gray-600">{{ $t('landing.brandEyebrow') }}</p>

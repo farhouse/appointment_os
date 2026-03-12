@@ -15,9 +15,9 @@ export default defineEventHandler(async (event) => {
 
   const result = await sendMail({
     to: parsed.to,
-    subject: 'Email de prueba - Barber OS',
-    html: '<p>Este es un email de prueba enviado desde Barber OS.</p>',
-    text: 'Este es un email de prueba enviado desde Barber OS.'
+    subject: 'Email de prueba - AM OS',
+    html: '<p>Este es un email de prueba enviado desde AM OS.</p>',
+    text: 'Este es un email de prueba enviado desde AM OS.'
   })
 
   if (!result.ok) {

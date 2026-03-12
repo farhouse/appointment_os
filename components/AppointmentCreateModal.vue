@@ -46,7 +46,7 @@ type SelectItem = {
 // Data
 const clients = ref<Client[]>([])
 const services = ref<Service[]>([])
-const barbers = ref<Professional[]>([])
+const workers = ref<Professional[]>([])
 const loading = ref(false)
 
 function asArray<T>(value: unknown): T[] {
@@ -84,7 +84,7 @@ function normalizeServiceItems(rows: Service[]): SelectItem[] {
 }
 
 const clientItems = computed(() => normalizeClientItems(clients.value))
-const professionalItems = computed(() => normalizeProfessionalItems(barbers.value))
+const professionalItems = computed(() => normalizeProfessionalItems(workers.value))
 const serviceItems = computed(() => normalizeServiceItems(services.value))
 
 // Form
@@ -112,15 +112,15 @@ const newClient = reactive({
 async function fetchData() {
   loading.value = true
   try {
-    const [clientsData, servicesData, barbersData] = await Promise.all([
+    const [clientsData, servicesData, workersData] = await Promise.all([
       $fetch('/api/clients'),
       $fetch('/api/services'),
-      $fetch(`/api/public/barbers?branchId=${props.branchId}`)
+      $fetch(`/api/public/workers?branchId=${props.branchId}`)
     ])
 
     clients.value = asArray<Client>(clientsData)
     services.value = asArray<Service>(servicesData).filter((s) => s?.active !== false)
-    barbers.value = asArray<Professional>(barbersData)
+    workers.value = asArray<Professional>(workersData)
   } catch (e) {
     toast.add({ title: 'Error loading data', color: 'red' })
   } finally {

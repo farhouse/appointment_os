@@ -12,7 +12,7 @@ type Branch = {
   todayWorkingHours?: { start: string; end: string; isWorking: boolean } | null
 }
 type Service = { id: string; name: string; description?: string | null; price: any; duration: number }
-type Barber = { id: string; name: string; email: string }
+type Worker = { id: string; name: string; email: string }
 
 type BusySlot = { startTime: string; endTime: string; status: string }
 
@@ -37,17 +37,17 @@ const props = withDefaults(defineProps<{
 
 const branches = ref<Branch[]>([])
 const services = ref<Service[]>([])
-const barbers = ref<Barber[]>([])
+const workers = ref<Worker[]>([])
 
 const loadingBranches = ref(false)
 const loadingServices = ref(false)
-const loadingBarbers = ref(false)
+const loadingWorkers = ref(false)
 const loadingSlots = ref(false)
 const lookingUpUser = ref(false)
 
 const branchId = ref<string>(props.initialBranchId || '')
 const serviceId = ref<string>('')
-const barberId = ref<string>('')
+const workerId = ref<string>('')
 
 const date = ref<string>(new Date().toISOString().slice(0, 10)) // YYYY-MM-DD
 
@@ -86,8 +86,8 @@ function changeDay(deltaDays: number) {
   date.value = formatYmd(dt)
 }
 
-function clearBarberFilter() {
-  barberId.value = ''
+function clearWorkerFilter() {
+  workerId.value = ''
 }
 const busy = ref<BusySlot[]>([])
 const workingHoursStart = ref<string | null>(null)
@@ -205,27 +205,27 @@ watch([clientEmail, clientPhone], ([email, phone]) => {
 })
 
 watch(branchId, async (id) => {
-  barberId.value = ''
-  barbers.value = []
+  workerId.value = ''
+  workers.value = []
 
   if (!id) {
-    loadingBarbers.value = false
+    loadingWorkers.value = false
     return
   }
 
-  loadingBarbers.value = true
+  loadingWorkers.value = true
   try {
-    barbers.value = await $fetch(`/api/public/barbers?branchId=${encodeURIComponent(id)}`)
+    workers.value = await $fetch(`/api/public/workers?branchId=${encodeURIComponent(id)}`)
   } catch {
-    barbers.value = []
+    workers.value = []
   } finally {
     // keep it visible at least a tick so it doesn't feel broken
     await nextTick()
-    loadingBarbers.value = false
+    loadingWorkers.value = false
   }
 }, { immediate: true })
 
-watch([branchId, barberId, date], async ([bId, brId, d]) => {
+watch([branchId, workerId, date], async ([bId, brId, d]) => {
   busy.value = []
   selectedStart.value = null
   selectedEnd.value = null
@@ -237,7 +237,7 @@ watch([branchId, barberId, date], async ([bId, brId, d]) => {
 
   loadingSlots.value = true
   try {
-    const availability = await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&barberId=${encodeURIComponent(brId || '')}&date=${encodeURIComponent(d)}`)
+    const availability = await $fetch(`/api/public/availability?branchId=${encodeURIComponent(bId)}&workerId=${encodeURIComponent(brId || '')}&date=${encodeURIComponent(d)}`)
     busy.value = (availability as any).busy || []
     workingHoursStart.value = (availability as any).workingHours?.start || null
     workingHoursEnd.value = (availability as any).workingHours?.end || null
@@ -298,7 +298,7 @@ const timelineTotalMinutes = computed(() => {
 })
 
 const availableSlots = computed(() => {
-  if (!branchId.value || !barberId.value || !selectedService.value) return [] as { start: Date; end: Date; label: string }[]
+  if (!branchId.value || !workerId.value || !selectedService.value) return [] as { start: Date; end: Date; label: string }[]
 
   if (!workingHoursStart.value || !workingHoursEnd.value) return []
 
@@ -335,7 +335,7 @@ const availableSlots = computed(() => {
 })
 
 const detailsComplete = computed(() => {
-  return !!(branchId.value && serviceId.value && barberId.value && date.value)
+  return !!(branchId.value && serviceId.value && workerId.value && date.value)
 })
 
 const timeComplete = computed(() => {
@@ -439,7 +439,7 @@ async function submitBooking() {
       body: {
         branchId: branchId.value,
         clientId: (client as any).id,
-        professionalId: barberId.value,
+        professionalId: workerId.value,
         startTime: selectedStart.value,
         endTime: selectedEnd.value,
         serviceIds: [serviceId.value],
@@ -559,7 +559,7 @@ async function submitBooking() {
 
         <div class="flex items-center justify-between gap-3 mb-1 mt-3">
           <label class="block text-sm font-medium">{{ $t('booking.barber') }}</label>
-          <span v-if="loadingBarbers" class="text-xs text-gray-500 inline-flex items-center gap-2">
+          <span v-if="loadingWorkers" class="text-xs text-gray-500 inline-flex items-center gap-2">
             <span class="i-lucide-loader-2 animate-spin" />
             {{ $t('common.loading') }}
           </span>
@@ -567,24 +567,24 @@ async function submitBooking() {
         <div class="mt-2" role="radiogroup" :aria-label="$t('booking.barber')">
           <div class="flex flex-wrap gap-2">
             <button
-              v-for="b in barbers"
+              v-for="b in workers"
               :key="b.id"
               type="button"
               role="radio"
-              :aria-checked="barberId === b.id"
-              :disabled="!branchId || loadingBarbers"
+              :aria-checked="workerId === b.id"
+              :disabled="!branchId || loadingWorkers"
               class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              :class="barberId === b.id
+              :class="workerId === b.id
                 ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
                 : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'
               "
-              @click="barberId = b.id"
+              @click="workerId = b.id"
             >
               {{ b.name }}
             </button>
           </div>
-          <p v-if="branchId && !barbers.length && !loadingBarbers" class="mt-2 text-xs text-gray-500">
-            {{ $t('booking.selectBarber') }}
+          <p v-if="branchId && !workers.length && !loadingWorkers" class="mt-2 text-xs text-gray-500">
+            {{ $t('booking.selectWorker') }}
           </p>
         </div>
 
@@ -724,10 +724,10 @@ async function submitBooking() {
                 size="sm"
                 variant="outline"
                 icon="i-lucide-scissors"
-                :disabled="!barberId"
-                @click="clearBarberFilter"
+                :disabled="!workerId"
+                @click="clearWorkerFilter"
               >
-                {{ $t('booking.noSlotsCta.anyBarber') }}
+                {{ $t('booking.noSlotsCta.anyWorker') }}
               </UButton>
             </div>
           </div>
