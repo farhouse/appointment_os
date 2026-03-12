@@ -259,7 +259,7 @@ async function submit() {
         </div>
 
         <!-- Professional -->
-        <UFormGroup label="Barbero / Profesional" required>
+        <UFormGroup label="Worker / Profesional" required>
           <USelectMenu
             v-model="form.professionalId"
             :items="professionalItems"

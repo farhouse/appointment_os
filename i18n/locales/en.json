@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Barber OS",
+    "name": "Worker OS",
     "private": "Private"
   },
   "nav": {
@@ -8,7 +8,7 @@
     "calendar": "Calendar",
     "manager": "Manager",
     "admin": "Admin",
-    "barber": "Barber",
+    "barber": "Worker",
     "client": "Client",
     "dashboard": "Dashboard",
     "cash": "Cash",
@@ -35,10 +35,10 @@
     "confirm": "Confirm"
   },
   "landing": {
-    "brandEyebrow": "Barbershop",
-    "brandName": "Emi Barber Club",
+    "brandEyebrow": "Service studio",
+    "brandName": "Emi Worker Club",
     "brandSubtitle": "Classic and modern cuts. Book your appointment in seconds.",
-    "photoAlt": "Emi Barber Club interior",
+    "photoAlt": "Emi Worker Club interior",
     "cta": {
       "book": "Book appointment",
       "viewCalendar": "View calendar"
@@ -141,7 +141,7 @@
           "sales": "Sales",
           "salesDesc": "Register sales and quick payments.",
           "employees": "Employees",
-          "employeesDesc": "Manage barbers and permissions.",
+          "employeesDesc": "Manage workers and permissions.",
           "products": "Products",
           "productsDesc": "Catalog and prices.",
           "stock": "Stock",
@@ -150,8 +150,8 @@
           "settingsDesc": "Notifications and rules."
         }
       },
-      "barberTitle": "Barber",
-      "barberSubtitle": "Barber workspace (skeleton).",
+      "barberTitle": "Worker",
+      "barberSubtitle": "Worker workspace (skeleton).",
       "clientTitle": "Client",
       "clientSubtitle": "Client workspace (skeleton).",
       "managerCalendar": "Manager · Calendar",
@@ -176,7 +176,7 @@
         "cashboxes": "Cashboxes",
         "cashboxesDesc": "Create and manage cashboxes by branch."
       },
-      "barberToday": "Barber · Today",
+      "barberToday": "Worker · Today",
       "profileTitle": "Profile",
       "profileSubtitle": "Your account details.",
       "profile": {
@@ -185,9 +185,9 @@
         "name": "Name",
         "role": "Role"
       },
-      "barberAppointments": "Barber · Appointments",
-      "barberFinances": "Barber · Finances",
-      "barberFinancesHint": "Weekly summary of your performance (paid appointments).",
+      "barberAppointments": "Worker · Appointments",
+      "barberFinances": "Worker · Finances",
+      "barberFinancesHint": "Weekly summary of your performance as a worker (paid appointments).",
       "weeks": "Weeks",
       "totalPaidAppointments": "Paid appointments (total)",
       "weekByWeek": "Week by week",
@@ -250,8 +250,8 @@
     "selectBranch": "Select a branch",
     "service": "Service",
     "selectService": "Select a service",
-    "barber": "Barber",
-    "selectBarber": "Select a barber",
+    "barber": "Worker",
+    "selectBarber": "Select a worker",
     "date": "Date",
     "contact": "Your details",
     "firstName": "First name",
@@ -268,13 +268,13 @@
     },
     "slots": "Available times",
     "duration": "Duration",
-    "pickFirst": "First choose branch, service and barber.",
+    "pickFirst": "First choose branch, service and worker.",
     "noSlots": "No available times for this date.",
-    "noSlotsHint": "Try another day or remove the barber filter to see more options.",
+    "noSlotsHint": "Try another day or remove the worker filter to see more options.",
     "noSlotsCta": {
       "title": "Want to try another option?",
       "nextDay": "Try next day",
-      "anyBarber": "See any barber"
+      "anyBarber": "See any worker"
     },
     "preview": "Preview",
     "busy": "Busy",
@@ -502,7 +502,7 @@
       "resetPassword": "Reset password",
       "searchPlaceholder": "Search employees",
       "emptyTitle": "No employees",
-      "emptyDescription": "Add barbers or managers to operate.",
+      "emptyDescription": "Add workers or managers to operate.",
       "columns": {
         "name": "Employee",
         "role": "Role",
@@ -513,7 +513,7 @@
         "owner": "Owner",
         "admin": "Admin",
         "manager": "Manager",
-        "barber": "Barber",
+        "barber": "Worker",
         "client": "Client"
       },
       "form": {

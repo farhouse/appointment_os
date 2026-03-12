@@ -9,10 +9,10 @@
   - Home pública consume `/api/public/landing` y renderiza HTML configurado con fallback a landing anterior si está vacío.
   - Files: `pages/private/backoffice/settings/landing.vue`, `server/api/settings/landing.*`, `server/api/public/landing.get.ts`, `pages/index.vue`, `prisma/schema.prisma`.
 
-- [ ] (todo) **Generalización de dominio: Barber → Worker**
-  - Fase 1: copy/UI/i18n (sin romper nada).
-  - Fase 2: alias API (`/workers` compatible con `/barbers`).
-  - Fase 3: renombre interno progresivo (modelo/campos).
+- [ ] (doing) **Generalización de dominio: Barber → Worker**
+  - ✅ Fase 1 (copy/UI/i18n): aplicado en textos visibles (labels, headings, booking copy, empleados, landing).
+  - ⏭️ Fase 2: alias API (`/workers` compatible con `/barbers`).
+  - ⏭️ Fase 3: renombre interno progresivo (modelo/campos).
 
 - [x] (done) **Client profile editable + cambio de password**
   - Resultado: `/private/profile` ahora permite editar nombre/email/teléfono y cambiar contraseña con validaciones básicas.

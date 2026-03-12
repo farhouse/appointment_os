@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Barber OS",
+    "name": "Worker OS",
     "private": "Privado"
   },
   "nav": {
@@ -8,7 +8,7 @@
     "calendar": "Calendario",
     "manager": "Manager",
     "admin": "Admin",
-    "barber": "Barbero",
+    "barber": "Worker",
     "client": "Cliente",
     "dashboard": "Panel",
     "cash": "Caja",
@@ -36,10 +36,10 @@
     "confirm": "Confirmar"
   },
   "landing": {
-    "brandEyebrow": "Barbería",
-    "brandName": "Emi Barber Club",
+    "brandEyebrow": "Centro de servicios",
+    "brandName": "Emi Worker Club",
     "brandSubtitle": "Cortes clásicos y modernos. Reservá tu turno en segundos.",
-    "photoAlt": "Interior de Emi Barber Club",
+    "photoAlt": "Interior de Emi Worker Club",
     "cta": {
       "book": "Sacar turno",
       "viewCalendar": "Ver calendario"
@@ -142,7 +142,7 @@
           "sales": "Ventas",
           "salesDesc": "Registrar ventas y cobros rápidos.",
           "employees": "Empleados",
-          "employeesDesc": "Gestionar barberos y permisos.",
+          "employeesDesc": "Gestionar workers y permisos.",
           "products": "Productos",
           "productsDesc": "Catálogo y precios.",
           "stock": "Stock",
@@ -151,8 +151,8 @@
           "settingsDesc": "Notificaciones y reglas."
         }
       },
-      "barberTitle": "Barbero",
-      "barberSubtitle": "Espacio de barbero (skeleton).",
+      "barberTitle": "Worker",
+      "barberSubtitle": "Espacio de worker (skeleton).",
       "clientTitle": "Cliente",
       "clientSubtitle": "Espacio de cliente (skeleton).",
       "managerCalendar": "Gerencia · Calendario",
@@ -177,7 +177,7 @@
         "cashboxes": "Cajas",
         "cashboxesDesc": "Alta y control de cajas por sucursal."
       },
-      "barberToday": "Barbero · Hoy",
+      "barberToday": "Worker · Hoy",
       "profileTitle": "Perfil",
       "profileSubtitle": "Tus datos de cuenta.",
       "profile": {
@@ -186,8 +186,8 @@
         "name": "Nombre",
         "role": "Rol"
       },
-      "barberAppointments": "Barbero · Turnos",
-      "barberFinances": "Barbero · Finanzas",
+      "barberAppointments": "Worker · Turnos",
+      "barberFinances": "Worker · Finanzas",
       "barberFinancesHint": "Resumen semanal de tu rendimiento (turnos pagados).",
       "weeks": "Semanas",
       "totalPaidAppointments": "Turnos pagados (total)",
@@ -251,8 +251,8 @@
     "selectBranch": "Seleccioná una sucursal",
     "service": "Servicio",
     "selectService": "Seleccioná un servicio",
-    "barber": "Barbero",
-    "selectBarber": "Seleccioná un barbero",
+    "barber": "Worker",
+    "selectBarber": "Seleccioná un worker",
     "date": "Fecha",
     "contact": "Tus datos",
     "firstName": "Nombre",
@@ -269,13 +269,13 @@
     },
     "slots": "Horarios disponibles",
     "duration": "Duración",
-    "pickFirst": "Primero elegí sucursal, servicio y barbero.",
+    "pickFirst": "Primero elegí sucursal, servicio y worker.",
     "noSlots": "No hay horarios disponibles para esta fecha.",
-    "noSlotsHint": "Probá con otro día o quitá el filtro de barbero para ver más opciones.",
+    "noSlotsHint": "Probá con otro día o quitá el filtro de worker para ver más opciones.",
     "noSlotsCta": {
       "title": "¿Querés probar otra opción?",
       "nextDay": "Probar día siguiente",
-      "anyBarber": "Ver con cualquier barbero"
+      "anyBarber": "Ver con cualquier worker"
     },
     "preview": "Vista",
     "busy": "Ocupado",
@@ -503,7 +503,7 @@
       "resetPassword": "Resetear contraseña",
       "searchPlaceholder": "Buscar empleados",
       "emptyTitle": "No hay empleados",
-      "emptyDescription": "Sumá barberos o managers para operar.",
+      "emptyDescription": "Sumá workers o managers para operar.",
       "columns": {
         "name": "Empleado",
         "role": "Rol",
@@ -514,7 +514,7 @@
         "owner": "Owner",
         "admin": "Admin",
         "manager": "Manager",
-        "barber": "Barbero",
+        "barber": "Worker",
         "client": "Cliente"
       },
       "form": {
