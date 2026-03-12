@@ -5,5 +5,13 @@ definePageMeta({
   roles: ['BARBER'],
 })
 
-await navigateTo('/private/barber/today')
+// Worker landing = Today
+await navigateTo('/private/worker/today')
 </script>
+
+<template>
+  <div>
+    <h1 class="text-2xl font-semibold">{{ $t('pages.private.barberTitle') }}</h1>
+    <p class="text-sm text-gray-600">{{ $t('pages.private.redirecting') }}</p>
+  </div>
+</template>
