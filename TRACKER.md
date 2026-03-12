@@ -12,7 +12,8 @@
 - [ ] (doing) **Generalización de dominio: Barber → Worker**
   - ✅ Fase 1 (copy/UI/i18n): aplicado en textos visibles (labels, headings, booking copy, empleados, landing).
   - ✅ Fase 2 (alias API): nuevo endpoint `/api/public/workers` compatible con `/api/public/barbers`.
-  - ⏭️ Fase 3: renombre interno progresivo (modelo/campos).
+  - 🟡 Fase 3 (parcial): alias de rutas privadas `/private/worker/*` y alias de API `/api/worker/*` hacia flujos existentes de barber.
+  - ⏭️ Fase 3 (pendiente): renombre interno progresivo de modelo/campos (`BARBER` role, `professionalId`, etc.) con migración controlada.
 
 - [x] (done) **Client profile editable + cambio de password**
   - Resultado: `/private/profile` ahora permite editar nombre/email/teléfono y cambiar contraseña con validaciones básicas.
