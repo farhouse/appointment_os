@@ -43,8 +43,8 @@ const formRef = useTemplateRef('branchForm')
 
 const branchSchema = z.object({
   name: z.string().min(1, t('admin.branches.form.nameRequired')),
-  address: z.string().optional().nullable(),
-  phone: z.string().optional().nullable()
+  address: z.string().optional(),
+  phone: z.string().optional()
 })
 
 type BranchForm = z.output<typeof branchSchema>
@@ -55,7 +55,6 @@ const formState = reactive<Partial<BranchForm>>({
   phone: ''
 })
 
-const tableRef = useTemplateRef('table')
 
 const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(branches, {
   search: (item, query) => {
@@ -87,8 +86,8 @@ watch(globalFilter, () => {
   pagination.value.pageIndex = 0
 })
 
-const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
-const pageCount = computed(() => tableRef.value?.tableApi.getPageCount?.() ?? Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+const filteredTotal = computed<number>(() => sorted.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
 
 watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value

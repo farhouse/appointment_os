@@ -142,7 +142,7 @@ async function fetchData() {
     services.value = asArray<Service>(servicesData).filter((s) => s?.active !== false)
     workers.value = asArray<Professional>(workersData)
   } catch (e) {
-    toast.add({ title: 'Error loading data', color: 'red' })
+    toast.add({ title: 'Error loading data', color: 'error' })
   } finally {
     loading.value = false
   }
@@ -203,26 +203,26 @@ async function createClient() {
       form.clientId = created.id
     }
     isQuickAddClient.value = false
-    toast.add({ title: 'Cliente creado', color: 'green' })
+    toast.add({ title: 'Cliente creado', color: 'success' })
     // Reset new client form
     newClient.firstName = ''
     newClient.lastName = ''
     newClient.email = ''
     newClient.phone = ''
   } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || 'Error creando cliente', color: 'red' })
+    toast.add({ title: e?.data?.statusMessage || 'Error creando cliente', color: 'error' })
   }
 }
 
 async function submit() {
   if (mode.value === 'BLOCK') {
     if (!form.professionalId || !form.date) {
-      toast.add({ title: 'Completá los campos obligatorios', color: 'orange' })
+      toast.add({ title: 'Completá los campos obligatorios', color: 'warning' })
       return
     }
 
     if (!blockForm.allDay && (!form.time || !blockForm.endTime)) {
-      toast.add({ title: 'Completá las horas', color: 'orange' })
+      toast.add({ title: 'Completá las horas', color: 'warning' })
       return
     }
 
@@ -239,7 +239,7 @@ async function submit() {
     }
 
     if (endDateTime <= startDateTime) {
-      toast.add({ title: 'La hora de fin debe ser posterior a la de inicio', color: 'orange' })
+      toast.add({ title: 'La hora de fin debe ser posterior a la de inicio', color: 'warning' })
       return
     }
 
@@ -256,11 +256,11 @@ async function submit() {
           reason: blockForm.reason
         }
       })
-      toast.add({ title: 'Bloqueo creado', color: 'green' })
+      toast.add({ title: 'Bloqueo creado', color: 'success' })
       isOpen.value = false
       emit('success')
     } catch (e: any) {
-      toast.add({ title: e?.data?.statusMessage || 'Error creando bloqueo', color: 'red' })
+      toast.add({ title: e?.data?.statusMessage || 'Error creando bloqueo', color: 'error' })
     } finally {
       loading.value = false
     }
@@ -268,7 +268,7 @@ async function submit() {
   }
 
   if (!form.clientId || !form.serviceIds.length || !form.date || !form.time) {
-    toast.add({ title: 'Completá los campos obligatorios', color: 'orange' })
+    toast.add({ title: 'Completá los campos obligatorios', color: 'warning' })
     return
   }
 
@@ -292,17 +292,17 @@ async function submit() {
       method: 'POST',
       body
     })
-    toast.add({ title: 'Turno creado', color: 'green' })
+    toast.add({ title: 'Turno creado', color: 'success' })
     isOpen.value = false
     emit('success')
   } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || 'Error creando turno', color: 'red' })
+    toast.add({ title: e?.data?.statusMessage || 'Error creando turno', color: 'error' })
   }
 }
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" :title="mode === 'BLOCK' ? 'Nuevo Bloqueo' : 'Nuevo Turno'" :ui="{ width: 'sm:max-w-2xl' }">
+  <UModal v-model:open="isOpen" :title="mode === 'BLOCK' ? 'Nuevo Bloqueo' : 'Nuevo Turno'" :ui="{ content: 'sm:max-w-2xl' }">
     <template #body>
       <div class="flex gap-4 border-b border-gray-200 mb-4 pb-2">
         <button type="button" class="pb-1 px-2" :class="mode === 'APPOINTMENT' ? 'font-bold border-b-2 border-primary-500 text-primary-600' : 'text-gray-500'" @click="mode = 'APPOINTMENT'">Turno</button>
@@ -358,7 +358,7 @@ async function submit() {
                 placeholder="Seleccionar cliente"
                 class="flex-1"
               />
-              <UButton icon="i-heroicons-plus" color="gray" variant="solid" @click="isQuickAddClient = true" />
+              <UButton icon="i-heroicons-plus" color="neutral" variant="solid" @click="isQuickAddClient = true" />
             </div>
           </UFormGroup>
         </div>
@@ -367,7 +367,7 @@ async function submit() {
         <div v-else class="p-3 border rounded bg-gray-50 space-y-3">
           <div class="flex justify-between items-center">
             <h4 class="text-sm font-medium">Nuevo Cliente</h4>
-            <UButton size="xs" color="gray" variant="ghost" @click="isQuickAddClient = false">Cancelar</UButton>
+            <UButton size="xs" color="neutral" variant="ghost" @click="isQuickAddClient = false">Cancelar</UButton>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <UInput v-model="newClient.firstName" placeholder="Nombre *" />

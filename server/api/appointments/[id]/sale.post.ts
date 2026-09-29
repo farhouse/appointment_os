@@ -4,6 +4,7 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated, requireParam } from '~/server/utils/http'
 import { badRequest, notFound } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const itemSchema = z.object({
   productId: z.string().uuid(),
@@ -33,6 +34,7 @@ export default defineEventHandler(async (event) => {
     })
 
     if (!appointment) notFound('Appointment not found')
+    await requireBranchAccess(u, appointment.branchId)
     
     // Check if sale is already paid (if paymentMethod is set)
     if (appointment.sale?.paymentMethod) {

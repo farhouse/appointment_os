@@ -72,6 +72,14 @@ async function runSanityChecks() {
       })
       console.log('✓ Created test cashbox')
 
+      const otherCashbox = await tx.cashBox.create({
+        data: {
+          branchId: branch.id,
+          name: `Other Test Cashbox ${testId}`
+        }
+      })
+      console.log('✓ Created second test cashbox')
+
       // Create test appointment (finished)
       const startTime = new Date()
       startTime.setHours(startTime.getHours() + 1)
@@ -121,6 +129,29 @@ async function runSanityChecks() {
       })
       console.log('✓ Opened cash session with opening balance')
 
+      const otherSession = await tx.cashSession.create({
+        data: {
+          branchId: branch.id,
+          cashBoxId: otherCashbox.id,
+          openedBy: user.id,
+          openingBalance: 0,
+          date: new Date()
+        }
+      })
+      console.log('✓ Opened independent session for second cashbox')
+
+      const selectedCashboxSession = await tx.cashSession.findFirst({
+        where: {
+          branchId: branch.id,
+          cashBoxId: cashbox.id,
+          closingTime: null
+        }
+      })
+      if (selectedCashboxSession?.id !== session.id) {
+        throw new Error('Selected cashbox did not resolve to the correct open session')
+      }
+      console.log('✓ Selected cashbox resolves to the correct open session')
+
       // Test 2: Mark appointment as PAID
       console.log('\n--- Testing appointment payment ---')
       const appointmentToPay = await tx.appointment.findUnique({
@@ -129,10 +160,6 @@ async function runSanityChecks() {
       if (!appointmentToPay || appointmentToPay.status !== 'FINISHED') {
         throw new Error('Appointment not found or not finished')
       }
-      if (appointmentToPay.status === 'PAID') {
-        throw new Error('Appointment already paid')
-      }
-
       const paidAppointment = await tx.appointment.update({
         where: { id: appointment.id },
         data: {
@@ -156,6 +183,20 @@ async function runSanityChecks() {
         }
       })
       console.log('✓ Marked appointment as PAID')
+
+      const paymentMovement = await tx.cashMovement.findFirst({
+        where: {
+          appointmentId: appointment.id,
+          sessionId: session.id
+        }
+      })
+      if (!paymentMovement) {
+        throw new Error('Payment movement was not attached to the selected cashbox session')
+      }
+      if (paymentMovement.sessionId === otherSession.id) {
+        throw new Error('Payment movement was attached to the wrong cashbox session')
+      }
+      console.log('✓ Payment movement attached to selected cashbox session')
 
       // Test 3: Prevent duplicate payment
       console.log('\n--- Testing duplicate payment prevention ---')

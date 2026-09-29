@@ -39,7 +39,6 @@ const clients = ref<Client[]>([])
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const tableRef = useTemplateRef('table')
 const { search: globalFilter, sorted } = useCrudTable(clients, {
   search: (item, query) => {
     const q = query.toLowerCase()
@@ -62,7 +61,7 @@ const page = computed({
   }
 })
 const pageSize = computed(() => pagination.value.pageSize)
-const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
+const filteredTotal = computed<number>(() => sorted.value.length)
 const hasData = computed(() => clients.value.length > 0)
 const isEmpty = computed(() => !isLoading.value && !errorMessage.value && clients.value.length === 0)
 

@@ -1,6 +1,10 @@
 import { z } from 'zod'
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
+import { requireRole } from '~/server/utils/permissions'
+import { readBodyValidated } from '~/server/utils/http'
+import { badRequest, forbidden } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const createSchema = z.object({
   branchId: z.string().uuid(),
@@ -12,43 +16,51 @@ const createSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const user = event.context.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  const user = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER', 'BARBER'])
+  const { branchId, professionalId, startTime, endTime, allDay, reason } = await readBodyValidated(event, createSchema)
+  await requireBranchAccess(user, branchId)
 
-  const body = await readBody(event)
-  const result = createSchema.safeParse(body)
-
-  if (!result.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Validation Error',
-      data: result.error.format()
-    })
-  }
-
-  const { branchId, professionalId, startTime, endTime, allDay, reason } = result.data
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+  if (end <= start) badRequest('endTime must be after startTime')
 
   // Authorization Check
   if (user.role === 'BARBER') {
-    // Barbers can only create blocks for themselves
     if (professionalId && professionalId !== user.userId) {
-      throw createError({ statusCode: 403, statusMessage: 'Forbidden: Can only block own time' })
+      forbidden('Can only block own time')
     }
     if (!professionalId) {
-       throw createError({ statusCode: 403, statusMessage: 'Forbidden: Cannot create branch-wide blocks' })
+      forbidden('Cannot create branch-wide blocks')
     }
-  } else if (['MANAGER', 'ADMIN', 'OWNER'].includes(user.role)) {
-    // Allowed
-  } else {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
   }
-  
+
+  if (professionalId) {
+    const assignment = await prisma.userBranch.findUnique({
+      where: { userId_branchId: { userId: professionalId, branchId } },
+      select: { user: { select: { role: true, active: true } } }
+    })
+    if (!assignment || assignment.user.role !== 'BARBER' || !assignment.user.active) {
+      badRequest('professionalId must be an active worker assigned to the branch')
+    }
+  }
+
+  const overlap = await prisma.timeBlock.findFirst({
+    where: {
+      branchId,
+      professionalId: professionalId || null,
+      startTime: { lt: end },
+      endTime: { gt: start }
+    },
+    select: { id: true }
+  })
+  if (overlap) badRequest('Time block overlaps an existing block')
+
   const timeBlock = await prisma.timeBlock.create({
     data: {
       branchId,
       professionalId: professionalId || null,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
+      startTime: start,
+      endTime: end,
       allDay: allDay || false,
       reason,
       createdById: user.userId

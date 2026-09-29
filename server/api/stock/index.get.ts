@@ -2,6 +2,7 @@ import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { requireQueryString } from '~/server/utils/http'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 /**
  * Returns stock rows for a given branch.
@@ -10,9 +11,10 @@ import { requireQueryString } from '~/server/utils/http'
  * so the UI can show quantity=0 instead of hiding missing products.
  */
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const branchId = requireQueryString(event, 'branchId')
+  await requireBranchAccess(u, branchId)
 
   const branch = await prisma.branch.findUnique({
     where: { id: branchId },

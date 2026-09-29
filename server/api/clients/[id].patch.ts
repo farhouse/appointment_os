@@ -4,11 +4,13 @@ import { clientSchema } from '~/server/utils/schemas'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated, requireParam } from '~/server/utils/http'
 import { conflict, notFound } from '~/server/utils/errors'
+import { requireClientAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const id = requireParam(event, 'id')
+  await requireClientAccess(u, id)
   const data = await readBodyValidated(event, clientSchema.partial())
 
   try {

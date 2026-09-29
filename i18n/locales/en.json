@@ -20,6 +20,7 @@
     "branches": "Branches",
     "settings": "Settings",
     "today": "Today",
+    "sales": "Sales",
     "appointments": "Appointments",
     "finances": "Finances",
     "profile": "Profile",
@@ -32,7 +33,8 @@
     "loading": "Loading…",
     "close": "Close",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "active": "Active"
   },
   "landing": {
     "brandEyebrow": "Service studio",
@@ -65,7 +67,7 @@
       "title": "Private",
       "redirecting": "Redirecting…",
       "managerTitle": "Manager",
-      "managerSubtitle": "Manager/Admin/Owner workspace (skeleton).",
+      "managerSubtitle": "Shop operations, team, and results.",
       "manager": {
         "dashboardSubtitle": "Branch control panel.",
         "sections": {
@@ -151,9 +153,9 @@
         }
       },
       "barberTitle": "Worker",
-      "barberSubtitle": "Worker workspace (skeleton).",
+      "barberSubtitle": "Your appointments, schedule, and earnings in one place.",
       "clientTitle": "Client",
-      "clientSubtitle": "Client workspace (skeleton).",
+      "clientSubtitle": "Your appointments, benefits, and personal details.",
       "managerCalendar": "Manager · Calendar",
       "managerCash": "Manager · Cash",
       "managerProducts": "Manager · Products",
@@ -213,16 +215,37 @@
          "saveWhatsappTemplate": "Save WhatsApp template",
          "testEmailTitle": "Send test email",
          "sendTestEmail": "Send test email",
-         "testEmailSent": "Test email sent.",
-         "testEmailError": "Could not send.",
+          "testEmailSent": "Test email sent.",
+          "testEmailError": "Could not send.",
+          "testError": "Could not send test email.",
+          "templatePreviewEmpty": "No content to preview.",
          "whatsappTemplateSaved": "WhatsApp template saved.",
          "whatsappTemplateError": "Could not save WhatsApp template.",
          "whatsappTemplateLoadError": "Could not load WhatsApp template.",
-         "emailLoadError": "Could not load email status."
-       }
-     }
-   },
-  "calendar": {
+          "emailLoadError": "Could not load email configuration."
+        },
+        "landing": {
+          "title": "Landing",
+          "subtitle": "Paste custom HTML for the public home page.",
+          "editor": "HTML Editor",
+          "preview": "Preview",
+          "useTemplate": "Use template",
+          "reset": "Reset",
+          "save": "Save",
+          "loading": "Loading…",
+          "loadError": "Could not load landing",
+          "saved": "Landing saved",
+          "saveError": "Could not save"
+        },
+        "paymentMedia": {
+          "loadError": "Could not load"
+        },
+        "newsOffers": {
+          "loadError": "Could not load"
+        }
+      }
+    },
+   "calendar": {
     "schedule": "Schedule",
     "backToDashboard": "Back to Dashboard",
     "day": "Day",
@@ -252,6 +275,7 @@
     "selectService": "Select a service",
     "barber": "Worker",
     "selectBarber": "Select a worker",
+    "selectWorker": "Select a worker",
     "date": "Date",
     "contact": "Your details",
     "firstName": "First name",
@@ -274,7 +298,8 @@
     "noSlotsCta": {
       "title": "Want to try another option?",
       "nextDay": "Try next day",
-      "anyBarber": "See any worker"
+      "anyBarber": "See any worker",
+      "anyWorker": "See any worker"
     },
     "preview": "Preview",
     "busy": "Busy",
@@ -328,6 +353,7 @@
     "filters": {
       "status": "Status",
       "range": "Range",
+      "day": "Today",
       "week": "This week",
       "month": "This month"
     },
@@ -339,6 +365,7 @@
     },
     "labels": {
       "branch": "Branch",
+      "client": "Client",
       "services": "Services",
       "professional": "Professional",
       "status": "Status",
@@ -428,6 +455,9 @@
       "loadError": "Could not load",
       "saveError": "Could not save",
       "deleteError": "Could not delete",
+      "createError": "Could not create",
+      "saveSuccess": "Saved successfully",
+      "deleteSuccess": "Deleted successfully",
       "errorTitle": "Something went wrong"
     },
     "products": {
@@ -589,6 +619,54 @@
         "created": "Service created",
         "updated": "Service updated",
         "deleted": "Service deleted"
+      }
+    },
+    "sales": {
+      "new": "New Sale",
+      "newTitle": "New sale",
+      "searchPlaceholder": "Search sales",
+      "emptyTitle": "No sales",
+      "emptyDescription": "No sales in this period.",
+      "columns": {
+        "createdAt": "Date",
+        "items": "Items",
+        "total": "Total",
+        "paymentMethod": "Method",
+        "CASH": "Cash",
+        "CARD": "Card",
+        "TRANSFER": "Transfer",
+        "OTHER": "Other"
+      },
+      "form": {
+        "itemType": "Type",
+        "quantity": "Qty",
+        "price": "Price",
+        "total": "Total",
+        "cashbox": "Cashbox",
+        "selectCashbox": "Select a cashbox",
+        "paymentMedium": "Payment medium",
+        "selectPaymentMedium": "Select a medium",
+        "detectedMethod": "Detected method: {method}",
+        "addItem": "Add item",
+        "register": "Register sale",
+        "cancel": "Cancel",
+        "cashboxRequired": "Select a cashbox",
+        "paymentMediumRequired": "Select a payment medium",
+        "openCashRequired": "Open cash first",
+        "product": "Product",
+        "service": "Service",
+        "concept": "Concept",
+        "selectProduct": "Select product",
+        "selectService": "Select service",
+        "conceptPlaceholder": "Concept / Detail"
+      },
+      "toast": {
+        "created": "Sale registered",
+        "saveError": "Could not save sale"
+      },
+      "filters": {
+        "from": "From",
+        "to": "To"
       }
     }
    },

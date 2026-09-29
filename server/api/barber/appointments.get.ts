@@ -3,7 +3,7 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { badRequest } from '~/server/utils/errors'
 
-const rangePresets = new Set(['week', 'month'])
+const rangePresets = new Set(['day', 'week', 'month'])
 
 export default defineEventHandler(async (event) => {
   const u = requireRole(event, ['BARBER'])
@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   const start = query.start ? new Date(String(query.start)) : null
   const end = query.end ? new Date(String(query.end)) : null
   const status = query.status ? String(query.status) : undefined
+  const branchId = query.branchId ? String(query.branchId) : undefined
 
   let startDate = start
   let endDate = end
@@ -23,7 +24,11 @@ export default defineEventHandler(async (event) => {
     const now = new Date()
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const endOfDay = new Date(startOfDay)
-    if (range === 'month') {
+    if (range === 'day') {
+      startDate = startOfDay
+      endDate = endOfDay
+      endDate.setHours(23, 59, 59, 999)
+    } else if (range === 'month') {
       startDate = new Date(now.getFullYear(), now.getMonth(), 1)
       endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
     } else {
@@ -40,6 +45,7 @@ export default defineEventHandler(async (event) => {
   return prisma.appointment.findMany({
     where: {
       professionalId: u.userId,
+      ...(branchId ? { branchId } : {}),
       ...(status ? { status: status as any } : {}),
       startTime: { gte: startDate },
       endTime: { lte: endDate }

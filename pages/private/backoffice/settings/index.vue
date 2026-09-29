@@ -29,8 +29,8 @@ const cards = computed(() => [
     to: '/private/backoffice/settings/cashboxes'
   },
   {
-    title: 'Landing',
-    description: 'HTML de la home pública',
+    title: t('pages.settings.landing.title'),
+    description: t('pages.settings.landing.subtitle'),
     to: '/private/backoffice/settings/landing'
   }
 ])

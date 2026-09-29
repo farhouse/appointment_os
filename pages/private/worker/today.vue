@@ -9,6 +9,7 @@ definePageMeta({
 })
 
 const { selectedBranchId } = useSelectedBranch()
+const me = useMeState()
 const { locale, t } = useI18n()
 const { statusLabel } = useAppointmentStatus()
 
@@ -28,6 +29,8 @@ const isBlock = computed(() => selectedEvent.value?.extendedProps?.type === 'BLO
 const recentHistory = ref<any[]>([])
 const historyLoading = ref(false)
 const historyError = ref('')
+const workingHours = ref<any[]>([])
+const workingHoursLoading = ref(false)
 
 const isCreateModalOpen = ref(false)
 const createInitialStart = ref<string | null>(null)
@@ -60,10 +63,23 @@ const calendarConfig = computed(() => ({
   date: new Date()
 }))
 
-const viewOptions = [
+const viewOptions: Array<{ id: 'day' | 'week', label: string }> = [
   { id: 'day', label: 'calendar.day' },
   { id: 'week', label: 'calendar.week' }
 ]
+
+const dayNames = computed(() => locale.value === 'es-AR'
+  ? ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])
+
+const visibleWorkingHours = computed(() => {
+  const rows = workingHours.value || []
+  if (currentView.value === 'day') {
+    const day = (calendarPayload.value?.start ? new Date(calendarPayload.value.start) : new Date()).getDay()
+    return rows.filter(row => row.dayOfWeek === day)
+  }
+  return rows
+})
 
 watch([calendarView, selectedBranchId], ([view, branchId]) => {
   if (!view) return
@@ -99,6 +115,24 @@ async function loadEvents(view: VueCalView, branchId?: string | null) {
     calendarEvents.value = []
   }
 }
+
+async function loadWorkingHours() {
+  if (!me.value?.id) await loadMe()
+  if (!me.value?.id) return
+
+  workingHoursLoading.value = true
+  try {
+    workingHours.value = await $fetch(`/api/employees/working-hours?userId=${encodeURIComponent(me.value.id)}`)
+  } catch {
+    workingHours.value = []
+  } finally {
+    workingHoursLoading.value = false
+  }
+}
+
+onMounted(() => {
+  void loadWorkingHours()
+})
 
 const calendarKey = computed(() => `${currentView.value}-${locale.value}`)
 
@@ -208,7 +242,7 @@ async function saveNotes() {
       </div>
     </div>
 
-    <div class="bg-white p-4 rounded-lg shadow h-[650px] mt-4 text-gray-900">
+    <div class="bg-white p-4 rounded-lg shadow mt-4 text-gray-900">
       <div class="flex flex-wrap items-center gap-2 mb-4">
         <div class="flex gap-2">
           <button
@@ -238,10 +272,27 @@ async function saveNotes() {
         </div>
       </div>
 
+      <div class="mb-4 rounded border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700">
+        <div class="font-medium text-stone-900">{{ locale === 'es-AR' ? 'Horarios laborales' : 'Working hours' }}</div>
+        <div v-if="workingHoursLoading" class="mt-1 text-stone-500">{{ t('common.loading') }}</div>
+        <div v-else-if="visibleWorkingHours.length" class="mt-1 flex flex-wrap gap-2">
+          <span
+            v-for="row in visibleWorkingHours"
+            :key="row.dayOfWeek"
+            class="rounded border border-stone-200 bg-white px-2 py-1"
+          >
+            {{ dayNames[row.dayOfWeek] }} · {{ row.startTime }}-{{ row.endTime }}
+          </span>
+        </div>
+        <div v-else class="mt-1 text-stone-500">
+          {{ locale === 'es-AR' ? 'Sin horarios configurados para este rango.' : 'No working hours configured for this range.' }}
+        </div>
+      </div>
+
       <VueCalClient
         :key="calendarKey"
         :config="calendarConfig"
-        class="h-full"
+        class="h-[560px]"
         @ready="handleReady"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
@@ -341,7 +392,7 @@ async function saveNotes() {
 
         <div class="mt-4 flex flex-wrap justify-end gap-2">
           <UButton variant="outline" @click="selectedEvent = null">Cerrar</UButton>
-          <UButton v-if="isBlock" color="red" :loading="isDeletingBlock" @click="deleteBlock">
+          <UButton v-if="isBlock" color="error" :loading="isDeletingBlock" @click="deleteBlock">
              Eliminar Bloqueo
           </UButton>
           <UButton v-else color="primary" :disabled="savingNotes" @click="saveNotes">

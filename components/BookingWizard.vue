@@ -25,11 +25,15 @@ type InitialClient = {
 
 const props = withDefaults(defineProps<{
   initialBranchId?: string
+  initialServiceId?: string
+  initialWorkerId?: string
   initialClient?: InitialClient
   hideDetailsTitle?: boolean
   hideContactTitle?: boolean
 }>(), {
   initialBranchId: '',
+  initialServiceId: '',
+  initialWorkerId: '',
   initialClient: () => ({}),
   hideDetailsTitle: false,
   hideContactTitle: false,
@@ -64,7 +68,7 @@ function formatYmd(dt: Date) {
 }
 
 function parseTimeToMinutes(time: string) {
-  const [h, m] = time.split(':').map(Number)
+  const [h = 0, m = 0] = time.split(':').map(Number)
   return h * 60 + m
 }
 
@@ -160,6 +164,9 @@ onMounted(async () => {
     ])
     branches.value = b as any
     services.value = s as any
+    if (props.initialServiceId && services.value.some(service => service.id === props.initialServiceId)) {
+      serviceId.value = props.initialServiceId
+    }
   } finally {
     loadingBranches.value = false
     loadingServices.value = false
@@ -216,6 +223,9 @@ watch(branchId, async (id) => {
   loadingWorkers.value = true
   try {
     workers.value = await $fetch(`/api/public/workers?branchId=${encodeURIComponent(id)}`)
+    if (props.initialWorkerId && workers.value.some(worker => worker.id === props.initialWorkerId)) {
+      workerId.value = props.initialWorkerId
+    }
   } catch {
     workers.value = []
   } finally {
@@ -374,7 +384,7 @@ watch(timeComplete, async (v) => {
 
 async function fetchWithRetry<T>(url: string, opts: any, retries = 1): Promise<T> {
   try {
-    return await $fetch<T>(url, opts)
+    return await $fetch(url, opts) as T
   } catch (e: any) {
     const msg = String(e?.message || '')
     const isNetwork = msg.includes('Failed to fetch') || msg.includes('fetch failed')

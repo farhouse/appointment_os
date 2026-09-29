@@ -125,7 +125,7 @@ async function changePassword() {
       </div>
 
       <div class="flex justify-end">
-        <UButton color="gray" :loading="isSavingPassword" @click="changePassword">Actualizar contraseña</UButton>
+        <UButton color="neutral" :loading="isSavingPassword" @click="changePassword">Actualizar contraseña</UButton>
       </div>
     </div>
   </div>

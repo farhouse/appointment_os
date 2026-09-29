@@ -33,7 +33,8 @@
     "loading": "Cargando…",
     "close": "Cerrar",
     "cancel": "Cancelar",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "active": "Activo"
   },
   "landing": {
     "brandEyebrow": "Centro de servicios",
@@ -66,7 +67,7 @@
       "title": "Privado",
       "redirecting": "Redirigiendo…",
       "managerTitle": "Gerencia",
-      "managerSubtitle": "Espacio de gerencia/admin/owner (skeleton).",
+      "managerSubtitle": "Operaciones, equipo y resultados de la barbería.",
       "manager": {
         "dashboardSubtitle": "Panel de control de la sucursal.",
         "sections": {
@@ -152,9 +153,9 @@
         }
       },
       "barberTitle": "Worker",
-      "barberSubtitle": "Espacio de worker (skeleton).",
+      "barberSubtitle": "Tu agenda, horarios e ingresos en un solo lugar.",
       "clientTitle": "Cliente",
-      "clientSubtitle": "Espacio de cliente (skeleton).",
+      "clientSubtitle": "Tus turnos, beneficios y datos personales.",
       "managerCalendar": "Gerencia · Calendario",
       "managerCash": "Gerencia · Caja",
       "managerProducts": "Gerencia · Productos",
@@ -214,15 +215,36 @@
          "saveWhatsappTemplate": "Guardar template WhatsApp",
          "testEmailTitle": "Enviar email de prueba",
          "sendTestEmail": "Enviar email de prueba",
-         "testEmailSent": "Email de prueba enviado.",
-         "testEmailError": "No se pudo enviar.",
+          "testEmailSent": "Email de prueba enviado.",
+          "testEmailError": "No se pudo enviar.",
+          "testError": "No se pudo enviar el email de prueba.",
+          "templatePreviewEmpty": "Sin contenido para previsualizar.",
          "whatsappTemplateSaved": "Template de WhatsApp guardado.",
          "whatsappTemplateError": "No se pudo guardar template de WhatsApp.",
          "whatsappTemplateLoadError": "No se pudo cargar template de WhatsApp.",
-         "emailLoadError": "No se pudo cargar el estado del email."
-       }
-     }
-   },
+          "emailLoadError": "No se pudo cargar la configuración de email."
+        },
+        "landing": {
+          "title": "Landing",
+          "subtitle": "Pegá HTML custom para la home pública.",
+          "editor": "Editor HTML",
+          "preview": "Preview",
+          "useTemplate": "Usar plantilla",
+          "reset": "Reset",
+          "save": "Guardar",
+          "loading": "Cargando…",
+          "loadError": "No se pudo cargar la landing",
+          "saved": "Landing guardada",
+          "saveError": "No se pudo guardar"
+        },
+        "paymentMedia": {
+          "loadError": "No se pudo cargar"
+        },
+        "newsOffers": {
+          "loadError": "No se pudo cargar"
+        }
+      }
+    },
   "calendar": {
     "schedule": "Agenda",
     "backToDashboard": "Volver al panel",
@@ -253,6 +275,7 @@
     "selectService": "Seleccioná un servicio",
     "barber": "Worker",
     "selectBarber": "Seleccioná un worker",
+    "selectWorker": "Seleccioná un worker",
     "date": "Fecha",
     "contact": "Tus datos",
     "firstName": "Nombre",
@@ -275,7 +298,8 @@
     "noSlotsCta": {
       "title": "¿Querés probar otra opción?",
       "nextDay": "Probar día siguiente",
-      "anyBarber": "Ver con cualquier worker"
+      "anyBarber": "Ver con cualquier worker",
+      "anyWorker": "Ver con cualquier worker"
     },
     "preview": "Vista",
     "busy": "Ocupado",
@@ -329,6 +353,7 @@
     "filters": {
       "status": "Estado",
       "range": "Rango",
+      "day": "Día",
       "week": "Semana",
       "month": "Mes"
     },
@@ -340,6 +365,7 @@
     },
     "labels": {
       "branch": "Sucursal",
+      "client": "Cliente",
       "services": "Servicios",
       "professional": "Profesional",
       "status": "Estado",
@@ -429,6 +455,9 @@
       "loadError": "No se pudo cargar",
       "saveError": "No se pudo guardar",
       "deleteError": "No se pudo eliminar",
+      "createError": "No se pudo crear",
+      "saveSuccess": "Guardado correctamente",
+      "deleteSuccess": "Eliminado correctamente",
       "errorTitle": "Algo salió mal"
     },
     "products": {
@@ -591,9 +620,57 @@
         "updated": "Servicio actualizado",
         "deleted": "Servicio eliminado"
       }
-    }
-   },
-   "placeholder": {
+    },
+    "sales": {
+      "new": "Nueva Venta",
+      "newTitle": "Nueva venta",
+      "searchPlaceholder": "Buscar ventas",
+      "emptyTitle": "Sin ventas",
+      "emptyDescription": "No hay ventas en este período.",
+      "columns": {
+        "createdAt": "Fecha",
+        "items": "Ítems",
+        "total": "Total",
+        "paymentMethod": "Método",
+        "CASH": "Efectivo",
+        "CARD": "Tarjeta",
+        "TRANSFER": "Transferencia",
+        "OTHER": "Otro"
+      },
+      "form": {
+        "itemType": "Tipo",
+        "quantity": "Cant",
+        "price": "Precio",
+        "total": "Total",
+        "cashbox": "Caja",
+        "selectCashbox": "Seleccionar caja",
+        "paymentMedium": "Medio de pago",
+        "selectPaymentMedium": "Seleccionar medio",
+        "detectedMethod": "Método detectado: {method}",
+        "addItem": "Agregar ítem",
+        "register": "Registrar venta",
+        "cancel": "Cancelar",
+        "cashboxRequired": "Seleccioná una caja",
+        "paymentMediumRequired": "Seleccioná un medio de pago",
+        "openCashRequired": "Abrí caja primero",
+        "product": "Producto",
+        "service": "Servicio",
+        "concept": "Concepto",
+        "selectProduct": "Seleccionar producto",
+        "selectService": "Seleccionar servicio",
+        "conceptPlaceholder": "Concepto / Detalle"
+      },
+      "toast": {
+        "created": "Venta registrada",
+        "saveError": "Error al guardar venta"
+      },
+      "filters": {
+        "from": "Desde",
+        "to": "Hasta"
+        }
+      }
+    },
+    "placeholder": {
      "name": "nombre",
      "date": "fecha",
      "branch": "sucursal"

@@ -5,6 +5,7 @@ export type MeUser = {
   email: string
   name: string
   phone?: string | null
+  clientId?: string | null
   role: Role
   active?: boolean
   branches?: { branchId: string }[]

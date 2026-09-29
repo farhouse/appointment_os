@@ -47,10 +47,10 @@ async function saveAll() {
 
   for (const day of workingHours.value) {
     if (!day.isWorking) continue
-    const startParts = day.startTime.split(':')
-    const endParts = day.endTime.split(':')
-    const startMins = parseInt(startParts[0]) * 60 + parseInt(startParts[1])
-    const endMins = parseInt(endParts[0]) * 60 + parseInt(endParts[1])
+    const [startHour = 0, startMinute = 0] = day.startTime.split(':').map(Number)
+    const [endHour = 0, endMinute = 0] = day.endTime.split(':').map(Number)
+    const startMins = startHour * 60 + startMinute
+    const endMins = endHour * 60 + endMinute
     if (endMins <= startMins) {
       toast.add({ title: `Horario inválido en ${dayNames[day.dayOfWeek]}`, color: 'error' })
       return

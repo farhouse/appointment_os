@@ -9,27 +9,32 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "seed": "ts-node --esm prisma/seed.ts",
-    "sanity": "ts-node scripts/sanity.ts"
+    "sanity": "ts-node scripts/sanity.ts",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
-    "@nuxt/ui": "^4.4.0",
+    "@nuxt/ui": "^4.11.2",
     "@nuxtjs/color-mode": "^4.0.0",
-    "@nuxtjs/i18n": "^10.2.3",
-    "@prisma/client": "^6.14.0",
+    "@nuxtjs/i18n": "^10.6.0",
+    "@prisma/client": "6.12.0",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.3",
-    "nuxt": "^4.3.1",
+    "nuxt": "^4.5.2",
+    "sanitize-html": "^2.17.7",
     "vue": "^3.5.27",
     "vue-cal": "^5.0.1-rc.34",
-    "vue-router": "^4.6.4",
+    "vue-router": "^5.3.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.2.2",
-    "prisma": "^6.14.0",
-    "ts-node": "^10.9.2"
+    "@types/sanitize-html": "^2.16.2",
+    "prisma": "6.12.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.11"
   }
 }

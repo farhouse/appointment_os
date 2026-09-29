@@ -7,6 +7,8 @@ definePageMeta({
   roles: ['OWNER', 'ADMIN']
 })
 
+const { t } = useI18n()
+
 type CashBox = {
   id: string
   name: string
@@ -58,7 +60,7 @@ async function loadCashBoxes() {
     cashBoxes.value = await $fetch('/api/cashboxes')
   } catch (e: any) {
     cashBoxes.value = []
-    errorMessage.value = e?.data?.statusMessage || 'No se pudo cargar'
+    errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
   } finally {
     isLoading.value = false
   }
@@ -81,7 +83,7 @@ async function handleCreateCashBox() {
     formState.active = true
     await loadCashBoxes()
   } catch (e: any) {
-    errorMessage.value = e?.data?.statusMessage || 'No se pudo crear'
+    errorMessage.value = e?.data?.statusMessage || t('admin.common.createError')
   } finally {
     isLoading.value = false
   }
@@ -97,7 +99,7 @@ async function toggleCashBox(cb: CashBox) {
     })
     await loadCashBoxes()
   } catch (e: any) {
-    errorMessage.value = e?.data?.statusMessage || 'No se pudo actualizar'
+    errorMessage.value = e?.data?.statusMessage || t('admin.common.saveError')
   } finally {
     isLoading.value = false
   }

@@ -32,6 +32,11 @@ const items = computed<SettingsNavItem[]>(() => [
     label: 'Landing',
     description: 'HTML de la home pública',
     to: '/private/backoffice/settings/landing'
+  },
+  {
+    label: 'News/Offers',
+    description: 'Promos visibles para clientes',
+    to: '/private/backoffice/settings/news-offers'
   }
 ])
 

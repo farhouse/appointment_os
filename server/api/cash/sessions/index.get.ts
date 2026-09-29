@@ -2,6 +2,7 @@ import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { forbidden } from '~/server/utils/errors'
+import { getAllowedBranchIds, requireBranchAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
   const authUser = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
@@ -23,6 +24,9 @@ export default defineEventHandler(async (event) => {
     forbidden('Forbidden')
   }
 
+  if (branchId) await requireBranchAccess(authUser, branchId)
+  const allowedBranchIds = !branchId ? await getAllowedBranchIds(authUser) : null
+
   const dateFilter: { gte?: Date; lte?: Date } = {}
   if (typeof from === 'string' && from) {
     const d = new Date(`${from}T00:00:00.000Z`)
@@ -36,6 +40,7 @@ export default defineEventHandler(async (event) => {
   const sessions = await prisma.cashSession.findMany({
     where: {
       ...(branchId ? { branchId } : {}),
+      ...(allowedBranchIds ? { branchId: { in: allowedBranchIds } } : {}),
       ...(cashBoxId ? { cashBoxId } : {}),
       ...(status === 'OPEN' ? { closingTime: null } : {}),
       ...(status === 'CLOSED' ? { closingTime: { not: null } } : {}),

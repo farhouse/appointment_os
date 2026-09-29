@@ -44,7 +44,7 @@ function getSlotRanges(workingStart: number, workingEnd: number, busySlots: { st
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const branchId = query.branchId as string
-  const barberId = (query.barberId as string) || null
+  const professionalId = ((query.workerId as string) || (query.barberId as string)) || null
   const date = query.date as string
 
   if (!branchId || !date) {
@@ -60,8 +60,8 @@ export default defineEventHandler(async (event) => {
     endTime: { gt: dayStart },
     status: { in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'] }
   }
-  if (barberId) {
-    appointmentWhere.professionalId = barberId
+  if (professionalId) {
+    appointmentWhere.professionalId = professionalId
   }
 
   const appts = await prisma.appointment.findMany({
@@ -75,9 +75,9 @@ export default defineEventHandler(async (event) => {
     endTime: { gt: dayStart }
   }
   
-  if (barberId) {
+  if (professionalId) {
     blockWhere.OR = [
-      { professionalId: barberId },
+      { professionalId },
       { professionalId: null }
     ]
   }
@@ -99,12 +99,12 @@ export default defineEventHandler(async (event) => {
   let isDayOff = false
 
   let hasBarberHours = false
-  if (barberId) {
+  if (professionalId) {
     try {
       const barberHours = await prisma.barberWorkingHour.findUnique({
         where: {
           userId_dayOfWeek: {
-            userId: barberId,
+            userId: professionalId,
             dayOfWeek
           }
         }
@@ -157,7 +157,8 @@ export default defineEventHandler(async (event) => {
 
   return {
     branchId,
-    barberId,
+    barberId: professionalId,
+    workerId: professionalId,
     date,
     dayOfWeek,
     isDayOff,

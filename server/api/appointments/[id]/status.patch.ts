@@ -3,8 +3,9 @@ import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated, requireParam } from '~/server/utils/http'
-import { badRequest, forbidden, notFound } from '~/server/utils/errors'
+import { badRequest, notFound } from '~/server/utils/errors'
 import { paymentMethodOrder, resolvePaymentMedium } from '~/server/utils/paymentMethods'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const statusSchema = z.object({
   status: z.enum(['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'FINISHED', 'PAID', 'CANCELED', 'NO_SHOW']),
@@ -18,6 +19,9 @@ export default defineEventHandler(async (event) => {
   const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
   const id = requireParam(event, 'id')
   const validation = await readBodyValidated(event, statusSchema)
+  const existing = await prisma.appointment.findUnique({ where: { id }, select: { branchId: true } })
+  if (!existing) notFound('Appointment not found')
+  await requireBranchAccess(u, existing.branchId)
 
   if (validation.status !== 'PAID') {
     try {
@@ -55,6 +59,10 @@ export default defineEventHandler(async (event) => {
         }
       })
       if (!appointment) notFound('Appointment not found')
+
+      if (cashBox.branchId !== appointment.branchId) {
+        badRequest('cashBoxId does not belong to appointment branch')
+      }
 
       if (appointment.status !== 'FINISHED' && appointment.status !== 'CONFIRMED' && appointment.status !== 'IN_PROGRESS') {
          // Allow paying from any active status if needed, but usually FINISHED
@@ -134,12 +142,13 @@ export default defineEventHandler(async (event) => {
       const session = await tx.cashSession.findFirst({
         where: {
           branchId: appointment.branchId,
+          cashBoxId: validation.cashBoxId,
           closingTime: null
         }
       })
 
       if (!session) {
-        badRequest('Open cash session required')
+        badRequest('Open cash session required for selected cashbox')
       }
 
       const updatedAppointment = await tx.appointment.update({
@@ -225,4 +234,3 @@ export default defineEventHandler(async (event) => {
 
    return result
 })
-

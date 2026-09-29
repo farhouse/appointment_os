@@ -1,25 +1,23 @@
-import { defineEventHandler, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
+import { requireRole } from '~/server/utils/permissions'
+import { requireParam } from '~/server/utils/http'
+import { forbidden, notFound } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
-  const user = event.context.user
-  if (!user) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-
-  const id = event.context.params?.id
-  if (!id) throw createError({ statusCode: 400, statusMessage: 'Missing ID' })
+  const user = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER', 'BARBER'])
+  const id = requireParam(event, 'id')
 
   const block = await prisma.timeBlock.findUnique({ where: { id } })
-  if (!block) throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+  if (!block) notFound('Time block not found')
+  await requireBranchAccess(user, block.branchId)
 
   // Authorization
   if (user.role === 'BARBER') {
     if (block.professionalId !== user.userId) {
-      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+      forbidden('Forbidden')
     }
-  } else if (['MANAGER', 'ADMIN', 'OWNER'].includes(user.role)) {
-    // Allowed
-  } else {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
   }
 
   await prisma.timeBlock.delete({ where: { id } })

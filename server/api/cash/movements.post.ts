@@ -5,6 +5,7 @@ import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
 import { paymentMethodOrder, resolvePaymentMedium } from '~/server/utils/paymentMethods'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const schema = z.object({
   sessionId: z.string().uuid(),
@@ -17,7 +18,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const parsed = await readBodyValidated(event, schema)
 
@@ -28,6 +29,7 @@ export default defineEventHandler(async (event) => {
   if (!session || session.closingTime) {
     badRequest('Open cash session required')
   }
+  await requireBranchAccess(u, session.branchId)
 
   const paymentMedium = await resolvePaymentMedium(
     prisma,

@@ -29,12 +29,14 @@ function getMethodLabel(method: string) {
 }
 
 function getMediumDisplayName(name: string) {
+  const labelMap: Record<string, string> = {
+    CASH: $t('manager.cash.methodCash'),
+    CARD: $t('manager.cash.methodCard'),
+    TRANSFER: $t('manager.cash.methodTransfer'),
+    OTHER: $t('manager.cash.methodOther'),
+  }
   const upper = (name || '').toUpperCase().trim()
-  if (upper === 'CASH') return 'Efectivo'
-  if (upper === 'CARD' || upper === 'CREDIT' || upper === 'DEBIT') return 'Tarjeta'
-  if (upper === 'TRANSFER' || upper === 'TRANSFERENCIA') return 'Transferencia'
-  if (upper === 'OTHER' || upper === 'OTRO') return 'Otro'
-  return name
+  return labelMap[upper] || name
 }
 
 async function loadPaymentMethods() {
@@ -57,7 +59,7 @@ async function loadPaymentMethods() {
         active: method.active,
         label: labelMap[method.method] || method.method
       }))
-      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+      .sort((a, b) => defaultOrder.indexOf(a.method as typeof defaultOrder[number]) - defaultOrder.indexOf(b.method as typeof defaultOrder[number]))
 
     paymentMedia.value = media
       .map((item: any) => ({
@@ -68,10 +70,10 @@ async function loadPaymentMethods() {
         active: item.active,
         isSystem: item.isSystem
       }))
-      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+      .sort((a, b) => defaultOrder.indexOf(a.method as typeof defaultOrder[number]) - defaultOrder.indexOf(b.method as typeof defaultOrder[number]))
   } catch (e: any) {
     paymentMethods.value = []
-    paymentMethodsError.value = e?.data?.statusMessage || 'No se pudo cargar'
+    paymentMethodsError.value = e?.data?.statusMessage || $t('admin.common.loadError')
   } finally {
     paymentMethodsLoading.value = false
   }

@@ -5,6 +5,7 @@ definePageMeta({
   roles: ['OWNER', 'ADMIN']
 })
 
+const { t } = useI18n()
 const toast = useToast()
 const loading = ref(false)
 const saving = ref(false)
@@ -24,7 +25,7 @@ async function loadConfig() {
     const res = await $fetch('/api/settings/landing')
     html.value = res?.html || ''
   } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || 'No se pudo cargar la landing', color: 'error' })
+    toast.add({ title: e?.data?.statusMessage || t('pages.settings.landing.loadError'), color: 'error' })
   } finally {
     loading.value = false
   }
@@ -38,9 +39,9 @@ async function saveConfig() {
       body: { html: html.value }
     })
     html.value = res?.html || ''
-    toast.add({ title: 'Landing guardada', color: 'success' })
+    toast.add({ title: t('pages.settings.landing.saved'), color: 'success' })
   } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || 'No se pudo guardar', color: 'error' })
+    toast.add({ title: e?.data?.statusMessage || t('pages.settings.landing.saveError'), color: 'error' })
   } finally {
     saving.value = false
   }
@@ -60,8 +61,8 @@ onMounted(() => { void loadConfig() })
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-semibold">Landing</h1>
-      <p class="text-sm text-gray-600">Pegá HTML custom para la home pública.</p>
+      <h1 class="text-2xl font-semibold">{{ $t('pages.settings.landing.title') }}</h1>
+      <p class="text-sm text-gray-600">{{ $t('pages.settings.landing.subtitle') }}</p>
     </div>
 
     <BackofficeSettingsNav />
@@ -69,21 +70,21 @@ onMounted(() => { void loadConfig() })
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between gap-2">
-          <div class="text-sm font-medium">Editor HTML</div>
+          <div class="text-sm font-medium">{{ $t('pages.settings.landing.editor') }}</div>
           <div class="flex gap-2">
-            <UButton color="neutral" variant="outline" size="sm" @click="applyDefaultTemplate">Usar plantilla</UButton>
-            <UButton color="neutral" variant="outline" size="sm" @click="resetLanding">Reset</UButton>
+            <UButton color="neutral" variant="outline" size="sm" @click="applyDefaultTemplate">{{ $t('pages.settings.landing.useTemplate') }}</UButton>
+            <UButton color="neutral" variant="outline" size="sm" @click="resetLanding">{{ $t('pages.settings.landing.reset') }}</UButton>
           </div>
         </div>
         <UTextarea v-model="html" :rows="18" autoresize />
         <div class="flex justify-end">
-          <UButton :loading="saving" :disabled="loading" @click="saveConfig">Guardar</UButton>
+          <UButton :loading="saving" :disabled="loading" @click="saveConfig">{{ $t('pages.settings.landing.save') }}</UButton>
         </div>
       </div>
 
       <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-        <div class="text-sm font-medium mb-3">Preview</div>
-        <div v-if="loading" class="text-sm text-gray-500">Cargando…</div>
+        <div class="text-sm font-medium mb-3">{{ $t('pages.settings.landing.preview') }}</div>
+        <div v-if="loading" class="text-sm text-gray-500">{{ $t('pages.settings.landing.loading') }}</div>
         <div v-else class="prose max-w-none" v-html="html" />
       </div>
     </div>

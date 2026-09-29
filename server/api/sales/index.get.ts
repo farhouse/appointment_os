@@ -2,12 +2,14 @@ import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { requireQueryString } from '~/server/utils/http'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const q = getQuery(event)
   const branchId = requireQueryString(event, 'branchId')
+  await requireBranchAccess(u, branchId)
   const from = q.from
   const to = q.to
 

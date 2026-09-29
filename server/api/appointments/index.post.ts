@@ -4,10 +4,12 @@ import { appointmentSchema } from '~/server/utils/schemas'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
   const { serviceIds, ...data } = await readBodyValidated(event, appointmentSchema)
+  await requireBranchAccess(u, data.branchId)
 
   // Check for overlapping appointments if professional is assigned
   if (data.professionalId) {

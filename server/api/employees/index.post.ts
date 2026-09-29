@@ -5,15 +5,28 @@ import bcrypt from 'bcrypt'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest, conflict, forbidden } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
+
+const assignableRolesByActor = {
+  OWNER: new Set(['OWNER', 'ADMIN', 'MANAGER', 'BARBER']),
+  ADMIN: new Set(['MANAGER', 'BARBER']),
+  MANAGER: new Set(['BARBER'])
+} as const
+
+function assertCanAssignRole(actorRole: keyof typeof assignableRolesByActor, targetRole: string) {
+  if (!assignableRolesByActor[actorRole]?.has(targetRole as never)) {
+    forbidden('Cannot assign requested role')
+  }
+}
 
 export default defineEventHandler(async (event) => {
   const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const { email, password, branchIds, ...rest } = await readBodyValidated(event, employeeSchema)
 
-  // Only OWNER can create ADMIN users.
-  if ((rest as any).role === 'ADMIN' && u.role !== 'OWNER') {
-    forbidden('Only OWNER can create ADMIN users')
+  assertCanAssignRole(u.role as keyof typeof assignableRolesByActor, (rest as any).role)
+  for (const branchId of branchIds || []) {
+    await requireBranchAccess(u, branchId)
   }
 
   if (!password) {

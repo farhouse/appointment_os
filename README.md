@@ -1,205 +1,71 @@
-# BarberOS v1.1
+# BarberOS
 
-Open-source barber shop management system (MVP).
+Nuxt 4 application for managing branches, workers, appointments, clients, inventory, sales, cash sessions, payments, loyalty, and public booking.
 
-## Features (v1.1)
+## Requirements
 
-- **Branches:** Manage multiple locations.
-- **Employees:** Manage staff, roles (Admin, Manager, Barber), and branch assignments.
-- **Services:** Configure services with duration and pricing.
-- **Calendar:** Full-featured appointment scheduling (FullCalendar integration).
-- **Appointments:** Booking flow with status tracking (Pending, Confirmed, etc.) and history.
-- **Clients:** Client management and history.
-- **API:** RESTful API with Zod validation.
-- **Auth:** JWT-based authentication with RBAC.
+- Node.js 24
+- PostgreSQL 14+
 
-## Getting Started (Local - Recommended for now)
-
-1. **Prereqs**
-   - Node.js 24
-   - Postgres 14+ (local install, or run Postgres however you like)
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Create `.env`**
-   Copy `.env.example` to `.env` and set at least:
-   - `DATABASE_URL`
-   - `JWT_SECRET`
-   - `JWT_REFRESH_SECRET` (optional; defaults to `JWT_SECRET`)
-
-4. **Create schema + seed**
-   ```bash
-   npx prisma db push
-   npx prisma db seed
-   ```
-
-5. **Run dev server**
-   ```bash
-   npm run dev
-   ```
-
-Open http://localhost:3000
-
-## Docker (Production)
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/yourusername/barber-os.git
-    cd barber-os
-    ```
-
-2.  **Environment Setup:**
-    Copy `.env.example` to `.env` (or create one) and configure:
-    ```bash
-    DATABASE_URL="postgresql://user:password@db:5432/barberos?schema=public"
-    JWT_SECRET="your_super_secret_key"
-    ```
-    *Note: When running with Docker Compose, the `db` host is automatically resolvable.*
-
-3.  **Run with Docker Compose:**
-    ```bash
-    docker-compose --profile prod up --build
-    ```
-    This will start the Postgres database and the Nuxt application.
-
-4.  **Seed Database (First Run):**
-    Run the seed script to create initial data (Admin user, Branch, Service):
-    ```bash
-    docker-compose exec app npx prisma migrate deploy
-    docker-compose exec app npx prisma db seed
-    ```
-    
-    **Default Credentials:**
-    - Admin: `admin@barberos.com` / `admin123`
-    - Barber: `barber@barberos.com` / `barber123`
-
-5.  **Access the App:**
-    Open [http://localhost:3000](http://localhost:3000)
-
-## Docker (Development)
-
-For development with hot reload and file watching:
-
-1. **Run with dev profile:**
-   ```bash
-   docker-compose --profile dev up --build
-   ```
-   This starts the dev server with hot reload, Postgres, and syncs the database schema safely.
-
-2. **Database Schema Sync:**
-   The dev container runs `npx prisma db push` without `--accept-data-loss` for safety. If schema changes would cause data loss, the startup will fail to prevent accidental data loss.
-
-3. **Handling Schema Conflicts:**
-   If you encounter a schema sync failure due to potential data loss, you have two options:
-   - Review and adjust your schema changes to avoid data loss.
-   - If destructive reset is necessary, manually run:
-     ```bash
-     docker-compose exec app-dev npx prisma db push --accept-data-loss
-     ```
-     Then restart the dev container.
-
-4. **Seeding (First Run or Reset):**
-   ```bash
-   docker-compose exec app-dev npx prisma db seed
-   ```
-
-## Development Setup (Local)
-
-1.  **Install Dependencies:**
-    ```bash
-    npm install
-    ```
-
-2.  **Database:**
-    Ensure you have a PostgreSQL database running and update `DATABASE_URL` in `.env`.
-
-3.  **Migrations & Seed:**
-    ```bash
-    npx prisma db push
-    npx prisma db seed
-    ```
-
-4.  **Run Dev Server:**
-    ```bash
-    npm run dev
-    ```
-
-## API Documentation
-
-The API is built with Nuxt Server Routes.
-- **Auth:** `/api/auth/*`
-- **Branches:** `/api/branches`
-- **Employees:** `/api/employees`
-- **Services:** `/api/services`
-- **Clients:** `/api/clients`
-- **Appointments:** `/api/appointments`
-- **Calendar:** `/api/calendar/events`
-
-## Smoke Test (curl)
-
-Assumes the app is running on `http://localhost:3000`.
-
-1) Login (captures `auth_token` cookie)
+## Local setup
 
 ```bash
-curl -i -c cookie.txt \
-  -H 'content-type: application/json' \
-  -d '{"email":"admin@barberos.com","password":"admin123"}' \
-  http://localhost:3000/api/auth/login
+npm install
+cp .env.example .env
+npx prisma migrate deploy
+npm run seed
+npm run dev
 ```
 
-2) Authenticated endpoint
+Open [http://localhost:3000](http://localhost:3000).
+
+Seed users all use password `1234`:
+
+- `admin@emi.local`
+- `manager@emi.local`
+- `barber@emi.local`
+- `client@emi.local`
+
+## Quality checks
 
 ```bash
-curl -i -b cookie.txt http://localhost:3000/api/me
-```
-
-3) Public endpoints (no cookie)
-
-```bash
-curl -i 'http://localhost:3000/api/public/branches'
-curl -i 'http://localhost:3000/api/public/services'
-```
-
-## Email Confirmation (Resend)
-
-Required environment variables:
-
-- `MAIL_PROVIDER` (set to `resend`)
-- `MAIL_FROM`
-- `MAIL_REPLY_TO` (optional)
-- `RESEND_API_KEY`
-
-Optional:
-
-- `MAIL_DRY_RUN=true` to log email payloads instead of sending
-
-Test email send path:
-
-- Create a public appointment with a client email. The confirmation email will be sent from the server on booking creation.
-- Backoffice (ADMIN/OWNER): Settings -> Email / Confirmaciones -> "Enviar email de prueba".
-
-4) Calendar events (BARBER users only see their own when `professionalId` is omitted)
-
-```bash
-curl -i -b cookie.txt \
-  'http://localhost:3000/api/calendar/events?start=2026-01-01T00:00:00.000Z&end=2026-01-08T00:00:00.000Z'
-```
-
-## Sanity Checks
-
-Automated sanity checks for critical cash/payment paths:
-
-```bash
+npm run typecheck
+npm run build
 npm run sanity
 ```
 
-**What it tests:**
-- Opening a cash session
-- Marking an appointment as PAID
-- Preventing duplicate payments
+`npm run sanity` requires a prepared database and validates opening independent cash sessions, assigning payment to the selected cashbox, and preventing duplicate appointment payments.
 
-**Expected outcome:** All checks pass with "✓ All sanity checks passed! Test data cleaned up." No test data is left in the database.
+## Docker
+
+Development with hot reload:
+
+```bash
+docker compose --profile dev up --build
+```
+
+Production-like environment:
+
+```bash
+docker compose --profile prod up --build
+```
+
+Production startup applies committed migrations before starting the Nuxt server. Development uses `prisma db push` to preserve the existing fast local workflow.
+
+## Main product areas
+
+- Public landing, booking, confirmation email, availability, and calendar export
+- Backoffice calendar, branches, workers, services, clients, products, stock, direct sales, cash, and settings
+- Worker agenda, appointment details, working hours, client context, and commission totals
+- Client profile, appointment history, rebooking, loyalty/redemptions, and haircut photos
+- Configurable payment media, email templates, landing content, and News/Offers
+
+The UI calls workers "Worker" while the persisted Prisma role remains `BARBER` for compatibility. See [AGENTS.md](./AGENTS.md) and [agent-context.md](./agent-context.md) before changing domain identifiers.
+
+## Email confirmation
+
+Configure `MAIL_PROVIDER=resend`, `MAIL_FROM`, optional `MAIL_REPLY_TO`, and `RESEND_API_KEY`. Use `MAIL_DRY_RUN=true` for local validation without sending.
+
+## Project status
+
+[TRACKER.md](./TRACKER.md) contains the release gates and completed work. There are no known active release-blocking tasks in the current scope.

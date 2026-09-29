@@ -5,9 +5,11 @@ import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
 import { paymentMethodOrder, resolvePaymentMedium } from '~/server/utils/paymentMethods'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const schema = z.object({
   branchId: z.string().uuid(),
+  cashBoxId: z.string().uuid(),
   clientId: z.string().uuid().optional().nullable(),
   userId: z.string().uuid().optional().nullable(),
   paymentMethod: z.enum(paymentMethodOrder),
@@ -23,9 +25,21 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const parsed = await readBodyValidated(event, schema)
+  await requireBranchAccess(u, parsed.branchId)
+
+  const cashBox = await prisma.cashBox.findFirst({
+    where: {
+      id: parsed.cashBoxId,
+      branchId: parsed.branchId,
+      active: true
+    }
+  })
+  if (!cashBox) {
+    badRequest('Invalid cashBoxId')
+  }
 
   const paymentMedium = await resolvePaymentMedium(prisma, parsed.paymentMethod, parsed.paymentMediumId)
   if (!paymentMedium) {
@@ -38,12 +52,13 @@ export default defineEventHandler(async (event) => {
   const openSession = await prisma.cashSession.findFirst({
     where: {
       branchId: parsed.branchId,
+      cashBoxId: parsed.cashBoxId,
       closingTime: null
     }
   })
 
   if (!openSession) {
-    badRequest('Open cash session required')
+    badRequest('Open cash session required for selected cashbox')
   }
 
   const sale = await prisma.$transaction(async (tx) => {
@@ -71,7 +86,7 @@ export default defineEventHandler(async (event) => {
       const stockByProduct = new Map(branchStocks.map(s => [s.productId, s.quantity]))
 
       for (const productId of productIds) {
-        const required = requiredByProduct[productId]
+        const required = requiredByProduct[productId] ?? 0
         const available = stockByProduct.get(productId) ?? 0
 
         if (available < required) {
@@ -122,7 +137,7 @@ export default defineEventHandler(async (event) => {
           items: {
             create: productIds.map((productId) => ({
               productId,
-              quantity: requiredByProduct[productId]
+              quantity: requiredByProduct[productId] ?? 0
             }))
           }
         }
@@ -138,7 +153,7 @@ export default defineEventHandler(async (event) => {
           },
           data: {
             quantity: {
-              decrement: requiredByProduct[productId]
+              decrement: requiredByProduct[productId] ?? 0
             }
           }
         })

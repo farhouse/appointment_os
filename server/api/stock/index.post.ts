@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const schema = z.object({
   branchId: z.string().uuid(),
@@ -12,9 +13,10 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const parsed = await readBodyValidated(event, schema)
+  await requireBranchAccess(u, parsed.branchId)
 
   return prisma.branchStock.upsert({
     where: { branchId_productId: { branchId: parsed.branchId, productId: parsed.productId } },

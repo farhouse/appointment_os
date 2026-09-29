@@ -9,6 +9,7 @@ definePageMeta({
 })
 
 const { selectedBranchId } = useSelectedBranch()
+const route = useRoute()
 
 const { data: me, pending: isLoading } = await useAsyncData('client-book-me', () => loadMe())
 const initialClient = computed(() => {
@@ -49,7 +50,9 @@ const initialClient = computed(() => {
     </div>
     <BookingWizard
       v-else
-      :initial-branch-id="selectedBranchId || undefined"
+      :initial-branch-id="(route.query.branchId as string) || selectedBranchId || undefined"
+      :initial-service-id="route.query.serviceId as string || undefined"
+      :initial-worker-id="route.query.workerId as string || undefined"
       :initial-client="initialClient"
       :hide-details-title="true"
     />

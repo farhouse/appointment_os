@@ -46,7 +46,7 @@ const placeholderVars = computed(() => ({
 
 const emailTemplatePreview = computed(() => {
   const source = (emailTemplate.value || '').trim()
-  if (!source) return '<p style="font-family:Arial,sans-serif;color:#666;padding:12px;">Sin contenido para previsualizar.</p>'
+  if (!source) return `<p style="font-family:Arial,sans-serif;color:#666;padding:12px;">${$t('pages.settings.email.templatePreviewEmpty')}</p>`
 
   const sampleValues: Record<string, string> = {
     name: 'Juan Pérez',
@@ -100,7 +100,7 @@ async function loadEmailStatus() {
     emailStatus.value = await $fetch('/api/settings/email')
   } catch (e: any) {
     emailStatus.value = null
-    emailStatusError.value = e?.data?.statusMessage || 'No se pudo cargar la configuración de email.'
+    emailStatusError.value = e?.data?.statusMessage || $t('pages.settings.email.emailLoadError')
   } finally {
     emailStatusLoading.value = false
   }
@@ -116,12 +116,12 @@ async function sendTestEmail() {
       body: { to: emailTestTarget.value.trim() }
     })
     if ((response as any)?.ok) {
-      emailTestMessage.value = { type: 'success', text: 'Email de prueba enviado.' }
+      emailTestMessage.value = { type: 'success', text: $t('pages.settings.email.testEmailSent') }
     } else {
-      emailTestMessage.value = { type: 'error', text: (response as any)?.error || 'No se pudo enviar el email de prueba.' }
+      emailTestMessage.value = { type: 'error', text: (response as any)?.error || $t('pages.settings.email.testError') }
     }
   } catch (e: any) {
-    emailTestMessage.value = { type: 'error', text: e?.data?.statusMessage || 'No se pudo enviar el email de prueba.' }
+    emailTestMessage.value = { type: 'error', text: e?.data?.statusMessage || $t('pages.settings.email.testError') }
   } finally {
     emailTestLoading.value = false
   }

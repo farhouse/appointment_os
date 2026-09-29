@@ -1,13 +1,18 @@
-import { defineEventHandler, getRouterParam, createError } from 'h3'
+import { defineEventHandler, getRouterParam } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
+import { getAllowedBranchIds } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
   const id = getRouterParam(event, 'id')
+  const allowedBranchIds = await getAllowedBranchIds(u)
 
   const appointments = await prisma.appointment.findMany({
-    where: { clientId: id },
+    where: {
+      clientId: id,
+      ...(allowedBranchIds ? { branchId: { in: allowedBranchIds } } : {})
+    },
     include: {
         services: {
             include: {

@@ -49,7 +49,7 @@ const formRef = useTemplateRef('serviceForm')
 
 const serviceSchema = z.object({
   name: z.string().min(1, t('admin.services.form.nameRequired')),
-  description: z.string().optional().nullable(),
+  description: z.string().optional(),
   price: z.number().positive(),
   duration: z.number().int().positive(),
   pointsReward: z.number().int().nonnegative(),
@@ -65,7 +65,6 @@ const formState = reactive<Partial<ServiceForm>>({
   pointsReward: 0,
 })
 
-const tableRef = useTemplateRef('table')
 
 const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(services, {
   search: (item, query) => {
@@ -97,8 +96,8 @@ watch(globalFilter, () => {
   pagination.value.pageIndex = 0
 })
 
-const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
-const pageCount = computed(() => tableRef.value?.tableApi.getPageCount?.() ?? Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+const filteredTotal = computed<number>(() => sorted.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
 
 watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value

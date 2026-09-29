@@ -1,63 +1,39 @@
-# Barber OS — Tracker (shortlist)
+# BarberOS - Release tracker
 
-> Estado rápido y accionable. Solo pendientes activos.
-> Leyenda: `todo | doing | blocked | done`
+Last updated: 2026-09-29
 
-## NEXT (prioridad alta)
-- [x] (done) **Landing configurable desde Settings (MVP)**
-  - Resultado: Settings ahora incluye sección Landing con editor HTML + preview y persistencia en DB (`LandingConfig`).
-  - Home pública consume `/api/public/landing` y renderiza HTML configurado con fallback a landing anterior si está vacío.
-  - Files: `pages/private/backoffice/settings/landing.vue`, `server/api/settings/landing.*`, `server/api/public/landing.get.ts`, `pages/index.vue`, `prisma/schema.prisma`.
+## Active pending work
 
-- [ ] (doing) **Generalización de dominio: Barber → Worker**
-  - ✅ Fase 1 (copy/UI/i18n): aplicado en textos visibles (labels, headings, booking copy, empleados, landing).
-  - ✅ Fase 2 (alias API): nuevo endpoint `/api/public/workers` compatible con `/api/public/barbers`.
-  - 🟡 Fase 3 (parcial): alias de rutas privadas `/private/worker/*` y alias de API `/api/worker/*` hacia flujos existentes de barber.
-  - ⏭️ Fase 3 (pendiente): renombre interno progresivo de modelo/campos (`BARBER` role, `professionalId`, etc.) con migración controlada.
+None. The planned stabilization and product blocks are complete.
 
-- [x] (done) **Client profile editable + cambio de password**
-  - Resultado: `/private/profile` ahora permite editar nombre/email/teléfono y cambiar contraseña con validaciones básicas.
-  - Files: `pages/private/profile.vue`, `server/api/me.patch.ts`, `server/api/me/password.post.ts`.
+## Completed blocks
 
-- [ ] (todo) **Cliente: fotos de cortes (máx 3)**
-  - Upload + preview + delete + storage local docker + metadata en DB.
+- [x] Cash sessions and payments are scoped by `cashBoxId`; duplicate payment protection is covered by `npm run sanity`.
+- [x] `User(CLIENT)` has a formal optional one-to-one relation with `Client` through `User.clientId`.
+- [x] Worker appointments, date ranges, details, working hours, finances, and branch filtering are implemented.
+- [x] Direct sales decrement stock and create cash movements in the selected open cash session.
+- [x] Public availability supports worker aliases and respects appointments, working hours, and time blocks.
+- [x] Time blocks validate branch access, worker assignment, interval order, and overlaps.
+- [x] Client profile, password, quick rebooking, loyalty/redemptions, and up to three haircut photos are implemented.
+- [x] Configurable landing, email settings, payment media, cashboxes, and News/Offers are implemented.
+- [x] Backoffice CRUD screens use the shared Nuxt UI table pattern and both locales are synchronized.
+- [x] Public landing HTML is sanitized on write and read.
+- [x] Fake Excel import and notification endpoints were removed; the real email test endpoint remains.
+- [x] Nuxt, Nuxt UI, i18n, and Vue Router were updated; production build and typecheck pass.
+- [x] The complete Prisma migration chain recreates the current schema without drift.
+- [x] Seed and cash/payment sanity checks pass on a clean migrated PostgreSQL database.
 
-## MANAGER / CALENDAR / CASH (pendientes)
-- [x] (done) **Calendar resources separators**
-  - Resultado: zebra suave por columna/resource + divisores visuales en calendario de backoffice.
-  - Files: `pages/private/backoffice/calendar.vue`.
+## Architecture decisions (not pending)
 
-- [ ] (todo) **Caja: revisar flujo abrir→cerrar→cobrar**
-  - Definir regla cuando caja está cerrada y llega cobro.
+- The persistent role remains `BARBER` and appointment ownership remains `professionalId`.
+- User-facing routes and copy use Worker. Renaming persisted enum values and columns has no product benefit for this release and would require a dedicated compatibility migration.
+- `/private/worker` and `/private/backoffice` are the primary route families. Older barber/manager paths are compatibility aliases.
 
-- [ ] (todo) **Módulo de Venta (venta directa fuera del turno)**
-  - Requiere sucursal + caja abierta + descuento de stock + movimiento de caja.
+## Release gates
 
-- [x] (done) **Bloqueo de franjas horarias por falta de staff**
-  - Alcance cerrado: bloqueo directo desde calendario (sin flujo de aprobación).
-  - Roles: WORKER + MANAGER + ADMIN.
-  - Tipos: día completo o franja horaria (ej. comida/descanso), con motivo opcional.
-  - Debe impactar en agenda interna y booking público (no ofrecer slots bloqueados).
-  - Resultado: Modelo TimeBlock, CRUD API, integración en calendarios (backoffice + worker) y disponibilidad pública.
-  - Files: `prisma/schema.prisma`, `server/api/time-blocks/*`, `server/api/calendar/events.get.ts`, `server/api/public/availability/index.get.ts`, `components/AppointmentCreateModal.vue`, `pages/private/backoffice/calendar.vue`, `pages/private/worker/today.vue`.
-
-## BARBER APP (pendientes)
-- [x] (done) **Barber finances** (totales + comisión fija por barbero)
-  - Resultado: panel muestra turnos pagados, total de servicios y comisión estimada (según `User.commissionRate`) con desglose semanal.
-  - Files: `server/api/barber/finances.get.ts`, `pages/private/barber/finances.vue`.
-- [ ] (todo) **Barber appointments**: filtros UI + modal + rango diario
-- [ ] (todo) **Barber working hours**: cerrar visualización en calendar + QA E2E
-
-## LATER
-- [ ] (todo) News/Offers CMS
-- [ ] (todo) Rebook rápido
-- [ ] (todo) Dev env cleanup (`docker-compose.yml` version obsolete)
-
----
-
-## Últimos hitos cerrados (resumen)
-- Venta asociada a turno (upsell) con items y cobro.
-- Total general del appointment actualizado en vivo al editar items.
-- Modal de appointment mejorado (ancho, scroll, cards, notas, selector productos).
-- Click en calendario para crear turno con snap a bloques de 10 minutos.
-- Booking availability/empty state y fixes de confirmación/email.
+- `npm run typecheck`
+- `npm run build`
+- `npx prisma migrate deploy` on an empty database
+- Prisma schema drift check
+- `npm run seed`
+- `npm run sanity`

@@ -3,6 +3,7 @@ import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest, notFound } from '~/server/utils/errors'
+import { resolveClientProfile } from '~/server/utils/clientProfile'
 
 const schema = z.object({
   productId: z.string().uuid(),
@@ -13,8 +14,7 @@ export default defineEventHandler(async (event) => {
   const u = requireRole(event, ['CLIENT'])
   const payload = await readBodyValidated(event, schema)
 
-  const client = await prisma.client.findFirst({ where: { email: u.email || '' } })
-  if (!client) notFound('Client not found')
+  const client = await resolveClientProfile(u)
 
   const product = await prisma.product.findUnique({ where: { id: payload.productId } }) as any
   if (!product) notFound('Product not found')

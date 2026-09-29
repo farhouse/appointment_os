@@ -1,9 +1,11 @@
-import { defineEventHandler, createError } from 'h3'
+import { defineEventHandler } from 'h3'
 import { z } from 'zod'
 import prisma from '~/server/utils/prisma'
 import { requireRole, getAuthUser } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { requireParam } from '~/server/utils/http'
+import { badRequest } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const schema = z.object({
   countedCash: z.number().nonnegative(),
@@ -20,6 +22,13 @@ export default defineEventHandler(async (event) => {
   const id = requireParam(event, 'id')
 
   const parsed = await readBodyValidated(event, schema)
+
+  const session = await prisma.cashSession.findUnique({
+    where: { id },
+    select: { branchId: true, closingTime: true }
+  })
+  if (!session || session.closingTime) badRequest('Open cash session required')
+  await requireBranchAccess(u, session.branchId)
 
   return prisma.cashSession.update({
     where: { id },

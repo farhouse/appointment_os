@@ -39,10 +39,10 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const parsed = workingHourSchema.parse(body)
 
-    const startParts = parsed.startTime.split(':')
-    const endParts = parsed.endTime.split(':')
-    const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1])
-    const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1])
+    const [startHour = 0, startMinute = 0] = parsed.startTime.split(':').map(Number)
+    const [endHour = 0, endMinute = 0] = parsed.endTime.split(':').map(Number)
+    const startMinutes = startHour * 60 + startMinute
+    const endMinutes = endHour * 60 + endMinute
     if (endMinutes <= startMinutes) {
       badRequest('endTime must be after startTime')
     }

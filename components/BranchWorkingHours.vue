@@ -46,8 +46,8 @@ async function saveAll() {
 
   for (const day of workingHours.value) {
     if (day.isWorking) {
-      const [sh, sm] = day.startTime.split(':').map(Number)
-      const [eh, em] = day.endTime.split(':').map(Number)
+      const [sh = 0, sm = 0] = day.startTime.split(':').map(Number)
+      const [eh = 0, em = 0] = day.endTime.split(':').map(Number)
       if ((eh * 60 + em) <= (sh * 60 + sm)) {
         toast.add({ title: `Horario inválido en ${dayNames[day.dayOfWeek]}`, color: 'error' })
         return

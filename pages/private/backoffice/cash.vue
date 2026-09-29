@@ -93,7 +93,7 @@ const sessionsForList = computed(() => {
 
 
 const openSchema = z.object({
-  cashBoxId: z.string().optional().nullable(),
+  cashBoxId: z.string().optional(),
   openingAmount: z.number().min(0)
 })
 
@@ -107,9 +107,9 @@ const closeSchema = z.object({
 const movementSchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAWAL']),
   paymentMethod: z.enum(['CASH', 'CARD', 'TRANSFER', 'OTHER']),
-  paymentMediumId: z.string().optional().nullable(),
+  paymentMediumId: z.string().optional(),
   amount: z.number().positive(),
-  reason: z.string().optional().nullable()
+  reason: z.string().optional()
 })
 
 type OpenForm = z.output<typeof openSchema>
@@ -309,7 +309,7 @@ async function loadPaymentMethods() {
         active: method.active,
         label: labelMap[method.method] || method.method
       }))
-      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+      .sort((a, b) => defaultOrder.indexOf(a.method as typeof defaultOrder[number]) - defaultOrder.indexOf(b.method as typeof defaultOrder[number]))
 
     paymentMedia.value = media
       .map((item: any) => ({
@@ -319,7 +319,7 @@ async function loadPaymentMethods() {
         active: item.active,
         isSystem: item.isSystem
       }))
-      .sort((a, b) => defaultOrder.indexOf(a.method) - defaultOrder.indexOf(b.method))
+      .sort((a, b) => defaultOrder.indexOf(a.method as typeof defaultOrder[number]) - defaultOrder.indexOf(b.method as typeof defaultOrder[number]))
   } catch {
     paymentMethods.value = []
     paymentMedia.value = []
@@ -911,7 +911,7 @@ watch(openSessionsSorted, (value) => {
   <UModal
     v-model:open="openingModal"
     :title="$t('manager.cash.openSession')"
-    :ui="{ width: 'sm:max-w-2xl', footer: 'justify-end' }"
+    :ui="{ content: 'sm:max-w-2xl', footer: 'justify-end' }"
   >
     <template #body>
       <div class="space-y-4">
@@ -944,7 +944,7 @@ watch(openSessionsSorted, (value) => {
   <UModal
     v-model:open="closingModal"
     :title="$t('manager.cash.closeSession')"
-    :ui="{ width: 'sm:max-w-3xl', footer: 'justify-end' }"
+    :ui="{ content: 'sm:max-w-3xl', footer: 'justify-end' }"
   >
     <template #body>
       <div class="space-y-4">

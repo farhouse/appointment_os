@@ -5,6 +5,7 @@ import { requireRole, getAuthUser } from '~/server/utils/permissions'
 import { readBodyValidated } from '~/server/utils/http'
 import { badRequest } from '~/server/utils/errors'
 import { resolvePaymentMedium } from '~/server/utils/paymentMethods'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 const schema = z.object({
   branchId: z.string().uuid(),
@@ -17,19 +18,36 @@ export default defineEventHandler(async (event) => {
   const u = getAuthUser(event)
 
   const parsed = await readBodyValidated(event, schema)
+  await requireBranchAccess(u, parsed.branchId)
 
   const today = new Date()
   today.setHours(0,0,0,0)
 
+  if (parsed.cashBoxId) {
+    const cashBox = await prisma.cashBox.findFirst({
+      where: {
+        id: parsed.cashBoxId,
+        branchId: parsed.branchId,
+        active: true
+      }
+    })
+    if (!cashBox) {
+      badRequest('Invalid cashBoxId')
+    }
+  }
+
   const existingOpen = await prisma.cashSession.findFirst({
     where: {
       branchId: parsed.branchId,
+      cashBoxId: parsed.cashBoxId ?? null,
       closingTime: null
     }
   })
 
   if (existingOpen) {
-    badRequest('Branch already has an open session')
+    badRequest(parsed.cashBoxId
+      ? 'Cashbox already has an open session'
+      : 'Branch already has an open legacy session')
   }
 
   return prisma.$transaction(async (tx) => {

@@ -2,6 +2,7 @@ import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { getAuthUser } from '~/server/utils/permissions'
 import { badRequest, forbidden } from '~/server/utils/errors'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
   const u = getAuthUser(event)
@@ -21,6 +22,8 @@ export default defineEventHandler(async (event) => {
       forbidden('Forbidden')
     }
   }
+
+  if (branchId) await requireBranchAccess(u, branchId)
 
   // Return events that overlap the requested interval.
   // (VueCal day/week views often send `end` as the start of the next day, so using `endTime <= end`

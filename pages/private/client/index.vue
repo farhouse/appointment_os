@@ -6,13 +6,25 @@ type Appointment = {
   status: string
   startTime: string
   endTime: string
-  branch: { name: string }
-  professional?: { name: string } | null
-  services: { service: { name: string } }[]
+  branch: { id: string; name: string }
+  professional?: { id: string; name: string } | null
+  services: { service: { id: string; name: string } }[]
 }
 
 type PointsSummary = {
   balance: number
+}
+
+type ClientPhoto = {
+  id: string
+  url: string
+  filename: string
+}
+
+type NewsOffer = {
+  id: string
+  title: string
+  body: string
 }
 
 definePageMeta({
@@ -31,6 +43,16 @@ const { data: appointments, pending: isLoadingAppointments, error: appointmentsE
   'client-dashboard-appointments',
   () => $fetch<Appointment[]>('/api/client/appointments'),
   { server: false }
+)
+const { data: clientPhotos, pending: isLoadingPhotos, refresh: refreshPhotos } = await useAsyncData(
+  'client-dashboard-photos',
+  () => $fetch<ClientPhoto[]>('/api/client/photos'),
+  { server: false, default: () => [] }
+)
+const { data: newsOffers, pending: isLoadingNews } = await useAsyncData(
+  'client-dashboard-news-offers',
+  () => $fetch<NewsOffer[]>('/api/public/news-offers'),
+  { server: false, default: () => [] }
 )
 
 const { formatDateTime, statusColor, statusLabel } = useAppointmentStatus()
@@ -60,8 +82,52 @@ const recentAppointments = computed(() => {
 })
 
 const lastAppointment = computed(() => recentAppointments.value.find(apt => new Date(apt.startTime) < now.value))
+const rebookUrl = computed(() => {
+  if (!lastAppointment.value) return '/private/client/book'
+  const query = new URLSearchParams()
+  if (lastAppointment.value.branch?.id) query.set('branchId', lastAppointment.value.branch.id)
+  if (lastAppointment.value.professional?.id) query.set('workerId', lastAppointment.value.professional.id)
+  const firstServiceId = lastAppointment.value.services?.[0]?.service?.id
+  if (firstServiceId) query.set('serviceId', firstServiceId)
+  const suffix = query.toString()
+  return suffix ? `/private/client/book?${suffix}` : '/private/client/book'
+})
 
 const isLoading = computed(() => isLoadingMe.value || isLoadingPoints.value || isLoadingAppointments.value)
+const photoInput = ref<HTMLInputElement | null>(null)
+const isUploadingPhoto = ref(false)
+const photoError = ref('')
+const canUploadPhoto = computed(() => (clientPhotos.value?.length || 0) < 3)
+
+async function uploadPhoto(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  photoError.value = ''
+  isUploadingPhoto.value = true
+  try {
+    const form = new FormData()
+    form.append('photo', file)
+    await $fetch('/api/client/photos', { method: 'POST', body: form })
+    await refreshPhotos()
+  } catch (e: any) {
+    photoError.value = e?.data?.statusMessage || 'No pudimos subir la foto.'
+  } finally {
+    isUploadingPhoto.value = false
+    input.value = ''
+  }
+}
+
+async function deletePhoto(id: string) {
+  photoError.value = ''
+  try {
+    await $fetch(`/api/client/photos/${id}`, { method: 'DELETE' })
+    await refreshPhotos()
+  } catch (e: any) {
+    photoError.value = e?.data?.statusMessage || 'No pudimos borrar la foto.'
+  }
+}
 </script>
 
 <template>
@@ -135,10 +201,19 @@ const isLoading = computed(() => isLoadingMe.value || isLoadingPoints.value || i
               <div class="text-base font-semibold text-stone-900">Novedades y promos</div>
               <div class="mt-1 text-sm text-stone-600">Enterate primero de combos, beneficios y descuentos personalizados para clientes frecuentes.</div>
             </div>
-            <UBadge color="info" variant="subtle">Próximamente</UBadge>
           </div>
-          <div class="mt-4 rounded-md border border-dashed border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
-            Estamos preparando un feed con promociones activas por sucursal y ofertas por medio de pago.
+          <div v-if="isLoadingNews" class="mt-4 space-y-2">
+            <USkeleton class="h-5 w-full" />
+            <USkeleton class="h-5 w-4/5" />
+          </div>
+          <div v-else-if="newsOffers?.length" class="mt-4 space-y-3">
+            <div v-for="offer in newsOffers" :key="offer.id" class="rounded-md border border-stone-200 bg-stone-50 p-3">
+              <div class="font-medium text-stone-900">{{ offer.title }}</div>
+              <div class="mt-1 text-sm text-stone-600">{{ offer.body }}</div>
+            </div>
+          </div>
+          <div v-else class="mt-4 rounded-md border border-dashed border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">
+            No hay promociones activas en este momento.
           </div>
         </div>
 
@@ -196,12 +271,52 @@ const isLoading = computed(() => isLoadingMe.value || isLoadingPoints.value || i
             <div class="rounded-md border border-dashed border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
               Última visita: {{ lastAppointment ? formatDateTime(lastAppointment.startTime) : 'Sin historial' }}
             </div>
-            <UButton to="/private/client/book" color="primary" block>Reservar de nuevo</UButton>
+            <UButton :to="rebookUrl" color="primary" block>Reservar de nuevo</UButton>
           </div>
         </div>
       </div>
 
       <div class="space-y-4">
+        <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <div class="text-sm font-semibold text-stone-900">Fotos de cortes</div>
+              <div class="mt-1 text-sm text-stone-600">Guardá hasta 3 referencias para futuras visitas.</div>
+            </div>
+            <UButton
+              size="xs"
+              variant="outline"
+              :loading="isUploadingPhoto"
+              :disabled="!canUploadPhoto"
+              @click="photoInput?.click()"
+            >
+              Subir
+            </UButton>
+            <input ref="photoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="uploadPhoto" />
+          </div>
+          <div v-if="photoError" class="mt-3 text-xs text-rose-600">{{ photoError }}</div>
+          <div v-if="isLoadingPhotos" class="mt-4 grid grid-cols-3 gap-2">
+            <USkeleton class="aspect-square rounded" />
+            <USkeleton class="aspect-square rounded" />
+            <USkeleton class="aspect-square rounded" />
+          </div>
+          <div v-else-if="clientPhotos?.length" class="mt-4 grid grid-cols-3 gap-2">
+            <div v-for="photo in clientPhotos" :key="photo.id" class="group relative aspect-square overflow-hidden rounded border border-stone-200 bg-stone-50">
+              <img :src="photo.url" :alt="photo.filename" class="h-full w-full object-cover" />
+              <button
+                type="button"
+                class="absolute right-1 top-1 rounded bg-white/90 px-2 py-1 text-xs text-stone-700 opacity-0 shadow transition group-hover:opacity-100"
+                @click="deletePhoto(photo.id)"
+              >
+                Borrar
+              </button>
+            </div>
+          </div>
+          <div v-else class="mt-4 rounded-md border border-dashed border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+            Todavía no subiste fotos.
+          </div>
+        </div>
+
         <div class="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
           <div class="text-sm font-semibold text-stone-900">Acciones rápidas</div>
           <div class="mt-3 space-y-2">

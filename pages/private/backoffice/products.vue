@@ -71,7 +71,7 @@ const formRef = useTemplateRef('productForm')
 const productSchema = z.object({
   name: z.string().min(1, t('admin.products.form.nameRequired')),
   sku: z.string().min(1, t('admin.products.form.skuRequired')),
-  description: z.string().optional().nullable(),
+  description: z.string().optional(),
   price: z.number().nonnegative(),
   cost: z.number().nonnegative().optional().nullable(),
   pointsCost: z.number().int().nonnegative().default(0)
@@ -88,7 +88,6 @@ const formState = reactive<Partial<ProductForm>>({
   pointsCost: 0
 })
 
-const tableRef = useTemplateRef('table')
 
 const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(products, {
   search: (item, query) => {
@@ -120,8 +119,8 @@ watch(globalFilter, () => {
   pagination.value.pageIndex = 0
 })
 
-const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
-const pageCount = computed(() => tableRef.value?.tableApi.getPageCount?.() ?? Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+const filteredTotal = computed<number>(() => sorted.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
 
 watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value

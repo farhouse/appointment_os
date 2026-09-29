@@ -2,7 +2,7 @@ import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 
 function parseTimeToMinutes(time: string) {
-  const [h, m] = time.split(':').map(Number)
+  const [h = 0, m = 0] = time.split(':').map(Number)
   return h * 60 + m
 }
 

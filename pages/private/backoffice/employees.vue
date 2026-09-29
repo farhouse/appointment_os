@@ -129,7 +129,6 @@ const roleFilterItems = computed(() => [
 
 const roleFilter = ref<'ALL' | Employee['role']>('ALL')
 
-const tableRef = useTemplateRef('table')
 
 const roleOrder = ['OWNER', 'ADMIN', 'MANAGER', 'BARBER', 'CLIENT'] as const
 
@@ -179,8 +178,8 @@ watch(roleFilter, () => {
   pagination.value.pageIndex = 0
 })
 
-const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
-const pageCount = computed(() => tableRef.value?.tableApi.getPageCount?.() ?? Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+const filteredTotal = computed<number>(() => sorted.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
 
 watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value

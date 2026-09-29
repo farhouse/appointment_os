@@ -14,7 +14,7 @@ const patchSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['ADMIN'])
+  requireRole(event, ['OWNER', 'ADMIN'])
 
   const parsed = await readBodyValidated(event, patchSchema)
   const templates = parsed.templates || []

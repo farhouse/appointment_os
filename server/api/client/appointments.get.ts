@@ -1,13 +1,12 @@
 import { defineEventHandler } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
-import { notFound } from '~/server/utils/errors'
+import { resolveClientProfile } from '~/server/utils/clientProfile'
 
 export default defineEventHandler(async (event) => {
   const u = requireRole(event, ['CLIENT'])
 
-  const client = await prisma.client.findFirst({ where: { email: u.email || '' } })
-  if (!client) notFound('Client profile not found')
+  const client = await resolveClientProfile(u)
 
   return prisma.appointment.findMany({
     where: { clientId: client.id },

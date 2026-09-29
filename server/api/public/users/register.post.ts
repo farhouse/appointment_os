@@ -22,21 +22,7 @@ export default defineEventHandler(async (event) => {
 
   const name = `${data.firstName} ${data.lastName || ''}`.trim()
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      phone,
-      name,
-      role: 'CLIENT',
-      active: true,
-      password: hashedPassword
-    },
-    select: { id: true, email: true, role: true }
-  })
-
-  // Ensure there is a Client record with the same email so points/history works.
-  // (Client model is the business entity; User is auth.)
-  await prisma.client.upsert({
+  const client = await prisma.client.upsert({
     where: { email },
     create: {
       firstName: data.firstName,
@@ -48,6 +34,19 @@ export default defineEventHandler(async (event) => {
       phone: phone || undefined
     },
     select: { id: true }
+  })
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      phone,
+      name,
+      role: 'CLIENT',
+      active: true,
+      password: hashedPassword,
+      clientId: client.id
+    },
+    select: { id: true, email: true, role: true, clientId: true }
   })
 
   // Auto-login

@@ -2,12 +2,14 @@ import { defineEventHandler, getQuery } from 'h3'
 import prisma from '~/server/utils/prisma'
 import { requireRole } from '~/server/utils/permissions'
 import { requireQueryString } from '~/server/utils/http'
+import { requireBranchAccess } from '~/server/utils/branchAccess'
 
 export default defineEventHandler(async (event) => {
-  requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
+  const u = requireRole(event, ['OWNER', 'ADMIN', 'MANAGER'])
 
   const q = getQuery(event)
   const branchId = requireQueryString(event, 'branchId')
+  await requireBranchAccess(u, branchId)
   const includeMovements = q.includeMovements === 'true'
   const cashBoxId = typeof q.cashBoxId === 'string' ? q.cashBoxId : undefined
 
@@ -15,11 +17,7 @@ export default defineEventHandler(async (event) => {
     where: {
       branchId,
       closingTime: null,
-      ...(cashBoxId
-        ? {
-            OR: [{ cashBoxId }, { cashBoxId: null }]
-          }
-        : {})
+      ...(cashBoxId ? { cashBoxId } : {})
     },
     include: {
       cashBox: true,

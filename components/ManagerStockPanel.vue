@@ -71,7 +71,6 @@ const productItems = computed(() => products.value.map(product => ({ label: `${p
 
 const filteredRows = computed(() => stockRows.value)
 
-const tableRef = useTemplateRef('table')
 
 const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(filteredRows, {
   search: (item, query) => {
@@ -103,8 +102,8 @@ watch(globalFilter, () => {
   pagination.value.pageIndex = 0
 })
 
-const filteredTotal = computed(() => tableRef.value?.tableApi.getFilteredRowModel().rows.length ?? sorted.value.length)
-const pageCount = computed(() => tableRef.value?.tableApi.getPageCount?.() ?? Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+const filteredTotal = computed<number>(() => sorted.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
 
 watch([pageCount], () => {
   if (page.value > pageCount.value) page.value = pageCount.value
@@ -245,7 +244,7 @@ async function saveStock(event: FormSubmitEvent<StockForm>) {
     const payload = event.data
     if (selected.value) {
       await $fetch('/api/stock', {
-        method: 'PATCH',
+        method: 'PATCH' as any,
         body: payload
       })
       toast.add({ title: t('admin.stock.toast.updated'), color: 'success' })

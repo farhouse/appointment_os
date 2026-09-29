@@ -63,7 +63,7 @@ const calendarConfig = computed(() => ({
   locale: locale.value === 'es-AR' ? 'es' : 'en-us'
 }))
 
-const viewOptions = [
+const viewOptions: Array<{ id: 'day' | 'week' | 'month', label: string }> = [
   { id: 'day', label: 'calendar.day' },
   { id: 'week', label: 'calendar.week' },
   { id: 'month', label: 'calendar.month' }
@@ -877,7 +877,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
           <div class="rounded border border-gray-200 p-3 space-y-2">
             <div class="flex justify-between items-center">
               <div class="font-medium text-gray-700">Productos / Venta</div>
-              <UBadge v-if="selectedEvent?.extendedProps?.sale?.paymentMethod" color="green" variant="subtle">Pagado</UBadge>
+              <UBadge v-if="selectedEvent?.extendedProps?.sale?.paymentMethod" color="success" variant="subtle">Pagado</UBadge>
             </div>
             
             <div v-if="localSaleItems.length" class="space-y-2">
@@ -891,8 +891,8 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                    <UButton 
                      v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" 
                      icon="i-heroicons-trash" 
-                     size="2xs" 
-                     color="red" 
+                     size="xs"
+                     color="error"
                      variant="ghost" 
                      @click="removeSaleItem(idx)" 
                    />
@@ -919,7 +919,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                  <label class="text-xs text-gray-500">Cant.</label>
                  <UInput v-model="selectedQuantity" type="number" min="1" size="sm" />
                </div>
-               <UButton icon="i-heroicons-plus" size="sm" color="gray" variant="solid" @click="addSaleItem" :disabled="!selectedProductId" />
+               <UButton icon="i-heroicons-plus" size="sm" color="neutral" variant="solid" @click="addSaleItem" :disabled="!selectedProductId" />
             </div>
 
             <div v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" class="flex justify-end pt-2">
@@ -951,7 +951,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 
         <div v-if="isBlock" class="mt-4 flex justify-end gap-2 flex-wrap">
           <UButton variant="outline" @click="closeDetailModal">{{ $t('common.close') }}</UButton>
-          <UButton color="red" :loading="isDeletingBlock" @click="deleteBlock">Liberar Horario</UButton>
+          <UButton color="error" :loading="isDeletingBlock" @click="deleteBlock">Liberar Horario</UButton>
         </div>
 
         <div v-else class="mt-4 flex justify-end gap-2 flex-wrap">

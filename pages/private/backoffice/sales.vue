@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { z } from 'zod'
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+import type { PaginationState } from '@tanstack/table-core'
+import { getPaginationRowModel } from '@tanstack/vue-table'
+import { useSelectedBranch } from '~/composables/useSelectedBranch'
 
 definePageMeta({
   layout: 'private',
@@ -7,127 +11,189 @@ definePageMeta({
   roles: ['OWNER', 'ADMIN', 'MANAGER'],
 })
 
-const { selectedBranchId } = useSelectedBranch()
+type SaleItem = {
+  id: string
+  name: string
+  quantity: number
+  price: string
+}
+
+type Sale = {
+  id: string
+  total: string
+  paymentMethod: string
+  paymentMediumId: string | null
+  createdAt: string
+  items: SaleItem[]
+}
+
+type CashBox = {
+  id: string
+  name: string
+}
+
+type PaymentMedium = {
+  id: string
+  method: string
+  name: string
+  active: boolean
+}
+
+type FormItem = {
+  type: 'PRODUCT' | 'SERVICE' | 'CONCEPT'
+  productId?: string
+  serviceId?: string
+  name: string
+  quantity: number
+  price: number
+}
+
+const UBadge = resolveComponent('UBadge')
+const UButton = resolveComponent('UButton')
+const UTooltip = resolveComponent('UTooltip')
+
 const toast = useToast()
 const { t } = useI18n()
+const { selectedBranchId } = useSelectedBranch()
 
-// Data
-const sales = ref<any[]>([])
-const loading = ref(false)
+const tableUi = useBackofficeTableUi()
+
+const sales = ref<Sale[]>([])
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+const modalOpen = ref(false)
+const isSaving = ref(false)
+
 const products = ref<any[]>([])
 const services = ref<any[]>([])
-const cashBoxes = ref<any[]>([])
-const paymentMedia = ref<any[]>([])
+const cashBoxes = ref<CashBox[]>([])
+const paymentMedia = ref<PaymentMedium[]>([])
 
-// Filters
 const dateFrom = ref(new Date().toISOString().split('T')[0])
 const dateTo = ref(new Date().toISOString().split('T')[0])
 
-// New Sale Form
-const isNewSaleOpen = ref(false)
 const saleForm = reactive({
-  items: [] as Array<{
-    type: 'PRODUCT' | 'SERVICE' | 'CONCEPT'
-    productId?: string
-    serviceId?: string
-    name: string
-    quantity: number
-    price: number
-  }>,
-  paymentMethod: 'CASH',
+  items: [] as FormItem[],
+  paymentMethod: 'CASH' as string,
   paymentMediumId: '',
-  cashBoxId: '',
-  notes: ''
+  cashBoxId: ''
 })
 
-// Fetch Sales
-async function fetchSales() {
-  if (!selectedBranchId.value) return
-  loading.value = true
-  try {
-    const query = new URLSearchParams({
-      branchId: selectedBranchId.value,
-      from: dateFrom.value,
-      to: dateTo.value
-    })
-    sales.value = await $fetch(`/api/sales?${query.toString()}`)
-  } catch (e) {
-    sales.value = []
-  } finally {
-    loading.value = false
+const { search: globalFilter, sorted, sortBy, sortDir, toggleSort } = useCrudTable(sales, {
+  search: (item, query) => {
+    const q = query.toLowerCase()
+    return item.items.some(i => i.name.toLowerCase().includes(q))
+  },
+  initialSortBy: 'createdAt',
+  initialSortDir: 'desc'
+})
+
+const pagination = ref<PaginationState>({ pageIndex: 0, pageSize: 10 })
+
+const page = computed({
+  get: () => pagination.value.pageIndex + 1,
+  set: (value: number) => {
+    pagination.value.pageIndex = Math.max(0, value - 1)
   }
+})
+
+const pageSize = computed({
+  get: () => pagination.value.pageSize,
+  set: (value: number) => {
+    pagination.value.pageSize = value
+    pagination.value.pageIndex = 0
+  }
+})
+
+watch(globalFilter, () => {
+  pagination.value.pageIndex = 0
+})
+
+const filteredTotal = computed<number>(() => sorted.value.length)
+const pageCount = computed(() => Math.max(1, Math.ceil(filteredTotal.value / pageSize.value)))
+
+watch([pageCount], () => {
+  if (page.value > pageCount.value) page.value = pageCount.value
+})
+
+function formatCurrency(value: string) {
+  const n = Number(value)
+  if (Number.isNaN(n)) return value
+  return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 }
 
-// Fetch dependencies for form
-async function loadFormDependencies() {
-  const cashboxesReq = selectedBranchId.value
-    ? $fetch(`/api/cashboxes?branchId=${selectedBranchId.value}&activeOnly=true`)
-    : Promise.resolve([])
-
-  const [prodRes, servRes, cashRes, payRes] = await Promise.allSettled([
-    $fetch('/api/products'),
-    $fetch('/api/services'),
-    cashboxesReq,
-    $fetch('/api/settings/payment-methods')
-  ])
-
-  products.value = prodRes.status === 'fulfilled' ? (prodRes.value as any[]) : []
-  services.value = servRes.status === 'fulfilled' ? ((servRes.value as any[]).filter((s: any) => s.active)) : []
-  cashBoxes.value = cashRes.status === 'fulfilled' ? (cashRes.value as any[]) : []
-  paymentMedia.value = payRes.status === 'fulfilled' ? (((payRes.value as any)?.media || []).filter((m: any) => m.active)) : []
+function formatDate(value: string) {
+  return new Date(value).toLocaleString('es-AR', {
+    year: 'numeric', month: 'short', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  })
 }
 
-watch(selectedBranchId, () => {
-  fetchSales()
-  loadFormDependencies()
-})
+function getPaymentMethodLabel(method: string) {
+  const key = `admin.sales.columns.${method}` as any
+  const result = t(key)
+  return result !== key ? result : method
+}
 
-watch([dateFrom, dateTo], () => {
-  fetchSales()
-})
+function getMediumDisplayName(medium: PaymentMedium) {
+  return medium.name
+}
 
-onMounted(() => {
-  if (selectedBranchId.value) {
-    fetchSales()
-  }
-  loadFormDependencies()
-})
+const baseColumns: TableColumn<Sale>[] = [
+  {
+    accessorKey: 'createdAt',
+    header: () => h('button', {
+      class: 'text-left font-semibold',
+      onClick: () => toggleSort('createdAt')
+    }, t('admin.sales.columns.createdAt')),
+    cell: ({ row }) => formatDate(row.original.createdAt),
+  },
+  {
+    id: 'items',
+    header: () => h('span', { class: 'font-semibold' }, t('admin.sales.columns.items')),
+    cell: ({ row }) => h('div', { class: 'space-y-0.5' }, [
+      h('div', { class: 'text-sm font-medium text-stone-900' },
+        row.original.items.map(i => `${i.quantity}x ${i.name}`).join(', ')
+      ),
+    ])
+  },
+  {
+    accessorKey: 'total',
+    header: () => h('button', {
+      class: 'text-right font-semibold w-full',
+      onClick: () => toggleSort('total')
+    }, t('admin.sales.columns.total')),
+    cell: ({ row }) => h('div', { class: 'text-right font-medium' }, formatCurrency(row.original.total)),
+    meta: { class: { td: 'text-right', th: 'text-right' } }
+  },
+  {
+    id: 'paymentMethod',
+    header: () => h('span', { class: 'font-semibold' }, t('admin.sales.columns.paymentMethod')),
+    cell: ({ row }) => {
+      const method = row.original.paymentMethod
+      const color = method === 'CASH' ? 'success' : method === 'CARD' ? 'info' : 'neutral'
+      return h(UBadge, { color, variant: 'subtle', label: getPaymentMethodLabel(method) })
+    },
+  },
+]
 
-// Form Logic
-const total = computed(() => {
+const columns = computed<TableColumn<Sale>[]>(() => baseColumns)
+
+const sortLabel = computed(() => sortBy.value ? `${sortBy.value}:${sortDir.value}` : '')
+const hasData = computed(() => sales.value.length > 0)
+const isEmpty = computed(() => !isLoading.value && !hasData.value && !errorMessage.value)
+
+const formTotal = computed(() => {
   return saleForm.items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 })
 
-function getPaymentMethodLabel(method: string) {
-  switch (method) {
-    case 'CARD': return 'Tarjeta'
-    case 'TRANSFER': return 'Transferencia'
-    case 'OTHER': return 'Otro'
-    default: return 'Efectivo'
-  }
+function resetForm() {
+  saleForm.items = []
+  saleForm.paymentMethod = 'CASH'
+  saleForm.paymentMediumId = ''
+  saleForm.cashBoxId = ''
 }
-
-function getMediumDisplayName(name: string) {
-  const upper = (name || '').toUpperCase().trim()
-  if (upper === 'CASH') return 'Efectivo'
-  if (upper === 'CARD' || upper === 'CREDIT' || upper === 'DEBIT') return 'Tarjeta'
-  if (upper === 'TRANSFER' || upper === 'TRANSFERENCIA') return 'Transferencia'
-  if (upper === 'OTHER' || upper === 'OTRO') return 'Otro'
-  return name
-}
-
-const selectedPaymentMethodLabel = computed(() => {
-  const medium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
-  const method = medium?.method || saleForm.paymentMethod
-  return getPaymentMethodLabel(method)
-})
-
-watch(() => saleForm.paymentMediumId, (mediumId) => {
-  const medium = paymentMedia.value.find((m: any) => m.id === mediumId)
-  if (medium?.method) {
-    saleForm.paymentMethod = medium.method
-  }
-})
 
 function addItem() {
   saleForm.items.push({
@@ -142,21 +208,7 @@ function removeItem(index: number) {
   saleForm.items.splice(index, 1)
 }
 
-async function openNewSale() {
-  await loadFormDependencies()
-  // Reset form
-  saleForm.items = []
-  addItem()
-  const firstMedium = paymentMedia.value.find((m: any) => m.active)
-  saleForm.paymentMediumId = firstMedium?.id || ''
-  saleForm.paymentMethod = firstMedium?.method || 'CASH'
-  saleForm.cashBoxId = ''
-  saleForm.notes = ''
-  isNewSaleOpen.value = true
-}
-
-// Helper to update item details when product/service changes
-function onItemChange(item: any) {
+function onItemChange(item: FormItem) {
   if (item.type === 'PRODUCT' && item.productId) {
     const p = products.value.find(x => x.id === item.productId)
     if (p) {
@@ -175,22 +227,64 @@ function onItemChange(item: any) {
   }
 }
 
+async function loadSales() {
+  if (!selectedBranchId.value) return
+  isLoading.value = true
+  errorMessage.value = ''
+  try {
+    const query = new URLSearchParams({ branchId: selectedBranchId.value })
+    if (dateFrom.value) query.set('from', dateFrom.value)
+    if (dateTo.value) query.set('to', dateTo.value)
+    sales.value = await $fetch(`/api/sales?${query.toString()}`)
+  } catch (e: any) {
+    sales.value = []
+    errorMessage.value = e?.data?.statusMessage || t('admin.common.loadError')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function loadFormDeps() {
+  const cashboxesReq = selectedBranchId.value
+    ? $fetch(`/api/cashboxes?branchId=${selectedBranchId.value}&activeOnly=true`)
+    : Promise.resolve([])
+
+  const [prodRes, servRes, cashRes, payRes] = await Promise.allSettled([
+    $fetch('/api/products'),
+    $fetch('/api/services'),
+    cashboxesReq,
+    $fetch('/api/settings/payment-methods')
+  ])
+
+  products.value = prodRes.status === 'fulfilled' ? (prodRes.value as any[]) : []
+  services.value = servRes.status === 'fulfilled' ? ((servRes.value as any[]).filter((s: any) => s.active)) : []
+  cashBoxes.value = cashRes.status === 'fulfilled' ? (cashRes.value as any[]) : []
+  paymentMedia.value = payRes.status === 'fulfilled' ? (((payRes.value as any)?.media || []).filter((m: any) => m.active)) : []
+}
+
+function openCreate() {
+  resetForm()
+  addItem()
+  const firstMedium = paymentMedia.value.find((m: any) => m.active)
+  saleForm.paymentMediumId = firstMedium?.id || ''
+  saleForm.paymentMethod = firstMedium?.method || 'CASH'
+  modalOpen.value = true
+}
+
 async function submitSale() {
-  if (!saleForm.items.length) return
   if (!saleForm.cashBoxId) {
-    toast.add({ title: 'Seleccioná una caja', color: 'orange' })
+    toast.add({ title: t('admin.sales.form.cashboxRequired'), color: 'warning' })
     return
   }
   if (!saleForm.paymentMediumId) {
-    toast.add({ title: 'Seleccioná un medio de pago', color: 'orange' })
+    toast.add({ title: t('admin.sales.form.paymentMediumRequired'), color: 'warning' })
     return
   }
 
-  // Verify open session
   try {
     const session = await $fetch(`/api/cash/sessions/current?branchId=${selectedBranchId.value}&cashBoxId=${saleForm.cashBoxId}`)
     if (!session) {
-      toast.add({ title: 'Abrí caja primero', color: 'red' })
+      toast.add({ title: t('admin.sales.form.openCashRequired'), color: 'error' })
       return
     }
   } catch {
@@ -200,110 +294,142 @@ async function submitSale() {
   const selectedMedium = paymentMedia.value.find((m: any) => m.id === saleForm.paymentMediumId)
   const paymentMethod = selectedMedium?.method || saleForm.paymentMethod
 
-  const body = {
-    branchId: selectedBranchId.value,
-    items: saleForm.items.map(i => ({
-      productId: i.type === 'PRODUCT' ? i.productId : undefined,
-      serviceId: i.type === 'SERVICE' ? i.serviceId : undefined,
-      name: i.name,
-      quantity: i.quantity,
-      price: i.price
-    })),
-    total: total.value,
-    paymentMethod,
-    paymentMediumId: saleForm.paymentMediumId
-  }
-
+  isSaving.value = true
   try {
     await $fetch('/api/sales', {
       method: 'POST',
-      body
+      body: {
+        branchId: selectedBranchId.value,
+        cashBoxId: saleForm.cashBoxId,
+        items: saleForm.items.map(i => ({
+          productId: i.type === 'PRODUCT' ? i.productId : undefined,
+          serviceId: i.type === 'SERVICE' ? i.serviceId : undefined,
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price
+        })),
+        total: formTotal.value,
+        paymentMethod,
+        paymentMediumId: saleForm.paymentMediumId
+      }
     })
-    toast.add({ title: 'Venta registrada', color: 'green' })
-    isNewSaleOpen.value = false
-    fetchSales()
+    toast.add({ title: t('admin.sales.toast.created'), color: 'success' })
+    modalOpen.value = false
+    await loadSales()
   } catch (e: any) {
-    toast.add({ title: e?.data?.statusMessage || 'Error al guardar venta', color: 'red' })
+    toast.add({ title: e?.data?.statusMessage || t('admin.sales.toast.saveError'), color: 'error' })
+  } finally {
+    isSaving.value = false
   }
 }
+
+watch(selectedBranchId, () => {
+  loadSales()
+  loadFormDeps()
+})
+
+watch([dateFrom, dateTo], () => {
+  loadSales()
+})
+
+watch(modalOpen, (value) => {
+  if (!value) {
+    resetForm()
+  } else {
+    loadFormDeps()
+  }
+})
+
+onMounted(() => {
+  if (selectedBranchId.value) {
+    loadSales()
+  }
+  loadFormDeps()
+})
 </script>
 
 <template>
-  <div class="p-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-semibold">Ventas</h1>
-      <UButton icon="i-heroicons-plus" color="primary" @click="openNewSale">Nueva Venta</UButton>
+  <CrudTableShell
+    :title="$t('nav.sales')"
+    :search-placeholder="$t('admin.sales.searchPlaceholder')"
+    :search-value="globalFilter"
+    :is-loading="isLoading"
+    :error-message="errorMessage"
+    :can-create="true"
+    :create-label="$t('admin.sales.new')"
+    @search="globalFilter = $event"
+    @create="openCreate"
+  >
+    <template #controls>
+      <UInput type="date" v-model="dateFrom" :aria-label="$t('admin.sales.filters.from')" class="w-40" />
+      <UInput type="date" v-model="dateTo" :aria-label="$t('admin.sales.filters.to')" class="w-40" />
+    </template>
+
+    <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3 text-xs text-stone-500">
+      <div>{{ $t('admin.common.count', { count: filteredTotal }) }}</div>
+      <div v-if="sortLabel">{{ $t('admin.common.sorting', { value: sortLabel }) }}</div>
     </div>
 
-    <!-- Filters -->
-    <div class="flex gap-4 mb-6 bg-white p-4 rounded-lg shadow items-end">
-      <UFormGroup label="Desde">
-        <UInput type="date" v-model="dateFrom" />
-      </UFormGroup>
-      <UFormGroup label="Hasta">
-        <UInput type="date" v-model="dateTo" />
-      </UFormGroup>
+    <div v-if="isLoading && !hasData" class="p-6">
+      <USkeleton class="h-8 w-full" />
+      <USkeleton class="mt-3 h-8 w-full" />
+      <USkeleton class="mt-3 h-8 w-full" />
     </div>
 
-    <!-- List -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ítems</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="sale in sales" :key="sale.id">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ new Date(sale.createdAt).toLocaleString() }}
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-500">
-              <ul>
-                <li v-for="item in sale.items" :key="item.id">
-                  {{ item.quantity }}x {{ item.name }}
-                </li>
-              </ul>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-              ${{ sale.total }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ getPaymentMethodLabel(sale.paymentMethod) }}
-            </td>
-          </tr>
-          <tr v-if="!sales.length">
-            <td colspan="4" class="px-6 py-4 text-center text-gray-500">No hay ventas en este período</td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-else-if="isEmpty" class="p-6">
+      <CrudState
+        :title="$t('admin.sales.emptyTitle')"
+        :description="$t('admin.sales.emptyDescription')"
+        icon="i-lucide-shopping-cart"
+        :action-label="$t('admin.sales.new')"
+        @action="openCreate"
+      />
     </div>
 
-    <!-- New Sale Inline Form -->
-    <UCard v-if="isNewSaleOpen" class="bg-white text-stone-900 mt-6">
-      <template #header>
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-semibold">Nueva Venta</h3>
-          <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isNewSaleOpen = false" />
+    <div v-else-if="errorMessage" class="p-6">
+      <CrudState
+        :title="$t('admin.common.errorTitle')"
+        :description="errorMessage"
+        icon="i-lucide-alert-triangle"
+        :action-label="$t('admin.common.retry')"
+        @action="loadSales"
+      />
+    </div>
+
+    <div v-else>
+      <UTable
+        ref="table"
+        v-model:global-filter="globalFilter"
+        v-model:pagination="pagination"
+        :pagination-options="({ getPaginationRowModel: getPaginationRowModel() } as any)"
+        :data="sorted"
+        :columns="columns"
+        :loading="isLoading"
+        :ui="tableUi"
+      />
+      <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
+        <div class="text-xs text-stone-500">
+          {{ $t('admin.common.pageInfo', { page, total: filteredTotal, size: pageSize }) }}
         </div>
-      </template>
+        <UPagination v-model:page="page" :total="filteredTotal" :items-per-page="pageSize" />
+      </div>
+    </div>
+  </CrudTableShell>
 
+  <UModal v-model:open="modalOpen" :title="$t('admin.sales.newTitle')" class="max-w-3xl">
+    <template #body>
       <div class="space-y-4">
-        <!-- Items -->
         <div class="space-y-2">
-          <div v-for="(item, index) in saleForm.items" :key="index" class="flex gap-2 items-start border p-2 rounded">
+          <div v-for="(item, index) in saleForm.items" :key="index" class="flex gap-2 items-start">
             <div class="w-32">
               <select
                 v-model="item.type"
-                class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                class="w-full rounded-md border border-stone-300 bg-white px-2 py-2 text-sm"
                 @change="onItemChange(item)"
               >
-                <option value="PRODUCT">Producto</option>
-                <option value="SERVICE">Servicio</option>
-                <option value="CONCEPT">Concepto</option>
+                <option value="PRODUCT">{{ $t('admin.sales.form.product') }}</option>
+                <option value="SERVICE">{{ $t('admin.sales.form.service') }}</option>
+                <option value="CONCEPT">{{ $t('admin.sales.form.concept') }}</option>
               </select>
             </div>
 
@@ -311,10 +437,10 @@ async function submitSale() {
               <select
                 v-if="item.type === 'PRODUCT'"
                 v-model="item.productId"
-                class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                class="w-full rounded-md border border-stone-300 bg-white px-2 py-2 text-sm"
                 @change="onItemChange(item)"
               >
-                <option disabled value="">Seleccionar producto</option>
+                <option disabled value="">{{ $t('admin.sales.form.selectProduct') }}</option>
                 <option v-for="product in products" :key="product.id" :value="product.id">
                   {{ product.name }}
                 </option>
@@ -322,60 +448,64 @@ async function submitSale() {
               <select
                 v-else-if="item.type === 'SERVICE'"
                 v-model="item.serviceId"
-                class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
+                class="w-full rounded-md border border-stone-300 bg-white px-2 py-2 text-sm"
                 @change="onItemChange(item)"
               >
-                <option disabled value="">Seleccionar servicio</option>
+                <option disabled value="">{{ $t('admin.sales.form.selectService') }}</option>
                 <option v-for="service in services" :key="service.id" :value="service.id">
                   {{ service.name }}
                 </option>
               </select>
-              <UInput v-else v-model="item.name" placeholder="Concepto / Detalle" />
+              <UInput v-else v-model="item.name" :placeholder="$t('admin.sales.form.conceptPlaceholder')" />
             </div>
 
             <div class="w-20">
-              <UInput type="number" v-model.number="item.quantity" min="1" placeholder="Cant" />
+              <UInput type="number" v-model.number="item.quantity" min="1" :placeholder="$t('admin.sales.form.quantity')" />
             </div>
             <div class="w-24">
-              <UInput type="number" v-model.number="item.price" min="0" step="0.01" placeholder="Precio" />
+              <UInput type="number" v-model.number="item.price" min="0" step="0.01" :placeholder="$t('admin.sales.form.price')" />
             </div>
-            <UButton icon="i-heroicons-trash" color="red" variant="ghost" @click="removeItem(index)" />
+            <UButton icon="i-heroicons-trash" color="error" variant="ghost" @click="removeItem(index)" />
           </div>
-          <UButton icon="i-heroicons-plus" variant="soft" block @click="addItem">Agregar Ítem</UButton>
+          <UButton icon="i-heroicons-plus" variant="soft" block @click="addItem">
+            {{ $t('admin.sales.form.addItem') }}
+          </UButton>
         </div>
 
-        <!-- Payment -->
-        <div class="grid grid-cols-2 gap-4 border-t pt-4">
-          <UFormGroup label="Caja">
-            <select v-model="saleForm.cashBoxId" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
-              <option disabled value="">Seleccionar caja</option>
+        <div class="grid grid-cols-2 gap-4 border-t border-stone-200 pt-4">
+          <div>
+            <label class="text-sm font-medium text-stone-700">{{ $t('admin.sales.form.cashbox') }}</label>
+            <select v-model="saleForm.cashBoxId" class="mt-1 w-full rounded-md border border-stone-300 bg-white px-2 py-2 text-sm">
+              <option disabled value="">{{ $t('admin.sales.form.selectCashbox') }}</option>
               <option v-for="box in cashBoxes" :key="box.id" :value="box.id">{{ box.name }}</option>
             </select>
-          </UFormGroup>
+          </div>
           <div>
-             <UFormGroup label="Medio de pago">
-               <select v-model="saleForm.paymentMediumId" class="w-full rounded-md border border-gray-300 bg-white px-2 py-2 text-sm">
-                 <option disabled value="">Seleccionar medio</option>
-                 <option v-for="medium in paymentMedia" :key="medium.id" :value="medium.id">
-                   {{ getMediumDisplayName(medium.name) }}
-                 </option>
-               </select>
-               <p class="mt-1 text-xs text-gray-500">Método detectado: {{ selectedPaymentMethodLabel }}</p>
-             </UFormGroup>
+            <label class="text-sm font-medium text-stone-700">{{ $t('admin.sales.form.paymentMedium') }}</label>
+            <select v-model="saleForm.paymentMediumId" class="mt-1 w-full rounded-md border border-stone-300 bg-white px-2 py-2 text-sm">
+              <option disabled value="">{{ $t('admin.sales.form.selectPaymentMedium') }}</option>
+              <option v-for="medium in paymentMedia" :key="medium.id" :value="medium.id">
+                {{ getMediumDisplayName(medium) }}
+              </option>
+            </select>
+            <p class="mt-1 text-xs text-stone-500">
+              {{ $t('admin.sales.form.detectedMethod', { method: getPaymentMethodLabel(saleForm.paymentMethod) }) }}
+            </p>
           </div>
         </div>
 
-        <div class="text-right text-xl font-bold">
-          Total: ${{ total }}
+        <div class="text-right text-xl font-bold border-t border-stone-200 pt-4">
+          {{ $t('admin.sales.form.total') }}: ${{ formTotal }}
         </div>
       </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <UButton color="gray" variant="ghost" @click="isNewSaleOpen = false">Cancelar</UButton>
-          <UButton color="primary" @click="submitSale">Registrar Venta</UButton>
-        </div>
-      </template>
-    </UCard>
-  </div>
+    </template>
+    <template #footer>
+      <UButton color="neutral" variant="outline" @click="modalOpen = false">
+        {{ $t('admin.sales.form.cancel') }}
+      </UButton>
+      <UButton color="primary" :loading="isSaving" @click="submitSale">
+        {{ $t('admin.sales.form.register') }}
+      </UButton>
+    </template>
+  </UModal>
 </template>
