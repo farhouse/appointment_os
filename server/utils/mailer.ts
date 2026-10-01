@@ -38,12 +38,18 @@ function getMailConfig(): MailConfig {
     serverMisconfigured(`Unsupported MAIL_PROVIDER: ${provider}`)
   }
 
+  const dryRun = process.env.MAIL_DRY_RUN === 'true'
+  const resendApiKey = process.env.RESEND_API_KEY || ''
+  if (!dryRun && !resendApiKey) {
+    serverMisconfigured('RESEND_API_KEY is required')
+  }
+
   return {
     provider,
     from: requireEnv('MAIL_FROM'),
     replyTo: process.env.MAIL_REPLY_TO,
-    resendApiKey: requireEnv('RESEND_API_KEY'),
-    dryRun: process.env.MAIL_DRY_RUN === 'true'
+    resendApiKey,
+    dryRun
   }
 }
 
