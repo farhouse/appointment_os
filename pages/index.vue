@@ -1,52 +1,51 @@
 <template>
-  <div class="py-14">
-    <div class="max-w-6xl mx-auto px-4">
-      <div v-if="landingHtml" class="prose max-w-none" v-html="landingHtml" />
+  <div>
+    <div v-if="landingHtml" class="prose mx-auto max-w-7xl px-4 py-10 sm:px-6" v-html="landingHtml" />
 
-      <template v-else>
-      <!-- Section 1: brand + "see the studio" -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        <div>
-          <p class="text-sm font-semibold tracking-wide uppercase text-gray-600">{{ $t('landing.brandEyebrow') }}</p>
-          <h1 class="mt-2 text-4xl md:text-5xl font-semibold tracking-tight">{{ $t('landing.brandName') }}</h1>
-          <p class="mt-4 text-lg text-gray-600">{{ $t('landing.brandSubtitle') }}</p>
+    <template v-else>
+      <section class="relative flex min-h-[68vh] items-end overflow-hidden bg-[#17233c] sm:min-h-[72vh]">
+        <img
+          src="/landing/multiservice-studio.jpg"
+          :alt="$t('landing.photoAlt')"
+          class="absolute inset-0 size-full object-cover object-center"
+          width="1800"
+          height="1013"
+          fetchpriority="high"
+        />
+        <div class="absolute inset-0 bg-[#17233c]/55" />
+        <div class="relative mx-auto w-full max-w-7xl px-4 pb-12 pt-28 sm:px-6 sm:pb-16 lg:pb-20">
+          <div class="max-w-2xl text-white">
+            <h1 class="font-serif text-4xl font-semibold leading-[1.05] sm:text-5xl lg:text-6xl">{{ $t('landing.brandName') }}</h1>
+            <p class="mt-4 max-w-xl text-base leading-7 text-white/90 sm:text-lg">{{ $t('landing.brandSubtitle') }}</p>
 
-          <div class="mt-6 flex flex-wrap gap-3">
-            <UButton to="/book" color="primary">{{ $t('landing.cta.book') }}</UButton>
-            <UButton :to="ctaHref" variant="outline">{{ ctaLabel }}</UButton>
+            <div class="mt-7 flex flex-wrap gap-3">
+              <UButton to="/book" color="primary" size="lg" icon="i-lucide-calendar-plus">{{ $t('landing.cta.book') }}</UButton>
+              <UButton :to="ctaHref" color="neutral" variant="solid" size="lg">{{ ctaLabel }}</UButton>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div class="rounded-2xl overflow-hidden border border-black/10 bg-white shadow-sm">
-          <img
-            src="/landing/emi-barber-1.jpg"
-            :alt="$t('landing.photoAlt')"
-            class="w-full h-[320px] object-cover"
-            loading="lazy"
-          />
-        </div>
-      </div>
-
-      <!-- Section 2: quick actions (single company landing) -->
-      <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="rounded-xl border border-black/10 bg-white shadow-sm p-6">
-          <h2 class="text-lg font-semibold">{{ $t('landing.actions.bookTitle') }}</h2>
-          <p class="mt-1 text-sm text-gray-600">{{ $t('landing.actions.bookSubtitle') }}</p>
-          <div class="mt-4">
-            <UButton to="/book" color="primary">{{ $t('landing.cta.book') }}</UButton>
+      <section class="border-b border-[#d9e1ea] bg-white">
+        <div class="mx-auto grid max-w-7xl gap-0 px-4 py-8 sm:grid-cols-3 sm:px-6 sm:py-10">
+          <div class="border-b border-[#d9e1ea] py-5 sm:border-b-0 sm:border-r sm:px-6 sm:py-2 sm:first:pl-0">
+            <UIcon name="i-lucide-sparkles" class="size-5 text-[#2563eb]" />
+            <h2 class="mt-3 text-base font-semibold text-[#17233c]">{{ $t('landing.services.title') }}</h2>
+            <p class="mt-1 text-sm leading-6 text-[#627087]">{{ $t('landing.services.description') }}</p>
+          </div>
+          <div class="border-b border-[#d9e1ea] py-5 sm:border-b-0 sm:border-r sm:px-6 sm:py-2">
+            <UIcon name="i-lucide-clock-3" class="size-5 text-[#2d7d68]" />
+            <h2 class="mt-3 text-base font-semibold text-[#17233c]">{{ $t('landing.schedule.title') }}</h2>
+            <p class="mt-1 text-sm leading-6 text-[#627087]">{{ $t('landing.schedule.description') }}</p>
+          </div>
+          <div class="py-5 sm:px-6 sm:py-2 sm:last:pr-0">
+            <UIcon name="i-lucide-user-round-check" class="size-5 text-[#b66a16]" />
+            <h2 class="mt-3 text-base font-semibold text-[#17233c]">{{ $t('landing.account.title') }}</h2>
+            <p class="mt-1 text-sm leading-6 text-[#627087]">{{ $t('landing.account.description') }}</p>
           </div>
         </div>
-
-        <div class="rounded-xl border border-black/10 bg-white shadow-sm p-6">
-          <h2 class="text-lg font-semibold">{{ $t('landing.actions.loginTitle') }}</h2>
-          <p class="mt-1 text-sm text-gray-600">{{ $t('landing.actions.loginSubtitle') }}</p>
-          <div class="mt-4">
-            <UButton :to="ctaHref" color="secondary">{{ ctaLabel }}</UButton>
-          </div>
-        </div>
-      </div>
-      </template>
-    </div>
+      </section>
+    </template>
   </div>
 </template>
 

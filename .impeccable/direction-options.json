@@ -1,0 +1,93 @@
+{
+  "title": "Elegir la identidad visual de BarberOS",
+  "question": "Todas las opciones muestran la misma herramienta operativa. Elegí el mundo que mejor combine precisión diaria con una marca premium sobria.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Mesa editorial",
+      "kicker": "THE ROLL",
+      "lineage": "mesa de producción editorial y planillas de cierre",
+      "thesis": "La jornada se organiza como una edición diaria: jerarquía nítida, ritmo y decisiones visibles.",
+      "palette": ["#171815", "#F2EFE8", "#C7FF4A", "#496B64", "#C9BDAE"],
+      "materials": ["papel de trabajo", "tinta precisa", "marcadores de producción"],
+      "viewport": "Un tablero de hoy con agenda dominante, cifras compactas y una columna de acciones críticas.",
+      "risk": "Puede sentirse editorial antes que operativo si la grilla no conserva suficiente densidad.",
+      "raised": [
+        {"from": "Manual de capas", "raise": "Las secciones adquieren navegación por pestañas inequívoca y estados físicamente distintos."},
+        {"from": "Secuenciador de jornada", "raise": "La agenda mantiene una línea temporal continua y un presente imposible de perder."},
+        {"from": "Terminal de servicio", "raise": "Los estados críticos ganan contraste inmediato sin convertir toda la interfaz en espectáculo."}
+      ],
+      "comp": ".impeccable/mocks/decision/mesa-editorial.webp"
+    },
+    {
+      "id": "model-pick",
+      "label": "Libro mayor de servicio",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "libro mayor contemporáneo y recepción de hotel",
+      "thesis": "Cada turno, cobro y cliente ocupa un lugar estable dentro de una operación serena y confiable.",
+      "palette": ["#18201D", "#F5F1E8", "#B8D7C5", "#D66B4D", "#B7AEA1"],
+      "materials": ["papel marfil", "tinta verde profunda", "sellos coral"],
+      "viewport": "Una recepción digital con agenda central, balance del día y avisos integrados en una grilla de lectura rápida.",
+      "risk": "Es la opción más familiar y puede perder singularidad si se suaviza demasiado.",
+      "comp": ".impeccable/mocks/decision/libro-servicio.webp"
+    },
+    {
+      "id": "challenger-manual",
+      "label": "Manual de capas",
+      "verdict": "competitive",
+      "lineage": "manual técnico encuadernado con separadores y láminas translúcidas",
+      "thesis": "La operación se entiende por capas: cada módulo revela sólo la información necesaria para actuar.",
+      "palette": ["#F4F0E8", "#20231F", "#E4B72F", "#4D8C82", "#C8553D"],
+      "materials": ["papel técnico", "acetato", "separadores cromáticos"],
+      "viewport": "Pestañas laterales ordenan módulos y una lámina activa concentra agenda, alertas y caja.",
+      "case": "Iguala la claridad y ofrece un sistema extensible, aunque identifica menos con el mundo cotidiano de servicios.",
+      "risk": "La metáfora puede sentirse demasiado técnica si las capas se vuelven decorativas.",
+      "comp": ".impeccable/mocks/decision/manual-capas.webp",
+      "hero": "https://impeccable.style/worlds/cards/rw-manual-acetate-tab-board-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/rw-manual-acetate-tab-board.webp"
+    },
+    {
+      "id": "challenger-sequencer",
+      "label": "Secuenciador de jornada",
+      "verdict": "competitive",
+      "lineage": "secuenciador rítmico profesional y línea de tiempo operativa",
+      "thesis": "El día es una secuencia visible de turnos, pausas, cobros y capacidad disponible.",
+      "palette": ["#20221F", "#F2EFE7", "#E65A45", "#F3B43A", "#8DB7A4"],
+      "materials": ["panel grafito", "teclas mates", "indicadores luminosos"],
+      "viewport": "Una línea de agenda ininterrumpida conduce la pantalla y sincroniza métricas, alertas y acciones.",
+      "case": "Supera en lectura temporal, pero exige moderación para no resultar lúdico en caja y administración.",
+      "risk": "Demasiado color o movimiento lo acercaría a una consola antes que a una herramienta confiable.",
+      "comp": ".impeccable/mocks/decision/secuenciador.webp",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row.webp"
+    },
+    {
+      "id": "challenger-terminal",
+      "label": "Terminal de servicio",
+      "verdict": "declined",
+      "lineage": "terminal industrial de misión",
+      "thesis": "Cada acción se presenta como una instrucción verificable y cada alerta tiene prioridad operativa.",
+      "palette": ["#111512", "#DDE5D8", "#77C98C", "#E3A33B"],
+      "materials": ["pantalla fósforo", "placa esmaltada", "códigos de equipo"],
+      "viewport": "Una consola de agenda y caja prioriza excepciones, capacidad y comandos del día.",
+      "case": "La precisión es alta, pero la referencia cultural aleja al negocio de cuidado y atención personal.",
+      "kept": "Los estados críticos deben leerse en menos de un segundo.",
+      "risk": "Puede sentirse hostil, retro o excesivamente técnica.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-industrial-starship-terminal-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/pop-culture-shelf-industrial-starship-terminal.webp"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "comp", "toggle": true},
+  "canon": true,
+  "canonCard": {
+    "label": "Estándar del mercado",
+    "thesis": "Un dashboard claro de gestión, ejecutado con gran calidad pero sin una identidad propia fuerte.",
+    "palette": ["#FFFFFF", "#111827", "#2563EB", "#E5E7EB"],
+    "materials": ["grilla limpia", "tarjetas blancas", "acentos azules"],
+    "viewport": "Barra lateral, indicadores superiores, agenda y accesos rápidos en tarjetas.",
+    "risk": "Resulta familiar y eficiente, pero deliberadamente indistinguible de otros productos SaaS.",
+    "comp": ".impeccable/mocks/decision/canon.webp"
+  },
+  "steer": true
+}

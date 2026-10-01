@@ -706,7 +706,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 <template>
   <div>
     <h1 class="text-2xl font-semibold">{{ $t('pages.private.managerCalendar') }}</h1>
-    <div class="bg-white p-4 rounded-lg shadow mt-4 text-gray-900 h-[calc(100vh-220px)] min-h-[600px] flex flex-col">
+    <div class="mt-4 flex min-h-[440px] h-[clamp(440px,calc(100vh-220px),820px)] flex-col rounded-lg border border-[#d9e1ea] bg-white p-4 text-[#17233c]">
       <div class="flex flex-wrap items-center gap-2 mb-4">
         <UButton
           v-if="selectedBranchId"
@@ -767,7 +767,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             <div class="text-lg font-semibold truncate">{{ $t('calendar.eventAlert') }}</div>
             <div class="text-sm text-gray-600 mt-1">{{ selectedEvent?.title }}</div>
           </div>
-          <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closeDetailModal">✕</button>
+          <UButton icon="i-lucide-x" color="neutral" variant="ghost" aria-label="Cerrar detalle" @click="closeDetailModal" />
         </div>
 
         <div v-if="isBlock" class="mt-4 space-y-3 text-sm overflow-y-auto pr-1 flex-1">
@@ -919,7 +919,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
                  <label class="text-xs text-gray-500">Cant.</label>
                  <UInput v-model="selectedQuantity" type="number" min="1" size="sm" />
                </div>
-               <UButton icon="i-heroicons-plus" size="sm" color="neutral" variant="solid" @click="addSaleItem" :disabled="!selectedProductId" />
+               <UButton icon="i-heroicons-plus" size="sm" color="neutral" variant="solid" aria-label="Agregar producto" @click="addSaleItem" :disabled="!selectedProductId" />
             </div>
 
             <div v-if="!selectedEvent?.extendedProps?.sale?.paymentMethod" class="flex justify-end pt-2">
@@ -1034,7 +1034,7 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
             <div class="text-lg font-semibold truncate">{{ $t('pages.private.manager.pay.title') }}</div>
             <div class="text-sm text-gray-600 mt-1">{{ selectedEvent?.title }}</div>
           </div>
-          <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="closePayModal">✕</button>
+          <UButton icon="i-lucide-x" color="neutral" variant="ghost" aria-label="Cerrar cobro" @click="closePayModal" />
         </div>
 
         <div class="mt-4 space-y-4 text-sm">
@@ -1112,29 +1112,23 @@ async function handleEventDropped({ event, originalEvent }: { event: VueCalEvent
 /* Resource separators (more visible): applies to schedule headings + cells. */
 .calendar-with-resources :deep(.vuecal__schedule),
 .calendar-with-resources :deep(.vuecal__schedule-heading) {
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.16);
+  border-right: 1px solid #d9e1ea;
 }
 
 .calendar-with-resources :deep(.vuecal__schedule:nth-child(odd)),
 .calendar-with-resources :deep(.vuecal__schedule-heading:nth-child(odd)) {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: #f6f8fb;
 }
 
 .calendar-with-resources :deep(.vuecal__schedule:last-child),
 .calendar-with-resources :deep(.vuecal__schedule-heading:last-child) {
-  box-shadow: none;
+  border-right: 0;
 }
 
 :deep(.vuecal__event.block-event) {
-  background-color: repeating-linear-gradient(
-    45deg,
-    #f3f4f6,
-    #f3f4f6 10px,
-    #e5e7eb 10px,
-    #e5e7eb 20px
-  );
-  border-left: 3px solid #6b7280;
-  color: #374151;
+  background-color: #edf1f6;
+  border: 1px dashed #8b98aa;
+  color: #344158;
   font-style: italic;
   display: flex;
   justify-content: center;

@@ -1,24 +1,37 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
-      <h1 class="text-2xl font-bold text-center">{{ $t('login.title') }}</h1>
-      <form v-if="!checkingSetup" @submit.prevent="handleLogin" class="space-y-4">
+  <section class="w-full max-w-md overflow-hidden rounded-lg border border-[#d9e1ea] bg-white">
+    <div class="border-b border-[#edf1f6] px-6 py-6 sm:px-8">
+      <p class="text-xs font-semibold uppercase text-[#627087]">Acceso seguro</p>
+      <h1 class="mt-1 font-serif text-3xl font-semibold text-[#17233c]">{{ $t('login.title') }}</h1>
+      <p class="mt-2 text-sm text-[#627087]">Ingresá para continuar con la operación de tu negocio.</p>
+    </div>
+
+    <div class="px-6 py-6 sm:px-8">
+      <div v-if="checkingSetup" class="space-y-4" aria-label="Comprobando configuración">
+        <USkeleton class="h-10 w-full" />
+        <USkeleton class="h-10 w-full" />
+        <USkeleton class="h-10 w-full" />
+      </div>
+
+      <form v-else class="space-y-5" @submit.prevent="handleLogin">
         <div>
-          <label class="block text-sm font-medium text-gray-700">{{ $t('login.email') }}</label>
-          <input v-model="email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500" />
+          <label for="login-email" class="block text-sm font-semibold text-[#344158]">{{ $t('login.email') }}</label>
+          <input id="login-email" v-model="email" type="email" autocomplete="email" required class="mt-2 h-10 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-sm text-[#17233c] outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700">{{ $t('login.password') }}</label>
-          <input v-model="password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md focus:ring-blue-500 focus:border-blue-500" />
+          <label for="login-password" class="block text-sm font-semibold text-[#344158]">{{ $t('login.password') }}</label>
+          <input id="login-password" v-model="password" type="password" autocomplete="current-password" required class="mt-2 h-10 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-sm text-[#17233c] outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
         </div>
-        <button type="submit" class="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">{{ $t('login.submit') }}</button>
-        <NuxtLink to="/" class="block w-full px-4 py-2 text-center text-stone-700 bg-stone-100 rounded-md hover:bg-stone-200">
+
+        <p v-if="error" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{{ error }}</p>
+
+        <button type="submit" class="h-10 w-full rounded-md bg-[#2563eb] px-4 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] focus:outline-none focus:ring-2 focus:ring-[#93c5fd] focus:ring-offset-2">{{ $t('login.submit') }}</button>
+        <NuxtLink to="/" class="flex h-10 w-full items-center justify-center rounded-md border border-[#d9e1ea] bg-white px-4 text-sm font-semibold text-[#344158] transition hover:bg-[#f6f8fb] focus:outline-none focus:ring-2 focus:ring-[#93c5fd]">
           Volver al inicio
         </NuxtLink>
-        <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
       </form>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">

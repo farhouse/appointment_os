@@ -64,6 +64,26 @@ function toIso(value: string) {
   return value ? new Date(value).toISOString() : null
 }
 
+function formatDate(value?: string | null) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(value))
+}
+
+function scheduleLabel(row: NewsOffer) {
+  const start = formatDate(row.startsAt)
+  const end = formatDate(row.endsAt)
+  if (start && end) return `${start} — ${end}`
+  if (start) return `Desde ${start}`
+  if (end) return `Hasta ${end}`
+  return 'Sin programación'
+}
+
 async function saveRow() {
   if (!form.title.trim() || !form.body.trim()) return
   isSaving.value = true
@@ -97,49 +117,98 @@ onMounted(loadRows)
 
 <template>
   <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold">Settings</h1>
-      <p class="text-sm text-gray-600">Novedades y promociones visibles para clientes.</p>
+    <div class="max-w-3xl">
+      <h1 class="text-2xl font-semibold text-[#17233c]">Novedades y promociones</h1>
+      <p class="mt-1 text-sm text-[#627087]">Publicá anuncios visibles para clientes y definí cuándo deben mostrarse.</p>
     </div>
 
     <BackofficeSettingsNav />
 
-    <section class="grid gap-4 lg:grid-cols-[360px_1fr]">
-      <div class="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-        <div class="text-sm font-semibold text-stone-900">{{ editingId ? 'Editar promo' : 'Nueva promo' }}</div>
-        <div class="mt-4 space-y-3">
-          <UInput v-model="form.title" placeholder="Título" />
-          <UTextarea v-model="form.body" placeholder="Descripción" :rows="5" />
-          <UCheckbox v-model="form.active" label="Activa" />
-          <UInput v-model="form.startsAt" type="datetime-local" />
-          <UInput v-model="form.endsAt" type="datetime-local" />
-          <div class="flex gap-2">
-            <UButton color="primary" :loading="isSaving" @click="saveRow">Guardar</UButton>
-            <UButton variant="outline" @click="resetForm">Limpiar</UButton>
+    <section class="grid items-start gap-5 xl:grid-cols-[400px_minmax(0,1fr)]">
+      <div class="overflow-hidden rounded-lg border border-[#d9e1ea] bg-white">
+        <div class="border-b border-[#d9e1ea] px-4 py-3">
+          <h2 class="text-base font-semibold text-[#17233c]">{{ editingId ? 'Editar publicación' : 'Nueva publicación' }}</h2>
+          <p class="mt-0.5 text-xs text-[#627087]">Título, mensaje y período de visibilidad.</p>
+        </div>
+
+        <div class="space-y-4 p-4">
+          <UFormField label="Título" required>
+            <UInput v-model="form.title" class="w-full" placeholder="Ej. Beneficio de primavera" />
+          </UFormField>
+
+          <UFormField label="Descripción" required>
+            <UTextarea v-model="form.body" class="w-full" placeholder="Contá los detalles de la novedad o promoción." :rows="5" autoresize />
+          </UFormField>
+
+          <div class="rounded-md border border-[#d9e1ea] bg-[#f6f8fb] px-3 py-2.5">
+            <UCheckbox v-model="form.active" label="Publicación activa" description="Puede mostrarse a clientes dentro del período configurado." />
           </div>
+
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <UFormField label="Visible desde">
+              <UInput v-model="form.startsAt" class="w-full" type="datetime-local" />
+            </UFormField>
+            <UFormField label="Visible hasta">
+              <UInput v-model="form.endsAt" class="w-full" type="datetime-local" />
+            </UFormField>
+          </div>
+
+          <p class="text-xs leading-5 text-[#627087]">Si no elegís fechas, la publicación no tendrá límite de vigencia.</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 border-t border-[#d9e1ea] bg-[#f6f8fb] px-4 py-3">
+          <UButton color="neutral" variant="ghost" @click="resetForm">{{ editingId ? 'Cancelar' : 'Limpiar' }}</UButton>
+          <UButton color="primary" icon="i-lucide-save" :loading="isSaving" :disabled="!form.title.trim() || !form.body.trim()" @click="saveRow">
+            {{ editingId ? 'Guardar cambios' : 'Publicar' }}
+          </UButton>
         </div>
       </div>
 
-      <div class="rounded-lg border border-stone-200 bg-white shadow-sm">
-        <div v-if="isLoading" class="p-6">
-          <USkeleton class="h-8 w-full" />
-        </div>
-        <div v-else-if="errorMessage" class="p-6 text-sm text-rose-600">{{ errorMessage }}</div>
-        <div v-else-if="!rows.length" class="p-6 text-sm text-stone-600">Sin novedades cargadas.</div>
-        <div v-else class="divide-y divide-stone-200">
-          <div v-for="row in rows" :key="row.id" class="flex flex-wrap items-start justify-between gap-3 p-4">
-            <div class="min-w-0">
-              <div class="font-medium text-stone-900">{{ row.title }}</div>
-              <div class="mt-1 text-sm text-stone-600">{{ row.body }}</div>
-              <UBadge class="mt-2" :color="row.active ? 'success' : 'neutral'" variant="subtle">
-                {{ row.active ? 'Activa' : 'Inactiva' }}
-              </UBadge>
-            </div>
-            <div class="flex gap-2">
-              <UButton size="xs" variant="outline" @click="editRow(row)">Editar</UButton>
-              <UButton size="xs" color="error" variant="outline" @click="deleteRow(row.id)">Borrar</UButton>
-            </div>
+      <div class="overflow-hidden rounded-lg border border-[#d9e1ea] bg-white">
+        <div class="flex items-center justify-between gap-4 border-b border-[#d9e1ea] px-4 py-3">
+          <div>
+            <h2 class="text-base font-semibold text-[#17233c]">Publicaciones</h2>
+            <p class="mt-0.5 text-xs text-[#627087]">Administrá el contenido que reciben tus clientes.</p>
           </div>
+          <UBadge color="neutral" variant="subtle">{{ rows.length }}</UBadge>
+        </div>
+
+        <div v-if="isLoading" class="p-6">
+          <div class="space-y-3">
+            <USkeleton class="h-5 w-48" />
+            <USkeleton class="h-16 w-full" />
+            <USkeleton class="h-16 w-full" />
+          </div>
+        </div>
+        <div v-else-if="errorMessage" class="flex items-center gap-2 p-6 text-sm text-[#d45a55]">
+          <UIcon name="i-lucide-circle-alert" class="size-4 shrink-0" />
+          {{ errorMessage }}
+        </div>
+        <div v-else-if="!rows.length" class="flex min-h-64 flex-col items-center justify-center px-6 text-center">
+          <UIcon name="i-lucide-megaphone" class="size-8 text-[#627087]" />
+          <p class="mt-3 text-sm font-medium text-[#17233c]">Todavía no hay publicaciones</p>
+          <p class="mt-1 max-w-sm text-xs leading-5 text-[#627087]">Creá una novedad o promoción para mantener informados a tus clientes.</p>
+        </div>
+        <div v-else class="divide-y divide-[#d9e1ea]">
+          <article v-for="row in rows" :key="row.id" class="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-semibold text-[#17233c]">{{ row.title }}</h3>
+                <UBadge :color="row.active ? 'success' : 'neutral'" variant="subtle">
+                  {{ row.active ? 'Activa' : 'Inactiva' }}
+                </UBadge>
+              </div>
+              <p class="mt-1 max-w-3xl whitespace-pre-line text-sm leading-5 text-[#627087]">{{ row.body }}</p>
+              <div class="mt-3 flex items-center gap-1.5 text-xs text-[#627087]">
+                <UIcon name="i-lucide-calendar-clock" class="size-3.5 shrink-0" />
+                <span>{{ scheduleLabel(row) }}</span>
+              </div>
+            </div>
+            <div class="flex gap-1 sm:justify-end">
+              <UButton size="sm" color="neutral" variant="ghost" icon="i-lucide-pencil" @click="editRow(row)">Editar</UButton>
+              <UButton size="sm" color="error" variant="ghost" icon="i-lucide-trash-2" @click="deleteRow(row.id)">Borrar</UButton>
+            </div>
+          </article>
         </div>
       </div>
     </section>

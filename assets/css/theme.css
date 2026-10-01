@@ -1,89 +1,96 @@
 @theme {
-  --color-charcoal: #1c1c1e;
-  --color-near-black: #0b0b0c;
-  --color-warm-brown: #7a4b33;
-  --color-brown-highlight: #b37a4c;
-  --color-teal: #2fa7a0;
-  --color-cream-tile: #e7dfd3;
-  --color-warm-wood: #a07a58;
-  --color-neutral-gray: #3a3a3a;
+  --color-charcoal: #17233c;
+  --color-near-black: #111827;
+  --color-warm-brown: #627087;
+  --color-brown-highlight: #2563eb;
+  --color-teal: #2d7d68;
+  --color-cream-tile: #ffffff;
+  --color-warm-wood: #d9e1ea;
+  --color-neutral-gray: #627087;
 
-  /* Primary accent (warm copper / leather highlight). */
-  --color-barber-50: #fbf3ea;
-  --color-barber-100: #f6e3d2;
-  --color-barber-200: #edc7a6;
-  --color-barber-300: #e2a473;
-  --color-barber-400: #cc8554;
-  --color-barber-500: #b37a4c;
-  --color-barber-600: #8f613e;
-  --color-barber-700: #6e4b31;
-  --color-barber-800: #4e3524;
-  --color-barber-900: #2f2218;
-  --color-barber-950: #1b140f;
+  --color-barber-50: #eff6ff;
+  --color-barber-100: #dbeafe;
+  --color-barber-200: #bfdbfe;
+  --color-barber-300: #93c5fd;
+  --color-barber-400: #60a5fa;
+  --color-barber-500: #3b82f6;
+  --color-barber-600: #2563eb;
+  --color-barber-700: #1d4ed8;
+  --color-barber-800: #1e40af;
+  --color-barber-900: #1e3a8a;
+  --color-barber-950: #17233c;
 
-  --color-slate-50: #f2efea;
-  --color-slate-100: #e7dfd3;
-  --color-slate-200: #d6c7b3;
-  --color-slate-300: #b8a186;
-  --color-slate-400: #9b7e5e;
-  --color-slate-500: #7a4b33;
-  --color-slate-600: #623b29;
-  --color-slate-700: #4b2e20;
-  --color-slate-800: #322119;
-  --color-slate-900: #1c1c1e;
-  --color-slate-950: #0b0b0c;
+  --color-slate-50: #f6f8fb;
+  --color-slate-100: #edf1f6;
+  --color-slate-200: #d9e1ea;
+  --color-slate-300: #c2ccd9;
+  --color-slate-400: #8b98aa;
+  --color-slate-500: #627087;
+  --color-slate-600: #4b586d;
+  --color-slate-700: #344158;
+  --color-slate-800: #243149;
+  --color-slate-900: #17233c;
+  --color-slate-950: #111827;
+
+  /* Legacy neutral utilities resolve to the current mineral scale. */
+  --color-gray-50: #f6f8fb;
+  --color-gray-100: #edf1f6;
+  --color-gray-200: #d9e1ea;
+  --color-gray-300: #c2ccd9;
+  --color-gray-400: #8b98aa;
+  --color-gray-500: #627087;
+  --color-gray-600: #4b586d;
+  --color-gray-700: #344158;
+  --color-gray-800: #243149;
+  --color-gray-900: #17233c;
+  --color-stone-50: #f6f8fb;
+  --color-stone-100: #edf1f6;
+  --color-stone-200: #d9e1ea;
+  --color-stone-300: #c2ccd9;
+  --color-stone-400: #8b98aa;
+  --color-stone-500: #627087;
+  --color-stone-600: #4b586d;
+  --color-stone-700: #344158;
+  --color-stone-800: #243149;
+  --color-stone-900: #17233c;
 }
 
 :root {
-  color-scheme: dark;
-  --ui-bg: var(--color-near-black);
-  --ui-bg-muted: var(--color-charcoal);
-  --ui-bg-elevated: var(--color-neutral-gray);
-  --ui-border: #2a2a2d;
-  --ui-text: #f3ede5;
-  --ui-text-muted: #c9c1b6;
-  --ui-text-highlighted: #ffffff;
+  color-scheme: light;
+  --ui-bg: #f6f8fb;
+  --ui-bg-muted: #edf1f6;
+  --ui-bg-elevated: #ffffff;
+  --ui-border: #d9e1ea;
+  --ui-text: #17233c;
+  --ui-text-muted: #627087;
+  --ui-text-highlighted: #111827;
+  --ui-primary: #2563eb;
+  --ui-primary-hover: #1d4ed8;
+  --ui-primary-active: #1e40af;
+  --ui-primary-contrast: #ffffff;
+  --ui-secondary: #2d7d68;
+  --ui-secondary-hover: #246854;
+  --ui-secondary-active: #1d5445;
+  --ui-secondary-contrast: #ffffff;
+  --ui-link: #1d4ed8;
+  --ui-ring: #60a5fa;
+}
 
-  --ui-primary: var(--color-barber-500);
-  --ui-primary-hover: var(--color-barber-400);
-  --ui-primary-active: var(--color-barber-600);
-  --ui-primary-contrast: #0b0b0c;
-
-  /* Secondary accent (teal) for highlights / info states. */
-  --ui-secondary: var(--color-teal);
-  --ui-secondary-hover: color-mix(in oklab, var(--color-teal), #ffffff 12%);
-  --ui-secondary-active: color-mix(in oklab, var(--color-teal), #000000 12%);
-  --ui-secondary-contrast: #0b0b0c;
-
-  --ui-link: var(--color-barber-400);
-  --ui-ring: color-mix(in oklab, var(--color-barber-500), #ffffff 22%);
+html,
+body {
+  background: var(--ui-bg);
 }
 
 body {
-  background: radial-gradient(
-      1200px 800px at 20% -10%,
-      #1f1b18 0%,
-      rgba(31, 27, 24, 0.3) 45%,
-      rgba(11, 11, 12, 0.1) 100%
-    ),
-    linear-gradient(135deg, #0b0b0c 0%, #161514 55%, #0b0b0c 100%);
   color: var(--ui-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.bg-white,
-.bg-gray-50,
-.bg-gray-100 {
-  background-color: var(--color-cream-tile) !important;
-  color: #1b1a19;
+:focus-visible {
+  outline-color: var(--ui-ring);
 }
 
-.text-gray-900,
-.text-gray-800,
-.text-gray-700 {
-  color: #1b1a19 !important;
-}
-
-.text-gray-600,
-.text-gray-500 {
-  color: #4a3a30 !important;
+::selection {
+  background: var(--color-barber-200);
+  color: #17233c;
 }

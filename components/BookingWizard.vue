@@ -482,7 +482,7 @@ async function submitBooking() {
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
     <!-- Left column: details + contact (on large screens, contact sits under details) -->
     <div class="lg:col-span-2 space-y-4">
-      <div class="rounded-xl border border-black/10 bg-white p-5 shadow-sm">
+      <section class="rounded-lg border border-[#d9e1ea] bg-white p-4 sm:p-5">
         <h2 v-if="!hideDetailsTitle" class="font-semibold mb-3">{{ $t('booking.details') }}</h2>
 
         <div class="flex items-center justify-between gap-3 mb-1">
@@ -517,7 +517,7 @@ async function submitBooking() {
               </div>
               <div
                 v-if="b.todayWorkingHours"
-                class="text-[11px] mt-1"
+                class="mt-1 text-xs"
                 :class="branchId === b.id ? 'text-white/80' : (b.isOpenNow ? 'text-emerald-700' : 'text-gray-500')"
               >
                 <template v-if="b.todayWorkingHours.isWorking">
@@ -553,7 +553,7 @@ async function submitBooking() {
               role="radio"
               :aria-checked="serviceId === s.id"
               :disabled="loadingServices"
-              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              class="min-h-11 rounded-md border px-3 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               :class="serviceId === s.id
                 ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
                 : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'"
@@ -583,7 +583,7 @@ async function submitBooking() {
               role="radio"
               :aria-checked="workerId === b.id"
               :disabled="!branchId || loadingWorkers"
-              class="rounded-full border px-3 py-1.5 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              class="min-h-11 rounded-md border px-3 py-2 text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               :class="workerId === b.id
                 ? 'border-transparent bg-[var(--ui-primary)] text-white shadow-sm'
                 : 'border-gray-300 bg-white text-gray-800 hover:border-gray-400'
@@ -602,7 +602,7 @@ async function submitBooking() {
         <div class="flex items-center gap-2">
           <button
             type="button"
-            class="px-3 py-2 rounded border border-gray-300 text-sm"
+            class="min-h-11 rounded-md border border-[#d9e1ea] px-3 py-2 text-sm text-[#17233c]"
             @click="changeDay(-1)"
           >
             {{ $t('calendar.labels.previous') }}
@@ -612,29 +612,29 @@ async function submitBooking() {
           </div>
           <button
             type="button"
-            class="px-3 py-2 rounded border border-gray-300 text-sm"
+            class="min-h-11 rounded-md border border-[#d9e1ea] px-3 py-2 text-sm text-[#17233c]"
             @click="changeDay(1)"
           >
             {{ $t('calendar.labels.next') }}
           </button>
         </div>
-      </div>
+      </section>
 
       <!-- Contact (shown under details on lg+) -->
-      <div v-if="detailsComplete && timeComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="contactEl">
+      <section v-if="detailsComplete && timeComplete" ref="contactEl" class="rounded-lg border border-[#d9e1ea] bg-white p-4 sm:p-5">
         <h2 v-if="!hideContactTitle" class="font-semibold mb-3">{{ $t('booking.contact') }}</h2>
 
-        <label class="block text-sm font-medium mb-1">{{ $t('booking.firstName') }}</label>
-        <input v-model="clientFirstName" class="w-full rounded border px-3 py-2 bg-white" />
+        <label for="booking-first-name" class="block text-sm font-medium mb-1">{{ $t('booking.firstName') }}</label>
+        <input id="booking-first-name" v-model="clientFirstName" autocomplete="given-name" class="h-11 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-base text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
 
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.lastName') }}</label>
-        <input v-model="clientLastName" class="w-full rounded border px-3 py-2 bg-white" />
+        <label for="booking-last-name" class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.lastName') }}</label>
+        <input id="booking-last-name" v-model="clientLastName" autocomplete="family-name" class="h-11 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-base text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
 
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }} *</label>
-        <input v-model="clientEmail" type="email" class="w-full rounded border px-3 py-2 bg-white" />
+        <label for="booking-email" class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.email') }} *</label>
+        <input id="booking-email" v-model="clientEmail" type="email" autocomplete="email" required class="h-11 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-base text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
 
-        <label class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
-        <input v-model="clientPhone" class="w-full rounded border px-3 py-2 bg-white" />
+        <label for="booking-phone" class="block text-sm font-medium mb-1 mt-3">{{ $t('booking.phone') }} *</label>
+        <input id="booking-phone" v-model="clientPhone" type="tel" autocomplete="tel" required class="h-11 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-base text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
 
         <div class="mt-3 flex items-center justify-between gap-3">
           <p class="text-xs text-gray-600">{{ $t('booking.contactHint') }}</p>
@@ -658,12 +658,12 @@ async function submitBooking() {
 
           <div v-if="createAccount" class="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
-              <div class="text-xs text-gray-600 mb-1">{{ $t('booking.newUser.password') }}</div>
-              <input v-model="accountPassword" type="password" class="w-full rounded border px-3 py-2 bg-white" />
+              <label for="booking-password" class="mb-1 block text-xs text-[#627087]">{{ $t('booking.newUser.password') }}</label>
+              <input id="booking-password" v-model="accountPassword" type="password" autocomplete="new-password" class="h-11 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-base outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
             </div>
             <div>
-              <div class="text-xs text-gray-600 mb-1">{{ $t('booking.newUser.password2') }}</div>
-              <input v-model="accountPassword2" type="password" class="w-full rounded border px-3 py-2 bg-white" />
+              <label for="booking-password-confirmation" class="mb-1 block text-xs text-[#627087]">{{ $t('booking.newUser.password2') }}</label>
+              <input id="booking-password-confirmation" v-model="accountPassword2" type="password" autocomplete="new-password" class="h-11 w-full rounded-md border border-[#d9e1ea] bg-white px-3 text-base outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" />
             </div>
           </div>
         </div>
@@ -692,12 +692,12 @@ async function submitBooking() {
             {{ loading ? $t('booking.saving') : $t('booking.confirm') }}
           </UButton>
         </div>
-      </div>
+      </section>
     </div>
 
     <!-- Right column: slots -->
     <div class="lg:col-span-3 space-y-4">
-      <div v-if="detailsComplete" class="rounded-xl border border-black/10 bg-white p-5 shadow-sm" ref="slotsEl">
+      <section v-if="detailsComplete" ref="slotsEl" class="rounded-lg border border-[#d9e1ea] bg-white p-4 sm:p-5">
         <div class="flex items-center justify-between gap-3 flex-wrap">
           <h2 class="font-semibold">{{ $t('booking.slots') }}</h2>
           <div class="text-sm text-gray-600">
@@ -745,7 +745,20 @@ async function submitBooking() {
 
         <!-- Day timeline (calendar-like) -->
         <div v-else class="mt-4">
-          <div class="scrollbar-nice relative rounded-lg border border-gray-200 bg-white overflow-y-auto" style="height: 520px;">
+          <div class="grid gap-2 sm:hidden">
+            <button
+              v-for="s in availableSlots"
+              :key="`mobile-${s.start.toISOString()}`"
+              type="button"
+              class="min-h-11 rounded-md border px-4 py-2 text-left text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#60a5fa]"
+              :class="selectedStart === s.start.toISOString() ? 'border-[#2563eb] bg-[#eff6ff] text-[#1d4ed8]' : 'border-[#d9e1ea] bg-white text-[#17233c]'"
+              @click="() => { selectedStart = s.start.toISOString(); selectedEnd = s.end.toISOString() }"
+            >
+              {{ s.label }} · {{ slotDurationMin }} min
+            </button>
+          </div>
+
+          <div class="scrollbar-nice relative hidden overflow-y-auto rounded-lg border border-[#d9e1ea] bg-white sm:block" style="height: clamp(420px, 62vh, 560px);">
             <!-- Time rail -->
             <div class="absolute inset-0 grid" :style="{ gridTemplateRows: `repeat(${Math.max(1, timelineHours.length - 1)}, 1fr)` }">
               <div v-for="h in Math.max(1, timelineHours.length - 1)" :key="h" class="border-t border-gray-100"></div>
@@ -754,7 +767,7 @@ async function submitBooking() {
             <!-- Labels -->
             <div class="absolute left-0 top-0 bottom-0 w-14 border-r border-gray-100 bg-gray-50">
               <div v-for="hour in timelineHours" :key="hour" class="relative" :style="{ height: (520 / Math.max(1, timelineHours.length - 1)) + 'px' }">
-                <div class="absolute -top-2 left-2 text-[10px] text-gray-600">
+                <div class="absolute -top-2 left-2 text-xs text-[#627087]">
                   {{ String(hour).padStart(2, '0') }}:00
                 </div>
               </div>
@@ -795,7 +808,7 @@ async function submitBooking() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       
     </div>

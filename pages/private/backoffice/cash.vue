@@ -782,7 +782,7 @@ watch(openSessionsSorted, (value) => {
           >
             <div class="flex items-center justify-between">
               <div class="text-sm font-semibold text-stone-900">{{ getMethodLabel(method) }}</div>
-              <UBadge variant="subtle" color="neutral" class="text-[10px]">{{ method }}</UBadge>
+              <UBadge variant="subtle" color="neutral" class="text-xs">{{ method }}</UBadge>
             </div>
             <div class="mt-2 text-xs text-stone-500">Subtotal</div>
             <div class="text-lg font-semibold text-stone-900">
@@ -810,11 +810,14 @@ watch(openSessionsSorted, (value) => {
             </span>
           </div>
           <div class="flex flex-wrap items-end gap-2">
-            <div class="text-xs text-stone-500">Filtrar por fecha:</div>
-            <input v-model="sessionFrom" type="date" class="rounded border border-stone-300 px-2 py-1 text-xs" />
-            <input v-model="sessionTo" type="date" class="rounded border border-stone-300 px-2 py-1 text-xs" />
-            <UButton size="xs" variant="outline" @click="applySessionDateFilter">Aplicar</UButton>
-            <UButton size="xs" variant="outline" @click="clearSessionDateFilter">Limpiar</UButton>
+            <UFormField label="Desde">
+              <UInput v-model="sessionFrom" type="date" class="min-h-11" />
+            </UFormField>
+            <UFormField label="Hasta">
+              <UInput v-model="sessionTo" type="date" class="min-h-11" />
+            </UFormField>
+            <UButton class="min-h-11" variant="outline" @click="applySessionDateFilter">Aplicar</UButton>
+            <UButton class="min-h-11" color="neutral" variant="ghost" @click="clearSessionDateFilter">Limpiar</UButton>
           </div>
         </div>
         <div v-if="isLoading" class="p-6">

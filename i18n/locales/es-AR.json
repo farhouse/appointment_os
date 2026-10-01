@@ -37,10 +37,9 @@
     "active": "Activo"
   },
   "landing": {
-    "brandEyebrow": "Centro de servicios",
     "brandName": "Emi Barber Club",
-    "brandSubtitle": "Cortes clásicos y modernos. Reservá tu turno en segundos.",
-    "photoAlt": "Interior de Emi Barber Club",
+    "brandSubtitle": "Peluquería, uñas, podología y otros servicios de cuidado, con turnos simples y horarios claros.",
+    "photoAlt": "Espacio de servicios de peluquería, uñas y cuidado personal",
     "cta": {
       "book": "Sacar turno",
       "viewCalendar": "Ver calendario"
@@ -50,6 +49,18 @@
       "bookSubtitle": "Mirá la agenda y elegí el horario que te quede cómodo.",
       "loginTitle": "Ya tengo cuenta",
       "loginSubtitle": "Iniciá sesión para ver tus turnos y tu cuenta."
+    },
+    "services": {
+      "title": "El servicio que necesitás",
+      "description": "Encontrá distintas especialidades y elegí el profesional indicado."
+    },
+    "schedule": {
+      "title": "Horarios en claro",
+      "description": "Consultá disponibilidad real y reservá sin llamadas ni esperas."
+    },
+    "account": {
+      "title": "Tus turnos, siempre a mano",
+      "description": "Revisá próximas visitas y mantené tus datos actualizados."
     },
     "login": "Iniciar sesión",
     "dashboard": "Ir al panel",

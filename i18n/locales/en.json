@@ -37,10 +37,9 @@
     "active": "Active"
   },
   "landing": {
-    "brandEyebrow": "Service studio",
     "brandName": "Emi Barber Club",
-    "brandSubtitle": "Classic and modern cuts. Book your appointment in seconds.",
-    "photoAlt": "Emi Barber Club interior",
+    "brandSubtitle": "Hair, nails, podiatry and other personal care services, with simple booking and clear schedules.",
+    "photoAlt": "Hair, nail and personal care service studio",
     "cta": {
       "book": "Book appointment",
       "viewCalendar": "View calendar"
@@ -50,6 +49,18 @@
       "bookSubtitle": "Check the calendar and pick a time that works for you.",
       "loginTitle": "Already a client",
       "loginSubtitle": "Sign in to see your appointments and account."
+    },
+    "services": {
+      "title": "The service you need",
+      "description": "Browse different specialties and choose the right professional."
+    },
+    "schedule": {
+      "title": "Clear availability",
+      "description": "See real availability and book without calls or waiting."
+    },
+    "account": {
+      "title": "Your appointments at hand",
+      "description": "Review upcoming visits and keep your details up to date."
     },
     "login": "Login",
     "dashboard": "Go to dashboard",

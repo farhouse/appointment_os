@@ -48,17 +48,17 @@ function isActive(to: string) {
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-2">
+  <nav aria-label="Secciones de configuración" class="flex gap-1 overflow-x-auto border-b border-[#d9e1ea]">
     <NuxtLink
       v-for="item in items"
       :key="item.to"
       :to="item.to"
-      class="rounded-full border px-3 py-1 text-sm transition"
+      class="min-h-11 shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium transition"
       :class="isActive(item.to)
-        ? 'border-stone-300 bg-stone-900 text-white'
-        : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:text-stone-900'"
+        ? 'border-[#2563eb] text-[#1d4ed8]'
+        : 'border-transparent text-[#627087] hover:border-[#c2ccd9] hover:text-[#17233c]'"
     >
       {{ item.label }}
     </NuxtLink>
-  </div>
+  </nav>
 </template>

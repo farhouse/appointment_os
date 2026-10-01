@@ -8,6 +8,7 @@ None. The planned stabilization and product blocks are complete.
 
 ## Completed blocks
 
+- [x] Visual identity foundation: approved production direction, `PRODUCT.md`, `DESIGN.md`, light theme tokens, responsive private shell, and real-data operational dashboard.
 - [x] Cash sessions and payments are scoped by `cashBoxId`; duplicate payment protection is covered by `npm run sanity`.
 - [x] `User(CLIENT)` has a formal optional one-to-one relation with `Client` through `User.clientId`.
 - [x] Worker appointments, date ranges, details, working hours, finances, and branch filtering are implemented.

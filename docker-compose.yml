@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: barber_os
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3001}:3000"
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://barber:password@postgres:5432/barber_os
@@ -48,7 +48,7 @@ services:
     build: .
     profiles: ["prod"]
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3001}:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://barber:password@postgres:5432/barber_os

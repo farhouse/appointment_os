@@ -358,7 +358,7 @@ async function submit() {
                 placeholder="Seleccionar cliente"
                 class="flex-1"
               />
-              <UButton icon="i-heroicons-plus" color="neutral" variant="solid" @click="isQuickAddClient = true" />
+              <UButton icon="i-heroicons-plus" color="neutral" variant="solid" aria-label="Crear cliente" @click="isQuickAddClient = true" />
             </div>
           </UFormGroup>
         </div>
@@ -369,11 +369,11 @@ async function submit() {
             <h4 class="text-sm font-medium">Nuevo Cliente</h4>
             <UButton size="xs" color="neutral" variant="ghost" @click="isQuickAddClient = false">Cancelar</UButton>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <UInput v-model="newClient.firstName" placeholder="Nombre *" />
-            <UInput v-model="newClient.lastName" placeholder="Apellido" />
-            <UInput v-model="newClient.email" placeholder="Email" />
-            <UInput v-model="newClient.phone" placeholder="Teléfono" />
+          <div class="grid gap-3 sm:grid-cols-2">
+            <UFormField label="Nombre" required><UInput v-model="newClient.firstName" class="w-full" /></UFormField>
+            <UFormField label="Apellido"><UInput v-model="newClient.lastName" class="w-full" /></UFormField>
+            <UFormField label="Email"><UInput v-model="newClient.email" type="email" class="w-full" /></UFormField>
+            <UFormField label="Teléfono"><UInput v-model="newClient.phone" type="tel" class="w-full" /></UFormField>
           </div>
           <UButton size="sm" block @click="createClient">Guardar Cliente</UButton>
         </div>

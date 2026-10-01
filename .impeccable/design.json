@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-29T23:30:00Z",
+  "title": "Design System: BarberOS",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Azul Mineral", "canonical": "#2563EB", "tonalRamp": ["#172554", "#1E3A8A", "#1D4ED8", "#2563EB", "#60A5FA", "#93C5FD", "#DBEAFE", "#EFF6FF"] },
+      "ink": { "role": "neutral", "displayName": "Tinta Profunda", "canonical": "#17233C", "tonalRamp": ["#111827", "#17233C", "#243149", "#344158", "#4B586D", "#627087", "#8B98AA", "#C2CCD9", "#D9E1EA", "#E4E8ED", "#EDF1F6", "#F6F8FB"] },
+      "success": { "role": "secondary", "displayName": "Eucalipto Operativo", "canonical": "#2D7D68", "tonalRamp": ["#123A30", "#1D5445", "#215D4E", "#246854", "#2D7D68", "#62A891", "#9BCDB9", "#D7EEE5", "#E3F3EC", "#F0FAF6"] },
+      "warning": { "role": "warning", "displayName": "Ambar de Atencion", "canonical": "#B66A16", "tonalRamp": ["#74420C", "#B66A16", "#FFF3DF"] },
+      "danger": { "role": "danger", "displayName": "Coral de Alerta", "canonical": "#D45A55", "tonalRamp": ["#8F3733", "#D45A55", "#FDECEB"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Momento editorial", "purpose": "Fecha o contexto principal, una vez por pantalla." },
+      "body": { "displayName": "Interfaz operativa", "purpose": "Datos, controles y tareas repetitivas." },
+      "label": { "displayName": "Etiqueta compacta", "purpose": "Estados y metadatos." }
+    },
+    "shadows": [
+      { "name": "overlay", "value": "0 12px 32px rgba(23,35,60,0.16)", "purpose": "Solo menus, dialogos y superficies flotantes." }
+    ],
+    "motion": [
+      { "name": "state", "value": "160ms ease-out", "purpose": "Cambios breves de hover, foco y seleccion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Accion principal compacta y directa.",
+      "html": "<button class=\"ds-button\">Guardar</button>",
+      "css": ".ds-button{background:#2563EB;color:#fff;border:0;border-radius:6px;padding:8px 12px;font:600 14px/1.3 system-ui;transition:background 160ms ease-out}.ds-button:hover{background:#1D4ED8}.ds-button:focus-visible{outline:3px solid #93C5FD;outline-offset:2px}"
+    },
+    {
+      "name": "Operational Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Superficie plana agrupada por borde y alineacion.",
+      "html": "<section class=\"ds-panel\"><strong>Agenda del dia</strong><p>Contenido operativo</p></section>",
+      "css": ".ds-panel{background:#fff;color:#17233C;border:1px solid #D9E1EA;border-radius:8px;padding:16px;font:400 14px/1.45 system-ui}.ds-panel strong{font-weight:650}.ds-panel p{color:#627087;margin:8px 0 0}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La jornada en claro",
+    "overview": "Una herramienta de trabajo precisa, luminosa y compacta. La agenda es el gesto distintivo y el acabado premium aparece en proporcion, tipografia y calidad de estados.",
+    "keyCharacteristics": ["Densidad operativa con lectura inmediata.", "Color funcional moderado.", "Calendarios y tablas como estructuras principales.", "Acabado premium sobrio y accesible."],
+    "rules": [
+      { "name": "Functional Color", "body": "Todo color saturado comunica accion, seleccion o estado.", "section": "colors" },
+      { "name": "One Editorial Moment", "body": "La serif aparece en un unico punto de orientacion por pantalla.", "section": "typography" },
+      { "name": "Work Surface", "body": "Una pantalla tiene una superficie operativa dominante.", "section": "layout" },
+      { "name": "Flat at Rest", "body": "Ningun contenedor permanente necesita sombra.", "section": "elevation" }
+    ],
+    "dos": ["Do dar prioridad espacial a la tarea actual.", "Do agrupar con lineas finas, alineacion y fondos tonales.", "Do mantener visibles tiempo, profesional y estado."],
+    "donts": ["Don't convertir cada dato en una tarjeta.", "Don't usar gradientes, vidrio o decoracion abstracta.", "Don't limitar el producto a barberias."]
+  }
+}

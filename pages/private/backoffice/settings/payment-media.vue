@@ -155,7 +155,7 @@ onMounted(() => {
 
     <BackofficeSettingsNav />
 
-    <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+    <div class="rounded-lg border border-[#d9e1ea] bg-white p-4">
       <div class="flex items-center justify-between gap-3">
         <div>
           <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.paymentMethods.title') }}</div>
@@ -167,15 +167,21 @@ onMounted(() => {
       <div v-if="paymentMethodsError" class="mt-2 text-xs text-red-600">{{ paymentMethodsError }}</div>
 
       <div v-if="!paymentMethods.length" class="mt-3 text-sm text-gray-600">{{ $t('pages.private.manager.paymentMethods.empty') }}</div>
-      <div v-else class="mt-3 space-y-2">
-        <div v-for="method in paymentMethods" :key="method.method" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
-          <div class="text-sm font-medium text-gray-900">{{ method.label }}</div>
-          <div class="text-xs text-gray-500">
+      <div v-else class="mt-3 overflow-hidden rounded-md border border-[#d9e1ea]">
+        <div class="hidden grid-cols-[minmax(0,1fr)_7rem_7rem] items-center gap-3 border-b border-[#edf1f6] bg-[#f6f8fb] px-3 py-2 text-xs font-semibold text-[#627087] sm:grid">
+          <span>Medio</span>
+          <span>Estado</span>
+          <span class="text-right">Acción</span>
+        </div>
+        <div v-for="method in paymentMethods" :key="method.method" class="grid gap-2 border-b border-[#edf1f6] px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_7rem_7rem] sm:items-center sm:gap-3">
+          <div class="min-w-0 text-sm font-medium text-[#17233c]">{{ method.label }}</div>
+          <div class="text-xs font-medium" :class="method.active ? 'text-[#2d7d68]' : 'text-[#627087]'">
             {{ method.active ? $t('pages.private.manager.paymentMethods.active') : $t('pages.private.manager.paymentMethods.inactive') }}
           </div>
           <UButton
             size="xs"
             variant="outline"
+            class="w-full justify-center"
             :loading="paymentMethodsLoading"
             @click="togglePaymentMethod(method)"
           >
@@ -186,28 +192,40 @@ onMounted(() => {
 
       <div class="mt-5 border-t border-gray-200 pt-4">
         <div class="text-sm font-semibold text-gray-900">{{ $t('pages.private.manager.paymentMethods.mediaTitle') }}</div>
-        <div class="mt-2 grid gap-2 md:grid-cols-4">
-          <select v-model="paymentMediumForm.method" class="rounded border border-gray-300 px-3 py-2 text-sm">
+        <div class="mt-3 grid items-end gap-3 md:grid-cols-[minmax(8rem,0.8fr)_minmax(0,1fr)_minmax(0,1.25fr)_8rem]">
+          <label class="grid gap-1 text-xs font-semibold text-[#627087]">
+            Tipo
+            <select v-model="paymentMediumForm.method" class="h-10 rounded-md border border-[#d9e1ea] bg-white px-3 text-sm font-normal text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]">
             <option value="CASH">{{ $t('manager.cash.methodCash') }}</option>
             <option value="CARD">{{ $t('manager.cash.methodCard') }}</option>
             <option value="TRANSFER">{{ $t('manager.cash.methodTransfer') }}</option>
             <option value="OTHER">{{ $t('manager.cash.methodOther') }}</option>
-          </select>
-          <input v-model="paymentMediumForm.name" type="text" class="rounded border border-gray-300 px-3 py-2 text-sm" :placeholder="$t('pages.private.manager.paymentMethods.mediaNamePlaceholder')" />
-          <input v-model="paymentMediumForm.description" type="text" class="rounded border border-gray-300 px-3 py-2 text-sm" :placeholder="$t('pages.private.manager.paymentMethods.mediaDescPlaceholder')" />
-          <UButton color="primary" :loading="paymentMediaSaving" :disabled="!paymentMediumForm.name.trim()" @click="createPaymentMedium">
+            </select>
+          </label>
+          <label class="grid gap-1 text-xs font-semibold text-[#627087]">
+            Nombre
+            <input v-model="paymentMediumForm.name" type="text" class="h-10 rounded-md border border-[#d9e1ea] px-3 text-sm font-normal text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" :placeholder="$t('pages.private.manager.paymentMethods.mediaNamePlaceholder')" />
+          </label>
+          <label class="grid gap-1 text-xs font-semibold text-[#627087]">
+            Descripción
+            <input v-model="paymentMediumForm.description" type="text" class="h-10 rounded-md border border-[#d9e1ea] px-3 text-sm font-normal text-[#17233c] outline-none focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]" :placeholder="$t('pages.private.manager.paymentMethods.mediaDescPlaceholder')" />
+          </label>
+          <UButton color="primary" class="h-10 justify-center" :loading="paymentMediaSaving" :disabled="!paymentMediumForm.name.trim()" @click="createPaymentMedium">
             {{ $t('pages.private.manager.paymentMethods.mediaCreate') }}
           </UButton>
         </div>
 
         <div v-if="!customPaymentMedia.length" class="mt-3 text-sm text-gray-600">{{ $t('pages.private.manager.paymentMethods.customEmpty') }}</div>
-        <div class="mt-3 space-y-2" v-else>
-          <div v-for="item in customPaymentMedia" :key="item.id" class="flex items-center justify-between rounded border border-gray-200 px-3 py-2">
-            <div>
+        <div v-else class="mt-3 overflow-hidden rounded-md border border-[#d9e1ea]">
+          <div v-for="item in customPaymentMedia" :key="item.id" class="grid gap-2 border-b border-[#edf1f6] px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_7rem_7rem] sm:items-center sm:gap-3">
+            <div class="min-w-0">
               <div class="text-sm font-medium text-gray-900">{{ getMediumDisplayName(item.name) }} <span class="text-xs text-gray-500">({{ getMethodLabel(item.method) }})</span></div>
               <div class="text-xs text-gray-500">{{ item.description || '—' }}</div>
             </div>
-            <UButton size="xs" variant="outline" :loading="paymentMediaSaving" @click="togglePaymentMedium(item)">
+            <div class="text-xs font-medium" :class="item.active ? 'text-[#2d7d68]' : 'text-[#627087]'">
+              {{ item.active ? $t('pages.private.manager.paymentMethods.active') : $t('pages.private.manager.paymentMethods.inactive') }}
+            </div>
+            <UButton size="xs" variant="outline" class="w-full justify-center" :loading="paymentMediaSaving" @click="togglePaymentMedium(item)">
               {{ item.active ? $t('pages.private.manager.paymentMethods.deactivate') : $t('pages.private.manager.paymentMethods.activate') }}
             </UButton>
           </div>

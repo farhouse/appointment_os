@@ -465,7 +465,7 @@ onMounted(() => {
             <div class="w-24">
               <UInput type="number" v-model.number="item.price" min="0" step="0.01" :placeholder="$t('admin.sales.form.price')" />
             </div>
-            <UButton icon="i-heroicons-trash" color="error" variant="ghost" @click="removeItem(index)" />
+            <UButton icon="i-heroicons-trash" color="error" variant="ghost" :aria-label="`Quitar ${item.name || 'ítem'}`" @click="removeItem(index)" />
           </div>
           <UButton icon="i-heroicons-plus" variant="soft" block @click="addItem">
             {{ $t('admin.sales.form.addItem') }}

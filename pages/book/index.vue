@@ -22,11 +22,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="py-10">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="mb-8">
-        <h1 class="text-3xl md:text-4xl font-semibold">{{ $t('booking.title') }}</h1>
-        <p class="mt-2 text-gray-600">{{ $t('booking.subtitle') }}</p>
+  <div class="py-8 sm:py-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="mb-8 max-w-2xl">
+        <h1 class="font-serif text-3xl font-semibold leading-tight text-[#17233c] sm:text-4xl">{{ $t('booking.title') }}</h1>
+        <p class="mt-2 text-base text-[#627087]">{{ $t('booking.subtitle') }}</p>
       </div>
 
       <BookingWizard :initial-client="initialClient" />

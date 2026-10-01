@@ -46,7 +46,7 @@ const placeholderVars = computed(() => ({
 
 const emailTemplatePreview = computed(() => {
   const source = (emailTemplate.value || '').trim()
-  if (!source) return `<p style="font-family:Arial,sans-serif;color:#666;padding:12px;">${$t('pages.settings.email.templatePreviewEmpty')}</p>`
+  if (!source) return `<p style="font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#627087;padding:12px;">${$t('pages.settings.email.templatePreviewEmpty')}</p>`
 
   const sampleValues: Record<string, string> = {
     name: 'Juan Pérez',
@@ -210,13 +210,9 @@ onMounted(() => {
 
       <div class="mt-4 border-t border-gray-200 pt-4 space-y-4">
         <div>
-          <div class="text-sm font-semibold text-gray-900">Template HTML de Email</div>
-          <div class="text-xs text-gray-500">Placeholders disponibles: <span v-pre>{{name}}, {{date}}, {{branch}}, {{services}}, {{confirm_url}}, {{expires_at}}</span></div>
-          <textarea
-            v-model="emailTemplate"
-            class="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm min-h-[180px] font-mono"
-            :disabled="emailTemplateLoading"
-          />
+          <UFormField label="Template HTML de email" description="Placeholders disponibles: name, date, branch, services, confirm_url y expires_at.">
+            <UTextarea v-model="emailTemplate" class="mt-2 w-full" :rows="8" autoresize :disabled="emailTemplateLoading" :ui="{ base: 'font-mono text-xs leading-5' }" />
+          </UFormField>
           <div class="mt-2 flex justify-end">
             <UButton color="primary" :loading="emailTemplateSaving" :disabled="!emailTemplate.trim()" @click="saveEmailTemplate">
               Guardar template HTML
@@ -240,13 +236,9 @@ onMounted(() => {
         </div>
 
         <div>
-          <div class="text-sm font-semibold text-gray-900">{{ $t('pages.settings.email.whatsappTemplateTitle') }}</div>
-          <div class="text-xs text-gray-500">{{ $t('pages.settings.email.whatsappPlaceholders', placeholderVars) }}</div>
-          <textarea
-            v-model="whatsappTemplate"
-            class="mt-2 w-full rounded border border-gray-300 px-3 py-2 text-sm min-h-[96px]"
-            :disabled="whatsappTemplateLoading"
-          />
+          <UFormField :label="$t('pages.settings.email.whatsappTemplateTitle')" :description="$t('pages.settings.email.whatsappPlaceholders', placeholderVars)">
+            <UTextarea v-model="whatsappTemplate" class="mt-2 w-full" :rows="4" autoresize :disabled="whatsappTemplateLoading" />
+          </UFormField>
           <div class="mt-2 flex justify-end">
             <UButton color="primary" :loading="whatsappTemplateSaving" :disabled="!whatsappTemplate.trim()" @click="saveWhatsappTemplate">
               {{ $t('pages.settings.email.saveWhatsappTemplate') }}
@@ -260,11 +252,9 @@ onMounted(() => {
         <div class="border-t border-gray-200 pt-4">
           <div class="text-sm font-semibold text-gray-900">{{ $t('pages.settings.email.testEmailTitle') }}</div>
           <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-            <input
-              v-model="emailTestTarget"
-              type="email"
-              class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            />
+            <UFormField label="Email destinatario" class="w-full">
+              <UInput v-model="emailTestTarget" type="email" autocomplete="email" class="w-full" />
+            </UFormField>
             <UButton color="primary" :disabled="!emailTestTarget.trim()" :loading="emailTestLoading" @click="sendTestEmail">
               {{ $t('pages.settings.email.sendTestEmail') }}
             </UButton>

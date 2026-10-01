@@ -292,7 +292,7 @@ async function saveNotes() {
       <VueCalClient
         :key="calendarKey"
         :config="calendarConfig"
-        class="h-[560px]"
+        class="h-[clamp(440px,68vh,720px)]"
         @ready="handleReady"
         @view-change="handleViewChange"
         @event-click="handleEventClick"
@@ -308,19 +308,14 @@ async function saveNotes() {
       @success="refreshCalendar"
     />
 
-    <!-- Simple modal for event details -->
-    <div v-if="selectedEvent" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="selectedEvent = null">
-      <div class="w-full max-w-lg rounded-lg bg-white p-4 shadow-lg">
-        <div class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <div class="text-lg font-semibold truncate">{{ selectedEvent.title }}</div>
-            <div class="text-sm text-gray-600 mt-1">
-              <span class="font-medium">{{ t('calendar.status') }}</span>
-              {{ statusLabel(selectedEvent.extendedProps?.status) }}
-            </div>
-          </div>
-          <button class="text-sm text-gray-500 hover:text-gray-800" type="button" @click="selectedEvent = null">✕</button>
-        </div>
+    <UModal
+      :open="!!selectedEvent"
+      :title="selectedEvent?.title || 'Detalle del turno'"
+      :description="selectedEvent ? `${t('calendar.status')}: ${statusLabel(selectedEvent.extendedProps?.status)}` : undefined"
+      :ui="{ content: 'sm:max-w-lg' }"
+      @update:open="(open) => { if (!open) selectedEvent = null }"
+    >
+      <template #body>
 
         <div v-if="isBlock" class="mt-4 space-y-3 text-sm">
            <div class="bg-gray-50 p-3 rounded border border-gray-100">
@@ -378,19 +373,15 @@ async function saveNotes() {
             </div>
           </div>
 
-          <div>
-            <div class="font-medium">Notas internas</div>
-            <textarea
-              v-model="editingNotes"
-              rows="4"
-              class="mt-1 w-full rounded border border-black/10 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-              placeholder="Escribí notas internas para este turno…"
-            />
+          <UFormField label="Notas internas">
+            <UTextarea v-model="editingNotes" :rows="4" class="w-full" placeholder="Escribí notas internas para este turno…" />
             <div v-if="notesError" class="mt-1 text-xs text-red-600">{{ notesError }}</div>
-          </div>
+          </UFormField>
         </div>
+      </template>
 
-        <div class="mt-4 flex flex-wrap justify-end gap-2">
+      <template #footer>
+        <div class="flex w-full flex-wrap justify-end gap-2">
           <UButton variant="outline" @click="selectedEvent = null">Cerrar</UButton>
           <UButton v-if="isBlock" color="error" :loading="isDeletingBlock" @click="deleteBlock">
              Eliminar Bloqueo
@@ -399,22 +390,16 @@ async function saveNotes() {
             {{ savingNotes ? 'Guardando…' : 'Guardar notas' }}
           </UButton>
         </div>
-      </div>
-    </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <style scoped>
 :deep(.vuecal__event.block-event) {
-  background-color: repeating-linear-gradient(
-    45deg,
-    #f3f4f6,
-    #f3f4f6 10px,
-    #e5e7eb 10px,
-    #e5e7eb 20px
-  );
-  border-left: 3px solid #6b7280;
-  color: #374151;
+  background-color: #edf1f6;
+  border: 1px dashed #8b98aa;
+  color: #344158;
   font-style: italic;
   display: flex;
   justify-content: center;

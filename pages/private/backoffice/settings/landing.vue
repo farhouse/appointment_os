@@ -11,11 +11,11 @@ const loading = ref(false)
 const saving = ref(false)
 const html = ref('')
 
-const defaultTemplate = `<section style="max-width: 960px; margin: 0 auto; padding: 2rem 1rem; font-family: Inter, system-ui, -apple-system, sans-serif;">
-  <h1 style="font-size: 2.2rem; margin-bottom: .5rem;">Bienvenido a tu espacio</h1>
-  <p style="color: #4b5563; margin-bottom: 1rem;">Reservá tu turno en segundos y gestioná todo desde un solo lugar.</p>
+const defaultTemplate = `<section style="max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #17233c;">
+  <h1 style="font-family: Georgia, serif; font-size: 2.5rem; line-height: 1.05; margin: 0 0 .75rem;">Tu próximo turno, en claro</h1>
+  <p style="max-width: 620px; color: #627087; line-height: 1.6; margin: 0 0 1.5rem;">Reservá el servicio que necesitás y elegí el horario que mejor se adapte a tu día.</p>
   <p>
-    <a href="/book" style="display:inline-block;background:#111827;color:#fff;padding:.65rem 1rem;border-radius:.5rem;text-decoration:none;">Reservar ahora</a>
+    <a href="/book" style="display:inline-block;background:#2563eb;color:#fff;padding:.7rem 1rem;border-radius:.375rem;text-decoration:none;font-weight:600;">Reservar turno</a>
   </p>
 </section>`
 
@@ -60,33 +60,68 @@ onMounted(() => { void loadConfig() })
 
 <template>
   <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold">{{ $t('pages.settings.landing.title') }}</h1>
-      <p class="text-sm text-gray-600">{{ $t('pages.settings.landing.subtitle') }}</p>
+    <div class="max-w-3xl">
+      <h1 class="text-2xl font-semibold text-[#17233c]">{{ $t('pages.settings.landing.title') }}</h1>
+      <p class="mt-1 text-sm text-[#627087]">{{ $t('pages.settings.landing.subtitle') }}</p>
     </div>
 
     <BackofficeSettingsNav />
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm space-y-3">
-        <div class="flex items-center justify-between gap-2">
-          <div class="text-sm font-medium">{{ $t('pages.settings.landing.editor') }}</div>
-          <div class="flex gap-2">
-            <UButton color="neutral" variant="outline" size="sm" @click="applyDefaultTemplate">{{ $t('pages.settings.landing.useTemplate') }}</UButton>
-            <UButton color="neutral" variant="outline" size="sm" @click="resetLanding">{{ $t('pages.settings.landing.reset') }}</UButton>
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
+      <section class="overflow-hidden rounded-lg border border-[#d9e1ea] bg-white">
+        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-[#d9e1ea] px-4 py-3">
+          <div>
+            <h2 class="text-base font-semibold text-[#17233c]">{{ $t('pages.settings.landing.editor') }}</h2>
+            <p class="mt-0.5 text-xs text-[#627087]">HTML personalizado para la página pública.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-layout-template" @click="applyDefaultTemplate">
+              {{ $t('pages.settings.landing.useTemplate') }}
+            </UButton>
+            <UButton color="neutral" variant="ghost" size="sm" icon="i-lucide-rotate-ccw" @click="resetLanding">
+              {{ $t('pages.settings.landing.reset') }}
+            </UButton>
           </div>
         </div>
-        <UTextarea v-model="html" :rows="18" autoresize />
-        <div class="flex justify-end">
-          <UButton :loading="saving" :disabled="loading" @click="saveConfig">{{ $t('pages.settings.landing.save') }}</UButton>
-        </div>
-      </div>
 
-      <div class="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
-        <div class="text-sm font-medium mb-3">{{ $t('pages.settings.landing.preview') }}</div>
-        <div v-if="loading" class="text-sm text-gray-500">{{ $t('pages.settings.landing.loading') }}</div>
-        <div v-else class="prose max-w-none" v-html="html" />
-      </div>
+        <div class="p-4">
+          <UTextarea
+            v-model="html"
+            :rows="20"
+            :disabled="loading"
+            autoresize
+            class="w-full"
+            :ui="{ base: 'min-h-[480px] font-mono text-xs leading-5' }"
+          />
+        </div>
+
+        <div class="flex items-center justify-between gap-4 border-t border-[#d9e1ea] bg-[#f6f8fb] px-4 py-3">
+          <span class="text-xs tabular-nums text-[#627087]">{{ html.length.toLocaleString() }} / 50.000 caracteres</span>
+          <UButton icon="i-lucide-save" :loading="saving" :disabled="loading" @click="saveConfig">
+            {{ $t('pages.settings.landing.save') }}
+          </UButton>
+        </div>
+      </section>
+
+      <section class="self-start overflow-hidden rounded-lg border border-[#d9e1ea] bg-white xl:sticky xl:top-24">
+        <div class="flex items-center justify-between border-b border-[#d9e1ea] px-4 py-3">
+          <h2 class="text-base font-semibold text-[#17233c]">{{ $t('pages.settings.landing.preview') }}</h2>
+          <UBadge color="neutral" variant="subtle">Vista previa</UBadge>
+        </div>
+        <div class="min-h-[360px] bg-[#f6f8fb] p-3 sm:p-5">
+          <div v-if="loading" class="flex min-h-[320px] items-center justify-center text-sm text-[#627087]">
+            {{ $t('pages.settings.landing.loading') }}
+          </div>
+          <div v-else-if="!html.trim()" class="flex min-h-[320px] flex-col items-center justify-center px-6 text-center">
+            <UIcon name="i-lucide-panel-top" class="size-8 text-[#627087]" />
+            <p class="mt-3 text-sm font-medium text-[#17233c]">La landing está vacía</p>
+            <p class="mt-1 max-w-xs text-xs leading-5 text-[#627087]">Usá la plantilla base o escribí el contenido para verlo acá.</p>
+          </div>
+          <div v-else class="min-h-[320px] overflow-hidden rounded-md border border-[#d9e1ea] bg-white">
+            <div class="prose max-w-none" v-html="html" />
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
