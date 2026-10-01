@@ -6,7 +6,13 @@ import prisma from '~/server/utils/prisma'
 
 // Paths that don't require auth
 const PUBLIC_PREFIXES = ['/api/public/']
-const PUBLIC_EXACT = new Set(['/api/auth/login', '/api/auth/refresh', '/api/auth/logout'])
+const PUBLIC_EXACT = new Set([
+  '/api/auth/login',
+  '/api/auth/refresh',
+  '/api/auth/logout',
+  '/api/setup/status',
+  '/api/setup/init',
+])
 
 export default defineEventHandler(async (event) => {
   const path = event.path
