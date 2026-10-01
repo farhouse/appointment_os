@@ -1,0 +1,12 @@
+.git
+.github
+.impeccable
+.nuxt
+.output
+node_modules
+
+.env*
+!.env.example
+
+*.log
+docs
